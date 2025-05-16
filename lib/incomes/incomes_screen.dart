@@ -6,6 +6,8 @@ class IncomesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IncomesBody();
+    return Scaffold(
+      body: IncomesBody(),
+    );
   }
 }

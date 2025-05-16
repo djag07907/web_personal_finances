@@ -6,6 +6,8 @@ class ExpensesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ExpensesBody();
+    return Scaffold(
+      body: ExpensesBody(),
+    );
   }
 }

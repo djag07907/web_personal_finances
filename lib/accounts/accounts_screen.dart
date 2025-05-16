@@ -6,6 +6,8 @@ class AccountsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AccountsBody();
+    return Scaffold(
+      body: AccountsBody(),
+    );
   }
 }
