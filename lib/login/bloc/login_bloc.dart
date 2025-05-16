@@ -14,7 +14,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     Emitter<LoginState> emit,
   ) async {
     emit(
-      LoginLoading(),
+      LoginInProgress(),
     );
     try {
       await authRepository.signInWithEmailAndPassword(
@@ -26,7 +26,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       );
     } on Exception catch (error) {
       emit(
-        LoginFailure(
+        LoginError(
           error: error.toString(),
         ),
       );

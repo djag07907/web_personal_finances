@@ -9,14 +9,14 @@ abstract class SignupState extends Equatable {
 
 class SignUpInitial extends SignupState {}
 
-class SignUpLoading extends SignupState {}
+class SignUpInProgress extends SignupState {}
 
 class SignUpSuccess extends SignupState {}
 
-class SignUpFailure extends SignupState {
+class SignUpError extends SignupState {
   final String error;
 
-  const SignUpFailure({
+  const SignUpError({
     required this.error,
   });
 }

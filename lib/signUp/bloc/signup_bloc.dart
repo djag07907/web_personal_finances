@@ -13,7 +13,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
     Emitter<SignupState> emit,
   ) async {
     emit(
-      SignUpLoading(),
+      SignUpInProgress(),
     );
     try {
       await authRepository.registerWithEmailAndPassword(
@@ -25,7 +25,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
       );
     } on Exception catch (error) {
       emit(
-        SignUpFailure(
+        SignUpError(
           error: error.toString(),
         ),
       );

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:web_personal_finances/repositories/firebase_auth_repository.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_bloc.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_event.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_state.dart';
+import 'package:web_personal_finances/resources/colors_constants.dart';
 
 class SignUpBody extends StatefulWidget {
   const SignUpBody({super.key});
@@ -14,6 +14,14 @@ class SignUpBody extends StatefulWidget {
 class _SignUpBodyState extends State<SignUpBody> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  late final SignupBloc _signupBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _signupBloc = context.read<SignupBloc>();
+  }
 
   @override
   void dispose() {
@@ -22,31 +30,18 @@ class _SignUpBodyState extends State<SignUpBody> {
     super.dispose();
   }
 
-  void _onSignUpButtonPressed(BuildContext context) {
-    context.read<SignupBloc>().add(
-          SignUpSubmitted(
-            email: _emailController.text,
-            password: _passwordController.text,
-          ),
-        );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<SignupBloc>(
-      create: (_) => SignupBloc(
-        authRepository: RepositoryProvider.of<AuthRepository>(
-          context,
-        ),
-      ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: BlocConsumer<SignupBloc, SignupState>(
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: white,
+          body: BlocListener<SignupBloc, SignupState>(
             listener: (context, state) {
-              if (state is SignUpFailure) {
+              if (state is SignUpError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
+                    backgroundColor: Colors.redAccent,
                     content: Text('Registration Failed: ${state.error}'),
                   ),
                 );
@@ -55,38 +50,147 @@ class _SignUpBodyState extends State<SignUpBody> {
                 Navigator.pushReplacementNamed(context, '/home');
               }
             },
-            builder: (context, state) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                  ),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Password'),
-                  ),
-                  const SizedBox(height: 20),
-                  if (state is SignUpLoading)
-                    const CircularProgressIndicator()
-                  else
-                    ElevatedButton(
-                      onPressed: () => _onSignUpButtonPressed(context),
-                      child: const Text('SignUp'),
+            child: Center(
+              child: SingleChildScrollView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      elevation: 4,
+                      color: white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Create Your Account',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(
+                                    color: LightColors.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 20),
+                            TextField(
+                              controller: _emailController,
+                              decoration: _buildInputDecoration(
+                                'Email',
+                                Icons.email_outlined,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextField(
+                              controller: _passwordController,
+                              obscureText: _obscurePassword,
+                              decoration: _buildInputDecoration(
+                                'Password',
+                                Icons.lock_outline,
+                                isPasswordField: true,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            if (context.read<SignupBloc>().state
+                                is SignUpInProgress)
+                              const CircularProgressIndicator()
+                            else
+                              SizedBox(
+                                width: 250,
+                                child: ElevatedButton(
+                                  onPressed: _onSignUpButtonPressed,
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Sign Up',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 16),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child:
+                                  const Text('Already have an account? Login'),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Already have an account? Login'),
                   ),
-                ],
-              );
-            },
+                ),
+              ),
+            ),
           ),
         ),
+        BlocBuilder<SignupBloc, SignupState>(
+          builder: (context, state) {
+            if (state is SignUpInProgress) {
+              return Container(
+                color: black.withValues(alpha: 0.5),
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ],
+    );
+  }
+
+  void _onSignUpButtonPressed() {
+    _signupBloc.add(
+      SignUpSubmitted(
+        email: _emailController.text,
+        password: _passwordController.text,
+      ),
+    );
+  }
+
+  InputDecoration _buildInputDecoration(
+    String label,
+    IconData icon, {
+    bool isPasswordField = false,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: LightColors.primary),
+      suffixIcon: isPasswordField
+          ? IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                color: LightColors.primary,
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
+            )
+          : null,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: BorderSide(color: Colors.grey.shade700),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: BorderSide(color: Colors.grey.shade800, width: 2),
       ),
     );
   }

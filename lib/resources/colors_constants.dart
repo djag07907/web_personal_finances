@@ -19,6 +19,6 @@ class DarkColors {
   static const primary = Color(0xFF6FCF97);
   static const background = Color(0xFF1E1E1E);
   static const surface = Color(0xFF2C2C2C);
-  static const textPrimary = Color(0xFFF2F2F2);
+  static const textPrimary = Color(0xFFBDBDBD);
   static const textSecondary = Color(0xFFBDBDBD);
 }
