@@ -16,7 +16,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
       SignUpLoading(),
     );
     try {
-      await authRepository.signInWithEmailAndPassword(
+      await authRepository.registerWithEmailAndPassword(
         email: event.email,
         password: event.password,
       );

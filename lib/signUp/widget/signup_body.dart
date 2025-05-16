@@ -23,28 +23,35 @@ class _SignUpBodyState extends State<SignUpBody> {
   }
 
   void _onSignUpButtonPressed(BuildContext context) {
-    context.read<SignupBloc>().add(SignUpSubmitted(
-          email: _emailController.text,
-          password: _passwordController.text,
-        ));
+    context.read<SignupBloc>().add(
+          SignUpSubmitted(
+            email: _emailController.text,
+            password: _passwordController.text,
+          ),
+        );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<SignupBloc>(
       create: (_) => SignupBloc(
-          authRepository: RepositoryProvider.of<AuthRepository>(context)),
+        authRepository: RepositoryProvider.of<AuthRepository>(
+          context,
+        ),
+      ),
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: BlocConsumer<SignupBloc, SignupState>(
             listener: (context, state) {
               if (state is SignUpFailure) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Registration Failed: ${state.error}')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Registration Failed: ${state.error}'),
+                  ),
+                );
               }
               if (state is SignUpSuccess) {
-                // Navigate to home screen or pop back to login
                 Navigator.pushReplacementNamed(context, '/home');
               }
             },
@@ -67,7 +74,7 @@ class _SignUpBodyState extends State<SignUpBody> {
                   else
                     ElevatedButton(
                       onPressed: () => _onSignUpButtonPressed(context),
-                      child: const Text('SigUp'),
+                      child: const Text('SignUp'),
                     ),
                   TextButton(
                     onPressed: () {

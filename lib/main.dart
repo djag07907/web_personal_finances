@@ -6,6 +6,7 @@ import 'package:web_personal_finances/firebase_options.dart';
 import 'package:web_personal_finances/home/home_screen.dart';
 import 'package:web_personal_finances/login/login_screen.dart';
 import 'package:web_personal_finances/repositories/firebase_auth_repository.dart';
+import 'package:web_personal_finances/resources/themes.dart';
 import 'package:web_personal_finances/signUp/signup_screen.dart';
 
 Future<void> main() async {
@@ -28,10 +29,9 @@ class MyApp extends StatelessWidget {
       create: (_) => AuthRepository(),
       child: MaterialApp(
         title: 'Web Personal Finances',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
+        theme: lightTheme,
+        darkTheme: darkTheme,
+        themeMode: ThemeMode.system,
         initialRoute: '/',
         routes: {
           '/': (context) => const LoginScreen(),
