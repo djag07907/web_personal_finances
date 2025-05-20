@@ -35,10 +35,13 @@ class _LoginBodyState extends State<LoginBody> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final welcomeTextColor =
+        isDark ? DarkColors.textPrimary : LightColors.textPrimary;
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: BlocListener<LoginBloc, LoginState>(
             listener: (context, state) {
               if (state is LoginError) {
@@ -61,6 +64,7 @@ class _LoginBodyState extends State<LoginBody> {
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 400),
                     child: Card(
+                      color: white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0),
                       ),
@@ -76,7 +80,7 @@ class _LoginBodyState extends State<LoginBody> {
                                   .textTheme
                                   .headlineMedium
                                   ?.copyWith(
-                                    color: LightColors.textPrimary,
+                                    color: welcomeTextColor,
                                     fontWeight: FontWeight.bold,
                                   ),
                             ),
@@ -88,6 +92,13 @@ class _LoginBodyState extends State<LoginBody> {
                                 icon: Icons.email_outlined,
                               ),
                               keyboardType: TextInputType.emailAddress,
+                              style: isDark
+                                  ? const TextStyle(
+                                      color: DarkColors.textPrimary,
+                                    )
+                                  : const TextStyle(
+                                      color: LightColors.textPrimary,
+                                    ),
                             ),
                             const SizedBox(height: 16),
                             TextField(
@@ -98,6 +109,13 @@ class _LoginBodyState extends State<LoginBody> {
                                 icon: Icons.lock_outline,
                                 isPasswordField: true,
                               ),
+                              style: isDark
+                                  ? const TextStyle(
+                                      color: DarkColors.textPrimary,
+                                    )
+                                  : const TextStyle(
+                                      color: LightColors.textPrimary,
+                                    ),
                             ),
                             const SizedBox(height: 16),
                             Row(
@@ -110,7 +128,10 @@ class _LoginBodyState extends State<LoginBody> {
                                     });
                                   },
                                 ),
-                                const Text('Remember me'),
+                                Text(
+                                  'Remember me',
+                                  style: TextStyle(color: LightColors.primary),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 24),
@@ -124,6 +145,8 @@ class _LoginBodyState extends State<LoginBody> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
+                                  backgroundColor: LightColors.primary,
+                                  foregroundColor: white,
                                 ),
                                 child: const Text(
                                   'Login',
@@ -136,6 +159,9 @@ class _LoginBodyState extends State<LoginBody> {
                               onPressed: () {
                                 Navigator.pushNamed(context, '/signup');
                               },
+                              style: TextButton.styleFrom(
+                                foregroundColor: LightColors.primary,
+                              ),
                               child:
                                   const Text("Don't have an account? Register"),
                             ),

@@ -32,10 +32,13 @@ class _SignUpBodyState extends State<SignUpBody> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final welcomeTextColor =
+        isDark ? DarkColors.textPrimary : LightColors.textPrimary;
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: BlocListener<SignupBloc, SignupState>(
             listener: (context, state) {
               if (state is SignUpError) {
@@ -58,11 +61,11 @@ class _SignUpBodyState extends State<SignUpBody> {
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 400),
                     child: Card(
+                      color: white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       elevation: 4,
-                      color: white,
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
                         child: Column(
@@ -74,7 +77,7 @@ class _SignUpBodyState extends State<SignUpBody> {
                                   .textTheme
                                   .headlineMedium
                                   ?.copyWith(
-                                    color: LightColors.textPrimary,
+                                    color: welcomeTextColor,
                                     fontWeight: FontWeight.bold,
                                   ),
                             ),
@@ -85,6 +88,14 @@ class _SignUpBodyState extends State<SignUpBody> {
                                 'Email',
                                 Icons.email_outlined,
                               ),
+                              keyboardType: TextInputType.emailAddress,
+                              style: isDark
+                                  ? const TextStyle(
+                                      color: DarkColors.textPrimary,
+                                    )
+                                  : const TextStyle(
+                                      color: LightColors.textPrimary,
+                                    ),
                             ),
                             const SizedBox(height: 16),
                             TextField(
@@ -95,6 +106,13 @@ class _SignUpBodyState extends State<SignUpBody> {
                                 Icons.lock_outline,
                                 isPasswordField: true,
                               ),
+                              style: isDark
+                                  ? const TextStyle(
+                                      color: DarkColors.textPrimary,
+                                    )
+                                  : const TextStyle(
+                                      color: LightColors.textPrimary,
+                                    ),
                             ),
                             const SizedBox(height: 24),
                             if (context.read<SignupBloc>().state
@@ -112,6 +130,8 @@ class _SignUpBodyState extends State<SignUpBody> {
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8.0),
                                     ),
+                                    backgroundColor: LightColors.primary,
+                                    foregroundColor: white,
                                   ),
                                   child: const Text(
                                     'Sign Up',
@@ -124,6 +144,9 @@ class _SignUpBodyState extends State<SignUpBody> {
                               onPressed: () {
                                 Navigator.pop(context);
                               },
+                              style: TextButton.styleFrom(
+                                foregroundColor: LightColors.primary,
+                              ),
                               child:
                                   const Text('Already have an account? Login'),
                             ),
