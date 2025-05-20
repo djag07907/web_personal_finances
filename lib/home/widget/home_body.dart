@@ -8,46 +8,62 @@ class HomeBody extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomRight,
-      child: Container(
-        height: 290.0,
-        margin: EdgeInsets.only(bottom: 150.0),
-        width: MediaQuery.of(context).size.width * 0.7,
-        decoration: BoxDecoration(
-          color: lightTheme.primaryColor,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(300.0),
-            bottomLeft: Radius.circular(300.0),
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: LightColors.greyBackground,
+            //TODO: Add background image
+            // image: DecorationImage(
+            //   image: AssetImage(
+            //     '${imagePath}background.png',
+            //   ),
+            //   fit: BoxFit.cover,
+            // ),
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Personal finances',
-              style: Theme.of(context).textTheme.headlineMedium!.copyWith(
-                    fontSize: fontSize40,
-                    color: white,
-                  ),
+        Align(
+          alignment: Alignment.bottomRight,
+          child: Container(
+            height: 200.0,
+            margin: EdgeInsets.only(bottom: 150.0),
+            width: MediaQuery.of(context).size.width * 0.5,
+            decoration: BoxDecoration(
+              color: lightTheme.primaryColor,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(300.0),
+                bottomLeft: Radius.circular(300.0),
+              ),
             ),
-            Text(
-              'Welcome',
-              style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: white,
-                  ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  'Personal finances',
+                  style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                        fontSize: fontSize40,
+                        color: white,
+                      ),
+                ),
+                Text(
+                  'Welcome',
+                  style: Theme.of(context).textTheme.displayLarge!.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: white,
+                      ),
+                ),
+                Text(
+                  'loremipsum',
+                  style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                        fontWeight: FontWeight.w400,
+                        color: white,
+                      ),
+                ),
+              ],
             ),
-            Text(
-              'loremipsum',
-              style: Theme.of(context).textTheme.headlineMedium!.copyWith(
-                    fontWeight: FontWeight.w400,
-                    color: white,
-                  ),
-            ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

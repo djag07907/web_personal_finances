@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:web_personal_finances/routes/landing_routes.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_bloc.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_event.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_state.dart';
@@ -50,7 +52,7 @@ class _SignUpBodyState extends State<SignUpBody> {
                 );
               }
               if (state is SignUpSuccess) {
-                Navigator.pushReplacementNamed(context, '/home');
+                context.go(homeRoute);
               }
             },
             child: Center(
@@ -142,7 +144,7 @@ class _SignUpBodyState extends State<SignUpBody> {
                             const SizedBox(height: 16),
                             TextButton(
                               onPressed: () {
-                                Navigator.pop(context);
+                                context.go(loginRoute);
                               },
                               style: TextButton.styleFrom(
                                 foregroundColor: LightColors.primary,

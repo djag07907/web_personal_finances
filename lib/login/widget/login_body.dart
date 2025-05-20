@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_personal_finances/login/bloc/login_bloc.dart';
 import 'package:web_personal_finances/login/bloc/login_event.dart';
 import 'package:web_personal_finances/login/bloc/login_state.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+import 'package:web_personal_finances/routes/landing_routes.dart';
 
 class LoginBody extends StatefulWidget {
   const LoginBody({super.key});
@@ -53,7 +55,7 @@ class _LoginBodyState extends State<LoginBody> {
                 );
               }
               if (state is LoginSuccess) {
-                Navigator.pushReplacementNamed(context, '/home');
+                context.go(homeRoute);
               }
             },
             child: Center(
@@ -157,7 +159,7 @@ class _LoginBodyState extends State<LoginBody> {
                             const SizedBox(height: 16),
                             TextButton(
                               onPressed: () {
-                                Navigator.pushNamed(context, '/signup');
+                                context.go(signupRoute);
                               },
                               style: TextButton.styleFrom(
                                 foregroundColor: LightColors.primary,
