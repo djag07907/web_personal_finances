@@ -8,9 +8,9 @@ class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return BlocProvider<LoginBloc>(
-      create: (_) => LoginBloc(
+      create: (final _) => LoginBloc(
         authRepository: AuthRepository(),
       ),
       child: const LoginBody(),

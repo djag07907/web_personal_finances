@@ -6,7 +6,7 @@ class AccountsToPayScreen extends StatelessWidget {
   const AccountsToPayScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       backgroundColor: transparent,
       body: AccountsToPayBody(),

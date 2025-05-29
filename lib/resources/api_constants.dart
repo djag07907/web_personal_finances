@@ -1,1 +1,1 @@
-const baseUrl = '';
+const String baseUrl = '';

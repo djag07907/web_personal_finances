@@ -11,15 +11,15 @@ class AccountsReceivableBody extends StatefulWidget {
 
 class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Stack(
-      children: [
+      children: <Widget>[
         CustomCardBody(
           isMain: false,
           isMenu: true,
           title: context.translate('accounts_receivable'),
           body: Column(
-            children: [],
+            children: <Widget>[],
           ),
         ),
       ],

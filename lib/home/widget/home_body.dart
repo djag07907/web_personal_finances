@@ -11,9 +11,9 @@ class HomeBody extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     return Stack(
-      children: [
+      children: <Widget>[
         Column(
-          children: [
+          children: <Widget>[
             Align(
               alignment: Alignment.topRight,
               child: Container(
@@ -59,7 +59,7 @@ class HomeBody extends StatelessWidget {
                 isMain: true,
                 title: context.translate('home'),
                 body: Column(
-                  children: [],
+                  children: <Widget>[],
                 ),
               ),
             ),

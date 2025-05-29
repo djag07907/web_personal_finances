@@ -36,7 +36,7 @@ class CircularImageBorder extends StatelessWidget {
       ),
       child: CircleAvatar(
         backgroundColor: LightColors.primary.withValues(alpha: 0.8),
-        child: imagePath != null ? _buildImageAsset() : _builTextImage(),
+        child: imagePath != null ? _buildImageAsset() : _buildTextImage(),
       ),
     );
   }
@@ -48,7 +48,7 @@ class CircularImageBorder extends StatelessWidget {
     );
   }
 
-  Widget _builTextImage() {
+  Widget _buildTextImage() {
     String initials = labelImage!
         .trim()
         .split(RegExp(' +'))

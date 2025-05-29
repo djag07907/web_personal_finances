@@ -30,9 +30,9 @@ class MyApp extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return RepositoryProvider(
-      create: (_) => AuthRepository(),
+      create: (final _) => AuthRepository(),
       child: MaterialApp.router(
         routerConfig: appRoutes,
         title: 'Web Personal Finances',

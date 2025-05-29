@@ -11,15 +11,15 @@ class ProfileBody extends StatefulWidget {
 
 class _ProfileBodyState extends State<ProfileBody> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Stack(
-      children: [
+      children: <Widget>[
         CustomCardBody(
           isMain: false,
           isMenu: true,
           title: context.translate('profile'),
           body: Column(
-            children: [],
+            children: <Widget>[],
           ),
         ),
       ],

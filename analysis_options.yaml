@@ -19,3 +19,7 @@ linter:
     flutter_style_todos: false
     require_trailing_commas: true
     prefer_single_quotes: true
+    prefer_final_fields: true
+    prefer_final_parameters: true
+    always_specify_types: true
+   

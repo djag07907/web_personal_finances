@@ -11,15 +11,15 @@ class ExpensesBody extends StatefulWidget {
 
 class _ExpensesBodyState extends State<ExpensesBody> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Stack(
-      children: [
+      children: <Widget>[
         CustomCardBody(
           isMain: false,
           isMenu: true,
           title: context.translate('expenses'),
           body: Column(
-            children: [],
+            children: <Widget>[],
           ),
         ),
       ],

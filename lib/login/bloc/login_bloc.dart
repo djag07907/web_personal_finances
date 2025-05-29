@@ -10,8 +10,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   Future<void> _onLoginSubmitted(
-    LoginSubmitted event,
-    Emitter<LoginState> emit,
+    final LoginSubmitted event,
+    final Emitter<LoginState> emit,
   ) async {
     emit(
       LoginInProgress(),

@@ -9,8 +9,8 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
     on<SignUpSubmitted>(_onSignUpSubmitted);
   }
   Future<void> _onSignUpSubmitted(
-    SignUpSubmitted event,
-    Emitter<SignupState> emit,
+    final SignUpSubmitted event,
+    final Emitter<SignupState> emit,
   ) async {
     emit(
       SignUpInProgress(),

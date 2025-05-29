@@ -17,7 +17,8 @@ final GoRouter appRoutes = GoRouter(
   routes: <RouteBase>[
     GoRoute(
       path: rootRoute,
-      redirect: (context, state) => loginRoute,
+      redirect: (final BuildContext context, final GoRouterState state) =>
+          loginRoute,
     ),
     GoRoute(
       path: loginRoute,

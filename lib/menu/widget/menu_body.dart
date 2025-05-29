@@ -16,10 +16,12 @@ part 'side_menu.dart';
 
 class MenuBody extends StatelessWidget {
   final Widget body;
+
   const MenuBody({
     super.key,
     required this.body,
   });
+
   @override
   Widget build(final BuildContext context) {
     return Stack(

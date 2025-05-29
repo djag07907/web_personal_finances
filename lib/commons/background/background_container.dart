@@ -5,7 +5,7 @@ class BackgroundContainer extends StatelessWidget {
   const BackgroundContainer({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(

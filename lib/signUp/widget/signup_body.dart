@@ -14,8 +14,8 @@ class SignUpBody extends StatefulWidget {
 }
 
 class _SignUpBodyState extends State<SignUpBody> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
   late final SignupBloc _signupBloc;
 
@@ -33,16 +33,16 @@ class _SignUpBodyState extends State<SignUpBody> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final welcomeTextColor =
+  Widget build(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color welcomeTextColor =
         isDark ? DarkColors.textPrimary : LightColors.textPrimary;
     return Stack(
-      children: [
+      children: <Widget>[
         Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: BlocListener<SignupBloc, SignupState>(
-            listener: (context, state) {
+            listener: (final BuildContext context, final SignupState state) {
               if (state is SignUpError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -72,7 +72,7 @@ class _SignUpBodyState extends State<SignUpBody> {
                         padding: const EdgeInsets.all(20.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
-                          children: [
+                          children: <Widget>[
                             Text(
                               'Create Your Account',
                               style: Theme.of(context)
@@ -163,7 +163,7 @@ class _SignUpBodyState extends State<SignUpBody> {
           ),
         ),
         BlocBuilder<SignupBloc, SignupState>(
-          builder: (context, state) {
+          builder: (final BuildContext context, final SignupState state) {
             if (state is SignUpInProgress) {
               return Container(
                 color: black.withValues(alpha: 0.5),
@@ -189,9 +189,9 @@ class _SignUpBodyState extends State<SignUpBody> {
   }
 
   InputDecoration _buildInputDecoration(
-    String label,
-    IconData icon, {
-    bool isPasswordField = false,
+    final String label,
+    final IconData icon, {
+    final bool isPasswordField = false,
   }) {
     return InputDecoration(
       labelText: label,

@@ -15,8 +15,8 @@ class LoginBody extends StatefulWidget {
 }
 
 class _LoginBodyState extends State<LoginBody> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
   late final LoginBloc _loginBloc;
   bool _rememberUser = false;
@@ -36,16 +36,16 @@ class _LoginBodyState extends State<LoginBody> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final welcomeTextColor =
+  Widget build(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color welcomeTextColor =
         isDark ? DarkColors.textPrimary : LightColors.textPrimary;
     return Stack(
-      children: [
+      children: <Widget>[
         Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: BlocListener<LoginBloc, LoginState>(
-            listener: (context, state) {
+            listener: (final BuildContext context, final LoginState state) {
               if (state is LoginError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -75,7 +75,7 @@ class _LoginBodyState extends State<LoginBody> {
                         padding: const EdgeInsets.all(20.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
-                          children: [
+                          children: <Widget>[
                             Text(
                               'Welcome Back',
                               style: Theme.of(context)
@@ -121,10 +121,10 @@ class _LoginBodyState extends State<LoginBody> {
                             ),
                             const SizedBox(height: 16),
                             Row(
-                              children: [
+                              children: <Widget>[
                                 Checkbox(
                                   value: _rememberUser,
-                                  onChanged: (value) {
+                                  onChanged: (final bool? value) {
                                     setState(() {
                                       _rememberUser = value ?? false;
                                     });
@@ -178,7 +178,7 @@ class _LoginBodyState extends State<LoginBody> {
           ),
         ),
         BlocBuilder<LoginBloc, LoginState>(
-          builder: (context, state) {
+          builder: (final BuildContext context, final LoginState state) {
             if (state is LoginInProgress) {
               return Container(
                 color: black.withValues(alpha: 0.5),
@@ -195,8 +195,8 @@ class _LoginBodyState extends State<LoginBody> {
   }
 
   Future<void> _loadRememberedEmail() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedEmail = prefs.getString('saved_email');
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? savedEmail = prefs.getString('saved_email');
     if (savedEmail != null && savedEmail.isNotEmpty) {
       setState(() {
         _emailController.text = savedEmail;
@@ -206,7 +206,7 @@ class _LoginBodyState extends State<LoginBody> {
   }
 
   Future<void> _saveRememberedEmail() async {
-    final prefs = await SharedPreferences.getInstance();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     if (_rememberUser) {
       await prefs.setString('saved_email', _emailController.text);
     } else {
@@ -225,9 +225,9 @@ class _LoginBodyState extends State<LoginBody> {
   }
 
   InputDecoration _buildInputDecoration({
-    required String label,
-    required IconData icon,
-    bool isPasswordField = false,
+    required final String label,
+    required final IconData icon,
+    final bool isPasswordField = false,
   }) {
     return InputDecoration(
       labelText: label,
