@@ -6,6 +6,7 @@ import 'package:web_personal_finances/expenses/expenses_screen.dart';
 import 'package:web_personal_finances/home/home_screen.dart';
 import 'package:web_personal_finances/incomes/incomes_screen.dart';
 import 'package:web_personal_finances/login/login_screen.dart';
+import 'package:web_personal_finances/menu/menu_screen.dart';
 import 'package:web_personal_finances/signUp/signup_screen.dart';
 
 part 'landing_constants.dart';
@@ -29,35 +30,48 @@ final GoRouter appRoutes = GoRouter(
         return const SignUpScreen();
       },
     ),
-    GoRoute(
-      path: homeRoute,
-      builder: (final BuildContext context, final GoRouterState state) {
-        return const HomeScreen();
+    ShellRoute(
+      builder: (
+        final BuildContext context,
+        final GoRouterState state,
+        final Widget child,
+      ) {
+        return MenuScreen(
+          menuBody: child,
+        );
       },
-    ),
-    GoRoute(
-      path: incomesRoute,
-      builder: (final BuildContext context, final GoRouterState state) {
-        return const IncomesScreen();
-      },
-    ),
-    GoRoute(
-      path: expensesRoute,
-      builder: (final BuildContext context, final GoRouterState state) {
-        return const ExpensesScreen();
-      },
-    ),
-    GoRoute(
-      path: accountsToPayRoute,
-      builder: (final BuildContext context, final GoRouterState state) {
-        return const AccountsToPayScreen();
-      },
-    ),
-    GoRoute(
-      path: accountsReceivableRoute,
-      builder: (final BuildContext context, final GoRouterState state) {
-        return const AccountsReceivableScreen();
-      },
+      routes: <RouteBase>[
+        GoRoute(
+          path: homeRoute,
+          builder: (final BuildContext context, final GoRouterState state) {
+            return const HomeScreen();
+          },
+        ),
+        GoRoute(
+          path: incomesRoute,
+          builder: (final BuildContext context, final GoRouterState state) {
+            return const IncomesScreen();
+          },
+        ),
+        GoRoute(
+          path: expensesRoute,
+          builder: (final BuildContext context, final GoRouterState state) {
+            return const ExpensesScreen();
+          },
+        ),
+        GoRoute(
+          path: accountsToPayRoute,
+          builder: (final BuildContext context, final GoRouterState state) {
+            return const AccountsToPayScreen();
+          },
+        ),
+        GoRoute(
+          path: accountsReceivableRoute,
+          builder: (final BuildContext context, final GoRouterState state) {
+            return const AccountsReceivableScreen();
+          },
+        ),
+      ],
     ),
   ],
 );

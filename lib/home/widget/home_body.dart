@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/resources/fonts_constants.dart';
 import 'package:web_personal_finances/resources/themes.dart';
 
@@ -12,14 +13,12 @@ class HomeBody extends StatelessWidget {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: LightColors.greyBackground,
-            //TODO: Add background image
-            // image: DecorationImage(
-            //   image: AssetImage(
-            //     '${imagePath}background.png',
-            //   ),
-            //   fit: BoxFit.cover,
-            // ),
+            image: DecorationImage(
+              image: AssetImage(
+                '${imagePath}home_background.png',
+              ),
+              fit: BoxFit.cover,
+            ),
           ),
         ),
         Align(
