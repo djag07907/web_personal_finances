@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:internationalization/internationalization.dart';
+import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 
 class AccountsReceivableBody extends StatefulWidget {
   const AccountsReceivableBody({super.key});
@@ -10,8 +12,17 @@ class AccountsReceivableBody extends StatefulWidget {
 class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Accounts Receivable'),
+    return Stack(
+      children: [
+        CustomCardBody(
+          isMain: false,
+          isMenu: true,
+          title: context.translate('accounts_receivable'),
+          body: Column(
+            children: [],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -6,12 +6,14 @@ class CustomCardBody extends StatelessWidget {
   final bool isMenu;
   final String title;
   final Widget body;
+  final bool isMain;
 
   const CustomCardBody({
     super.key,
     this.isMenu = false,
     required this.title,
     required this.body,
+    this.isMain = false,
   });
 
   @override
@@ -19,16 +21,23 @@ class CustomCardBody extends StatelessWidget {
     return Container(
       clipBehavior: Clip.hardEdge,
       margin: const EdgeInsets.only(
-          top: 42.0, left: 50.0, right: 50.0, bottom: 100.0),
+        top: 20.0,
+        left: 50.0,
+        right: 50.0,
+        bottom: 50.0,
+      ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30.0),
       ),
       child: Column(
         spacing: 10.0,
         children: <Widget>[
-          CustomHeader(
-            title: title,
-            isMenu: isMenu,
+          Visibility(
+            visible: !isMain,
+            child: CustomHeader(
+              title: title,
+              isMenu: isMenu,
+            ),
           ),
           Expanded(
             child: Container(

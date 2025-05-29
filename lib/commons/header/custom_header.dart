@@ -35,7 +35,7 @@ class CustomHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title.toUpperCase(),
-              textAlign: isMenu ? TextAlign.start : TextAlign.center,
+              textAlign: isMenu ? TextAlign.center : TextAlign.start,
               style: Theme.of(context).textTheme.headlineLarge!.copyWith(
                     fontSize: fontSize22,
                     color: LightColors.primary,

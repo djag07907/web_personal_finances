@@ -15,32 +15,32 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
   final List<MenuOptions> _navItems = <MenuOptions>[
     MenuOptions(
       title: 'home',
-      icon: Icons.supervised_user_circle_outlined,
+      icon: Icons.home,
       pagePath: homeRoute,
     ),
     MenuOptions(
       title: 'incomes',
-      icon: Icons.not_listed_location_outlined,
+      icon: Icons.trending_up,
       pagePath: incomesRoute,
     ),
     MenuOptions(
       title: 'expenses',
-      icon: Icons.storage_outlined,
+      icon: Icons.trending_down,
       pagePath: expensesRoute,
     ),
     MenuOptions(
       title: 'accounts_to_pay',
-      icon: Icons.settings_outlined,
+      icon: Icons.receipt_long,
       pagePath: accountsToPayRoute,
     ),
     MenuOptions(
       title: 'accounts_receivable',
-      icon: Icons.gpp_maybe_outlined,
+      icon: Icons.request_quote,
       pagePath: accountsReceivableRoute,
     ),
   ];
   double get _menuHeight {
-    return _isCollapsed ? 425.0 : MediaQuery.of(context).size.height;
+    return _isCollapsed ? 440.0 : MediaQuery.of(context).size.height;
   }
 
   @override
@@ -132,7 +132,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                   ),
                 ),
                 titleStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                      color: LightColors.textPrimary,
+                      color: LightColors.textSecondary,
                     ),
                 selectedTitleStyle:
                     Theme.of(context).textTheme.bodyLarge!.copyWith(
@@ -185,9 +185,6 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
         hasSelectedLine: false,
         hoverColor: LightColors.primary.withValues(alpha: 0.6),
         title: context.translate('profile'),
-        // titleStyle: TextStyle(
-        //   color: LightColors.textPrimary,
-        // ),
         icon: CircularImageBorder(
           minHeight: 50.0,
           minWidth: 50.0,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:internationalization/internationalization.dart';
+import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 
 class ExpensesBody extends StatefulWidget {
   const ExpensesBody({super.key});
@@ -10,8 +12,17 @@ class ExpensesBody extends StatefulWidget {
 class _ExpensesBodyState extends State<ExpensesBody> {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Expenses'),
+    return Stack(
+      children: [
+        CustomCardBody(
+          isMain: false,
+          isMenu: true,
+          title: context.translate('expenses'),
+          body: Column(
+            children: [],
+          ),
+        ),
+      ],
     );
   }
 }
