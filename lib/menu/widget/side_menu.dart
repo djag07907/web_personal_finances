@@ -11,7 +11,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
   final SideMenuController _menuController = SideMenuController();
   final List<SideMenuItemData> _options = <SideMenuItemData>[];
   int _currentPage = emptyInt;
-
+  bool _isCollapsed = true;
   final List<MenuOptions> _navItems = <MenuOptions>[
     MenuOptions(
       title: 'home',
@@ -39,13 +39,27 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
       pagePath: accountsReceivableRoute,
     ),
   ];
+  double get _menuHeight {
+    return _isCollapsed ? 425.0 : MediaQuery.of(context).size.height;
+  }
 
   @override
   Widget build(final BuildContext context) {
     return MouseRegion(
-      onEnter: (final PointerEvent event) => _menuController.open(),
-      onExit: (final PointerEvent event) => _menuController.close(),
+      onEnter: (final PointerEvent event) {
+        setState(() {
+          _isCollapsed = false;
+        });
+        _menuController.open();
+      },
+      onExit: (final PointerEvent event) {
+        setState(() {
+          _isCollapsed = true;
+        });
+        _menuController.close();
+      },
       child: Container(
+        height: _menuHeight,
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.only(
@@ -55,9 +69,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
           boxShadow: <BoxShadow>[
             BoxShadow(
               blurRadius: 4,
-              color: black.withValues(
-                alpha: 0.25,
-              ),
+              color: black.withValues(alpha: 0.25),
             ),
           ],
         ),
@@ -82,9 +94,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                       imagePath: '${imagePath}logo.jpg',
                     ),
                     Text(
-                      _menuController.isCollapsed()
-                          ? emptyString
-                          : 'Daniel Alvarez',
+                      _isCollapsed ? emptyString : 'Daniel Alvarez',
                       style: Theme.of(context).textTheme.titleLarge!.copyWith(
                             fontSize: fontSize20,
                             color: LightColors.primary,
@@ -95,7 +105,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
               ),
               items: _buildMenuItems(context),
               footer: Visibility(
-                visible: !_menuController.isCollapsed(),
+                visible: !_isCollapsed,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Image.asset(
@@ -113,7 +123,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                   ),
                 ),
                 selectedDecoration: BoxDecoration(
-                  color: _menuController.isCollapsed()
+                  color: _isCollapsed
                       ? white
                       : LightColors.primary.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.only(
@@ -149,9 +159,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
           icon: Icon(item.icon),
           selectedIcon: Icon(
             item.icon,
-            color: _menuController.isCollapsed()
-                ? LightColors.primary
-                : Colors.red,
+            color: LightColors.primary,
           ),
           onTap: () => _handleNavigationMenu(
             routePath: item.pagePath,
@@ -161,7 +169,6 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
         ),
       );
     }
-
     _options.add(
       SideMenuItemDataDivider(
         divider: SizedBox(
@@ -169,23 +176,21 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
         ),
       ),
     );
-
     _options.addAll(<SideMenuItemData>[
       SideMenuItemDataTile(
         onTap: () {
-          //TODO: Agregar funcionalidad para navegar al perfil de usuario
+          context.go(profileRoute);
         },
         isSelected: false,
         hasSelectedLine: false,
         hoverColor: LightColors.primary.withValues(alpha: 0.6),
         title: context.translate('profile'),
-        titleStyle: TextStyle(
-          color: LightColors.textPrimary,
-        ),
+        // titleStyle: TextStyle(
+        //   color: LightColors.textPrimary,
+        // ),
         icon: CircularImageBorder(
           minHeight: 50.0,
           minWidth: 50.0,
-          //TODO: Nombre de prueba
           labelImage: context.translate('Daniel Alvarez'),
           borderWidth: 3,
         ),
@@ -213,7 +218,6 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
   }) {
     setState(() => _currentPage = page);
     _options.clear();
-    _menuController.close();
     context.go(routePath);
   }
 

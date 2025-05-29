@@ -8,3 +8,4 @@ const String incomesRoute = '/incomes';
 const String expensesRoute = '/expenses';
 const String accountsToPayRoute = '/accountsToPay';
 const String accountsReceivableRoute = '/accountsReceivable';
+const String profileRoute = '/profile';

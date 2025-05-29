@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:web_personal_finances/accountsToPay/widget/accounts_to_pay_body.dart';
+import 'package:web_personal_finances/profile/widget/profile_body.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 
-class AccountsToPayScreen extends StatelessWidget {
-  const AccountsToPayScreen({super.key});
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: transparent,
-      body: AccountsToPayBody(),
+      body: ProfileBody(),
     );
   }
 }

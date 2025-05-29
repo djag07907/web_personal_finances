@@ -3,5 +3,7 @@
     "incomes": "Incomes",
     "expenses": "Expenses",
     "accounts_to_pay": "Accounts to pay",
-    "accounts_receivable": "Accounts receivable"
+    "accounts_receivable": "Accounts receivable",
+    "profile": "Profile",
+    "logout": "Logout"
 }

@@ -16,36 +16,26 @@ part 'side_menu.dart';
 
 class MenuBody extends StatelessWidget {
   final Widget body;
-
   const MenuBody({
     super.key,
     required this.body,
   });
-
   @override
   Widget build(final BuildContext context) {
-    return Row(
+    return Stack(
       children: <Widget>[
-        SideMenuWidget(),
-        Expanded(
-          child: Stack(
-            fit: StackFit.expand,
+        Positioned.fill(
+          child: Row(
             children: <Widget>[
-              Image.asset(
-                '$imagePath/home_background.png',
-                fit: BoxFit.fill,
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 20.0),
-                  child: Image.asset(
-                    '$imagePath/logo.jpg',
-                    height: 50.0,
-                  ),
+              SideMenuWidget(),
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    body,
+                  ],
                 ),
               ),
-              body,
             ],
           ),
         ),
