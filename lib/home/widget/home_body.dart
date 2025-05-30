@@ -2,11 +2,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
+import 'package:web_personal_finances/commons/cards/custom_card_item.dart';
 import 'package:web_personal_finances/home/model/financial_data.dart';
 import 'package:web_personal_finances/home/widget/indicator.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/fonts_constants.dart';
-import 'package:web_personal_finances/resources/themes.dart';
 
 class HomeBody extends StatefulWidget {
   const HomeBody({super.key});
@@ -30,7 +30,7 @@ class _HomeBodyState extends State<HomeBody> {
                 title: context.translate('home'),
                 body: _buildCharts(
                   financialData,
-                ), // Pass financialData to the charts
+                ),
               ),
             ),
           ],
@@ -47,7 +47,7 @@ class _HomeBodyState extends State<HomeBody> {
         margin: EdgeInsets.only(top: 10.0),
         width: MediaQuery.of(context).size.width * 0.45,
         decoration: BoxDecoration(
-          color: lightTheme.primaryColor,
+          color: LightColors.primary,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(300.0),
             bottomLeft: Radius.circular(300.0),
@@ -68,16 +68,41 @@ class _HomeBodyState extends State<HomeBody> {
 
   Widget _buildCharts(final FinancialData financialData) {
     return Column(
+      spacing: 10,
       children: <Widget>[
+        _buildCustomCardItems(),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Expanded(child: _buildPieChart(financialData)), // Left Pie Chart
-            SizedBox(width: 16), // Spacing between charts
-            Expanded(child: _buildPieChart(financialData)), // Right Pie Chart
+            Expanded(child: _buildPieChart(financialData)),
+            SizedBox(width: 16),
+            Expanded(child: _buildPieChart(financialData)),
           ],
         ),
-        _buildIndicators(financialData), // Show indicators below the charts
+        _buildIndicators(financialData),
+      ],
+    );
+  }
+
+  Widget _buildCustomCardItems() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        CustomCardItem(
+          leadingIcon: Icons.attach_money,
+          titleText: 'Total Income',
+          subtitleText: 'Lempiras: 10,000',
+        ),
+        CustomCardItem(
+          leadingIcon: Icons.money_off,
+          titleText: 'Total Expenses',
+          subtitleText: 'Lempiras: 5,000',
+        ),
+        CustomCardItem(
+          leadingIcon: Icons.pie_chart,
+          titleText: 'Savings',
+          subtitleText: 'Lempiras: 5,000',
+        ),
       ],
     );
   }
@@ -107,8 +132,7 @@ class _HomeBodyState extends State<HomeBody> {
           borderData: FlBorderData(show: false),
           sectionsSpace: 0,
           centerSpaceRadius: 40,
-          sections:
-              showingSections(financialData), // Pass financialData to sections
+          sections: showingSections(financialData),
         ),
       ),
     );
@@ -131,7 +155,6 @@ class _HomeBodyState extends State<HomeBody> {
           isSquare: true,
         ),
         SizedBox(height: 4),
-        // Add more indicators as needed
         SizedBox(height: 18),
       ],
     );
@@ -148,9 +171,9 @@ class _HomeBodyState extends State<HomeBody> {
       switch (i) {
         case 0:
           return PieChartSectionData(
-            color: Colors.green, // Income color
-            value: financialData.totalIncomes, // Use actual income data
-            title: '${financialData.totalIncomes}', // Display total income
+            color: Colors.green,
+            value: financialData.totalIncomes,
+            title: '${financialData.totalIncomes}',
             radius: radius,
             titleStyle: TextStyle(
               fontSize: fontSize,
@@ -161,9 +184,9 @@ class _HomeBodyState extends State<HomeBody> {
           );
         case 1:
           return PieChartSectionData(
-            color: Colors.red, // Expense color
-            value: financialData.totalExpenses, // Use actual expense data
-            title: '${financialData.totalExpenses}', // Display total expenses
+            color: Colors.red,
+            value: financialData.totalExpenses,
+            title: '${financialData.totalExpenses}',
             radius: radius,
             titleStyle: TextStyle(
               fontSize: fontSize,
@@ -180,7 +203,6 @@ class _HomeBodyState extends State<HomeBody> {
 }
 
 FinancialData getFinancialData() {
-  // Replace with your actual data retrieval logic
   return FinancialData(
     totalExpensesLempiras: 5000,
     totalExpensesDollars: 200,

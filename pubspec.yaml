@@ -19,6 +19,7 @@ dependencies:
   internationalization: ^5.0.0
   shared_preferences: ^2.1.1
   go_router: ^15.1.1
+  flutter_svg: ^2.0.17
   flutter_side_menu: ^0.5.41
   fl_chart: ^0.71.0
   flutter_localizations:
