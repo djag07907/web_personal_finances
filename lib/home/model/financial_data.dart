@@ -16,9 +16,7 @@ class FinancialData {
   double get totalIncomes =>
       totalIncomesLempiras + (totalIncomesDollars * getDollarValue());
   double get spendingCapacity => totalIncomes - totalExpenses;
-  // Placeholder for getting current dollar value
   double getDollarValue() {
-    // You can fetch the dollar value dynamically or set it statically for now
-    return 25.0; // Example: 1 USD = 24 HNL
+    return 25.0;
   }
 }
