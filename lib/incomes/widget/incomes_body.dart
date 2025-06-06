@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
+import 'package:web_personal_finances/addIncome/add_income_page.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/dialog/custom_confirmation_dialog.dart';
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/incomes/widget/incomes_list_table.dart';
+import 'package:web_personal_finances/resources/colors_constants.dart';
 
 class IncomesBody extends StatefulWidget {
   const IncomesBody({super.key});
@@ -96,9 +98,15 @@ class _IncomesBodyState extends State<IncomesBody> {
   }
 
   void _addIncome() {
-    // Logic to open the right side menu and add income
-    // You can implement a form dialog or a side menu here
-    showSnackbar(context, 'Add Income functionality not implemented yet.');
+    showDialog(
+      context: context,
+      builder: (final BuildContext context) {
+        return Dialog(
+          backgroundColor: LightColors.background,
+          child: AddIncomePage(),
+        );
+      },
+    );
   }
 
   void _editIncome(final IncomeItem item) {

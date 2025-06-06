@@ -21,6 +21,7 @@ dependencies:
   go_router: ^15.1.1
   flutter_svg: ^2.0.17
   flutter_side_menu: ^0.5.41
+  http: ^1.0.0
   fl_chart: ^0.71.0
   flutter_localizations:
     sdk: flutter
