@@ -98,6 +98,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                       style: Theme.of(context).textTheme.titleLarge!.copyWith(
                             fontSize: fontSize20,
                             color: LightColors.primary,
+                            fontWeight: FontWeight.bold,
                           ),
                     ),
                   ],
@@ -177,6 +178,19 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
       ),
     );
     _options.addAll(<SideMenuItemData>[
+      SideMenuItemDataTile(
+        onTap: () {
+          //TODO: Implement theme change
+        },
+        isSelected: false,
+        hasSelectedLine: false,
+        hoverColor: LightColors.primary.withValues(alpha: 0.6),
+        title: context.translate('change_theme'),
+        icon: Icon(
+          Icons.dark_mode,
+          color: LightColors.textSecondary,
+        ),
+      ),
       SideMenuItemDataTile(
         onTap: () {
           context.go(profileRoute);

@@ -29,7 +29,10 @@ class CustomLabelSelector extends StatelessWidget {
         children: <Widget>[
           Text(
             label,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           DropdownButtonFormField<String>(
             value: selectedValue,
@@ -49,7 +52,9 @@ class CustomLabelSelector extends StatelessWidget {
             onChanged: onChanged,
             validator: validator,
             decoration: InputDecoration(
-              border: OutlineInputBorder(),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
               filled: true,
               fillColor: white,
             ),

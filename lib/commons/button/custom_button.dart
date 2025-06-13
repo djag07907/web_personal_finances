@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+import 'package:web_personal_finances/resources/fonts_constants.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -27,7 +28,12 @@ class CustomButton extends StatelessWidget {
           ),
         ),
       ),
-      child: Text(text),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: fontSize18,
+        ),
+      ),
     );
   }
 }

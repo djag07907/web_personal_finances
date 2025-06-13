@@ -39,6 +39,7 @@ class CustomHeader extends StatelessWidget {
               style: Theme.of(context).textTheme.headlineLarge!.copyWith(
                     fontSize: fontSize22,
                     color: LightColors.primary,
+                    fontWeight: FontWeight.bold,
                   ),
             ),
           ),
