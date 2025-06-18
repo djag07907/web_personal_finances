@@ -22,6 +22,10 @@ class PrimaryPopupMenu<T> extends StatelessWidget {
     return PopupMenuButton<T>(
       padding: EdgeInsets.zero,
       splashRadius: 1.0,
+      menuPadding: EdgeInsets.symmetric(
+        horizontal: 8.0,
+        vertical: 8.0,
+      ),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20.0),
@@ -38,6 +42,10 @@ class PrimaryPopupMenu<T> extends StatelessWidget {
       position: PopupMenuPosition.under,
       // offset: const Offset(0, 0.0),
       color: white,
+      constraints: BoxConstraints(
+        maxWidth: 110.0,
+        maxHeight: 170,
+      ),
       child: child,
     );
   }
@@ -49,7 +57,8 @@ class PrimaryPopupMenu<T> extends StatelessWidget {
       menuItems.add(
         PopupMenuItem<T>(
           value: item.value,
-          child: _HoverableMenuItem(
+          padding: EdgeInsets.zero,
+          child: _HoverableMenuItem<T>(
             item: item,
             onTap: () {
               if (onSelect != null) {
@@ -84,6 +93,7 @@ class PrimaryPopupMenu<T> extends StatelessWidget {
 class _HoverableMenuItem<T> extends StatefulWidget {
   final PopupItem<T> item;
   final VoidCallback? onTap;
+
   const _HoverableMenuItem({
     required this.item,
     this.onTap,
@@ -101,11 +111,11 @@ class _HoverableMenuItemState<T> extends State<_HoverableMenuItem<T>> {
     return MouseRegion(
       onEnter: (final _) => setState(() => _isHovered = true),
       onExit: (final _) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: InkWell(
         onTap: widget.onTap,
+        hoverColor: LightColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8.0),
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 12.0),
           decoration: BoxDecoration(
             color: _isHovered
                 ? LightColors.primary.withValues(alpha: 0.1)
@@ -116,22 +126,13 @@ class _HoverableMenuItemState<T> extends State<_HoverableMenuItem<T>> {
             horizontal: 12.0,
             vertical: 14.0,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Expanded(
-                child: Text(
-                  widget.item.title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: _isHovered
-                            ? LightColors.primary
-                            : LightColors.greyBackground,
-                        fontWeight:
-                            _isHovered ? FontWeight.bold : FontWeight.normal,
-                      ),
+          width: double.infinity,
+          child: Text(
+            widget.item.title,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: _isHovered ? LightColors.primary : greyHard,
+                  fontWeight: _isHovered ? FontWeight.bold : FontWeight.normal,
                 ),
-              ),
-            ],
           ),
         ),
       ),
