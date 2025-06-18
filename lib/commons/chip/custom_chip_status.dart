@@ -21,14 +21,14 @@ class CustomChipStatus extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
         color: (isActive ? chipColor : LightColors.greyBackground)
-            .withValues(alpha: 0.7),
+            .withValues(alpha: 0.8),
       ),
       child: Text(
         context.translate(
           isActive ? 'active' : 'inactive',
         ),
         style: Theme.of(context).textTheme.titleSmall!.copyWith(
-              color: isActive ? LightColors.primary : Colors.grey,
+              color: isActive ? white : greyHard,
             ),
       ),
     );

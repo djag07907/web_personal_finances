@@ -5,7 +5,7 @@ enum CustomOptions {
   edit,
   delete,
   activate,
-  inactivate;
+  deactivate;
 
   String toTranslate(
     final BuildContext context,
@@ -18,8 +18,8 @@ enum CustomOptions {
         return translate('delete');
       case CustomOptions.activate:
         return translate('activate');
-      case CustomOptions.inactivate:
-        return translate('inactivate');
+      case CustomOptions.deactivate:
+        return translate('deactivate');
     }
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:internationalization/internationalization.dart';
+import 'package:lottie/lottie.dart';
 import 'package:web_personal_finances/routes/landing_routes.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_bloc.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_event.dart';
@@ -35,8 +37,9 @@ class _SignUpBodyState extends State<SignUpBody> {
   @override
   Widget build(final BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color welcomeTextColor =
+    final Color textColor =
         isDark ? DarkColors.textPrimary : LightColors.textPrimary;
+
     return Stack(
       children: <Widget>[
         Scaffold(
@@ -46,7 +49,7 @@ class _SignUpBodyState extends State<SignUpBody> {
               if (state is SignUpError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    backgroundColor: Colors.redAccent,
+                    backgroundColor: redAlert,
                     content: Text('Registration Failed: ${state.error}'),
                   ),
                 );
@@ -55,110 +58,123 @@ class _SignUpBodyState extends State<SignUpBody> {
                 context.go(homeRoute);
               }
             },
-            child: Center(
-              child: SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    child: Card(
-                      color: white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
+            child: LayoutBuilder(
+              builder: (
+                final BuildContext context,
+                final BoxConstraints constraints,
+              ) {
+                return Row(
+                  children: <Widget>[
+                    if (constraints.maxWidth >= 800)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Lottie.asset(
+                            'assets/animations/finance_animation2.json',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
                       ),
-                      elevation: 4,
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text(
-                              'Create Your Account',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineMedium
-                                  ?.copyWith(
-                                    color: welcomeTextColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            const SizedBox(height: 20),
-                            TextField(
-                              controller: _emailController,
-                              decoration: _buildInputDecoration(
-                                'Email',
-                                Icons.email_outlined,
+                    Expanded(
+                      child: Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(32.0),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: Card(
+                              color: white,
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              keyboardType: TextInputType.emailAddress,
-                              style: isDark
-                                  ? const TextStyle(
-                                      color: DarkColors.textPrimary,
-                                    )
-                                  : const TextStyle(
-                                      color: LightColors.textPrimary,
+                              child: Padding(
+                                padding: const EdgeInsets.all(24.0),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Text(
+                                      context.translate('create_your_account'),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineMedium
+                                          ?.copyWith(
+                                            color: textColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                     ),
-                            ),
-                            const SizedBox(height: 16),
-                            TextField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              decoration: _buildInputDecoration(
-                                'Password',
-                                Icons.lock_outline,
-                                isPasswordField: true,
-                              ),
-                              style: isDark
-                                  ? const TextStyle(
-                                      color: DarkColors.textPrimary,
-                                    )
-                                  : const TextStyle(
-                                      color: LightColors.textPrimary,
+                                    const SizedBox(height: 20),
+                                    TextField(
+                                      controller: _emailController,
+                                      decoration: _buildInputDecoration(
+                                        context.translate('email'),
+                                        Icons.email_outlined,
+                                      ),
+                                      keyboardType: TextInputType.emailAddress,
+                                      style: TextStyle(color: textColor),
                                     ),
-                            ),
-                            const SizedBox(height: 24),
-                            if (context.read<SignupBloc>().state
-                                is SignUpInProgress)
-                              const CircularProgressIndicator()
-                            else
-                              SizedBox(
-                                width: 250,
-                                child: ElevatedButton(
-                                  onPressed: _onSignUpButtonPressed,
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
+                                    const SizedBox(height: 16),
+                                    TextField(
+                                      controller: _passwordController,
+                                      obscureText: _obscurePassword,
+                                      decoration: _buildInputDecoration(
+                                        context.translate('password'),
+                                        Icons.lock_outline,
+                                        isPasswordField: true,
+                                      ),
+                                      style: TextStyle(color: textColor),
                                     ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
+                                    const SizedBox(height: 24),
+                                    if (context.read<SignupBloc>().state
+                                        is SignUpInProgress)
+                                      const CircularProgressIndicator()
+                                    else
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          onPressed: _onSignUpButtonPressed,
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 14,
+                                            ),
+                                            backgroundColor:
+                                                LightColors.primary,
+                                            foregroundColor: white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            context.translate('sign_up'),
+                                            style:
+                                                const TextStyle(fontSize: 16),
+                                          ),
+                                        ),
+                                      ),
+                                    const SizedBox(height: 16),
+                                    TextButton(
+                                      onPressed: () {
+                                        context.go(loginRoute);
+                                      },
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: LightColors.primary,
+                                      ),
+                                      child: Text(
+                                        context
+                                            .translate('already_have_account'),
+                                      ),
                                     ),
-                                    backgroundColor: LightColors.primary,
-                                    foregroundColor: white,
-                                  ),
-                                  child: const Text(
-                                    'Sign Up',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
+                                  ],
                                 ),
                               ),
-                            const SizedBox(height: 16),
-                            TextButton(
-                              onPressed: () {
-                                context.go(loginRoute);
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: LightColors.primary,
-                              ),
-                              child:
-                                  const Text('Already have an account? Login'),
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-              ),
+                  ],
+                );
+              },
             ),
           ),
         ),

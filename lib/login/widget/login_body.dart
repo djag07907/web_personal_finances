@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:internationalization/internationalization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_personal_finances/login/bloc/login_bloc.dart';
 import 'package:web_personal_finances/login/bloc/login_event.dart';
 import 'package:web_personal_finances/login/bloc/login_state.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/routes/landing_routes.dart';
+import 'package:lottie/lottie.dart';
 
 class LoginBody extends StatefulWidget {
   const LoginBody({super.key});
@@ -40,16 +42,16 @@ class _LoginBodyState extends State<LoginBody> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color welcomeTextColor =
         isDark ? DarkColors.textPrimary : LightColors.textPrimary;
+
     return Stack(
       children: <Widget>[
         Scaffold(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: BlocListener<LoginBloc, LoginState>(
             listener: (final BuildContext context, final LoginState state) {
               if (state is LoginError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    backgroundColor: Colors.redAccent,
+                    backgroundColor: redAlert,
                     content: Text('Login Failed: ${state.error}'),
                   ),
                 );
@@ -58,122 +60,137 @@ class _LoginBodyState extends State<LoginBody> {
                 context.go(homeRoute);
               }
             },
-            child: Center(
-              child: SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    child: Card(
-                      color: white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      elevation: 4,
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text(
-                              'Welcome Back',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineMedium
-                                  ?.copyWith(
-                                    color: welcomeTextColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            const SizedBox(height: 20),
-                            TextField(
-                              controller: _emailController,
-                              decoration: _buildInputDecoration(
-                                label: 'Email',
-                                icon: Icons.email_outlined,
+            child: LayoutBuilder(
+              builder: (
+                final BuildContext context,
+                final BoxConstraints constraints,
+              ) {
+                return Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 5,
+                      child: Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.0),
                               ),
-                              keyboardType: TextInputType.emailAddress,
-                              style: isDark
-                                  ? const TextStyle(
-                                      color: DarkColors.textPrimary,
-                                    )
-                                  : const TextStyle(
-                                      color: LightColors.textPrimary,
+                              elevation: 8,
+                              color: Theme.of(context).cardColor,
+                              child: Padding(
+                                padding: const EdgeInsets.all(24.0),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Text(
+                                      context.translate('welcome_back'),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineMedium
+                                          ?.copyWith(
+                                            color: welcomeTextColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                     ),
-                            ),
-                            const SizedBox(height: 16),
-                            TextField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              decoration: _buildInputDecoration(
-                                label: 'Password',
-                                icon: Icons.lock_outline,
-                                isPasswordField: true,
-                              ),
-                              style: isDark
-                                  ? const TextStyle(
-                                      color: DarkColors.textPrimary,
-                                    )
-                                  : const TextStyle(
-                                      color: LightColors.textPrimary,
+                                    const SizedBox(height: 20),
+                                    TextField(
+                                      controller: _emailController,
+                                      decoration: _buildInputDecoration(
+                                        label: context.translate('email'),
+                                        icon: Icons.email_outlined,
+                                      ),
+                                      keyboardType: TextInputType.emailAddress,
                                     ),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: <Widget>[
-                                Checkbox(
-                                  value: _rememberUser,
-                                  onChanged: (final bool? value) {
-                                    setState(() {
-                                      _rememberUser = value ?? false;
-                                    });
-                                  },
-                                ),
-                                Text(
-                                  'Remember me',
-                                  style: TextStyle(color: LightColors.primary),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            SizedBox(
-                              width: 250,
-                              child: ElevatedButton(
-                                onPressed: _onLoginButtonPressed,
-                                style: ElevatedButton.styleFrom(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                  backgroundColor: LightColors.primary,
-                                  foregroundColor: white,
-                                ),
-                                child: const Text(
-                                  'Login',
-                                  style: TextStyle(fontSize: 16),
+                                    const SizedBox(height: 16),
+                                    TextField(
+                                      controller: _passwordController,
+                                      obscureText: _obscurePassword,
+                                      decoration: _buildInputDecoration(
+                                        label: context.translate('password'),
+                                        icon: Icons.lock_outline,
+                                        isPasswordField: true,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      children: <Widget>[
+                                        Checkbox(
+                                          value: _rememberUser,
+                                          onChanged: (final bool? value) {
+                                            setState(() {
+                                              _rememberUser = value ?? false;
+                                            });
+                                          },
+                                        ),
+                                        Text(
+                                          context.translate('remember_me'),
+                                          style: TextStyle(
+                                            color: LightColors.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 24),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        onPressed: _onLoginButtonPressed,
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 14,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                          backgroundColor: LightColors.primary,
+                                          foregroundColor: white,
+                                        ),
+                                        child: Text(
+                                          context.translate('login'),
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    TextButton(
+                                      onPressed: () {
+                                        context.go(signupRoute);
+                                      },
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: LightColors.primary,
+                                      ),
+                                      child: Text(
+                                        context.translate('dont_have_account'),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            TextButton(
-                              onPressed: () {
-                                context.go(signupRoute);
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: LightColors.primary,
-                              ),
-                              child:
-                                  const Text("Don't have an account? Register"),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-              ),
+                    if (constraints.maxWidth > 800)
+                      Expanded(
+                        flex: 4,
+                        child: Padding(
+                          padding: const EdgeInsets.all(32.0),
+                          child: Lottie.asset(
+                            'assets/animations/finance_animation1.json',
+                            fit: BoxFit.contain,
+                            repeat: true,
+                            animate: true,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -247,11 +264,11 @@ class _LoginBodyState extends State<LoginBody> {
           : null,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(color: Colors.grey.shade700),
+        borderSide: BorderSide(color: Colors.grey.shade400),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(color: Colors.grey.shade800, width: 2),
+        borderSide: BorderSide(color: LightColors.primary, width: 2),
       ),
     );
   }

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 const Color transparent = Colors.transparent;
 const Color white = Colors.white;
 const Color black = Colors.black;
+const Color redAlert = Color(0xFFD50000);
+const Color greyHard = Color.fromARGB(255, 104, 109, 111);
 
 class LightColors {
   static const Color primary = Color(0xFF4CAF90);

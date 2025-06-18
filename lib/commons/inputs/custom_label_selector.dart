@@ -57,6 +57,9 @@ class CustomLabelSelector extends StatelessWidget {
               ),
               filled: true,
               fillColor: white,
+              suffixIcon: Icon(
+                Icons.arrow_drop_down,
+              ),
             ),
           ),
         ],

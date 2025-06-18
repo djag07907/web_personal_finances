@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
@@ -7,25 +6,24 @@ import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/fonts_constants.dart';
 
-class AddIncomeBody extends StatefulWidget {
-  const AddIncomeBody({super.key});
+class AddExpenseBody extends StatefulWidget {
+  const AddExpenseBody({super.key});
 
   @override
-  State<AddIncomeBody> createState() => _AddIncomeBodyState();
+  State<AddExpenseBody> createState() => _AddExpenseBodyState();
 }
 
-class _AddIncomeBodyState extends State<AddIncomeBody> {
+class _AddExpenseBodyState extends State<AddExpenseBody> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _dateToReceiveController =
-      TextEditingController();
-  late String incomeName;
-  late String incomeComment;
-  late double incomeAmount;
+  final TextEditingController _dateDueController = TextEditingController();
+  late String expenseName;
+  late String expenseComment;
+  late double expenseAmount;
   String? selectedCurrency;
-  // String? selectedFrequency;
+  String? selectedFrequency;
 
   @override
   void initState() {
@@ -53,7 +51,7 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                 ),
                 child: Center(
                   child: Text(
-                    context.translate('add_income'),
+                    'Add Expense',
                     style: TextStyle(
                       fontSize: fontSize18,
                       color: LightColors.primary,
@@ -62,57 +60,57 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                   ),
                 ),
               ),
-              // CustomLabelSelector(
-              //   label: 'Frequency',
-              //   hintText: 'Select frequency',
-              //   validator: (final String? value) {
-              //     if (value == null) {
-              //       return 'Please select a frequency';
-              //     }
-              //     return null;
-              //   },
-              //   selectedValue: selectedFrequency,
-              //   items: <String>[
-              //     'Weekly',
-              //     'Biweekly',
-              //     'Monthly',
-              //     'Yearly',
-              //     'Specific Date',
-              //   ],
-              //   onChanged: (final String? value) {
-              //     setState(() {
-              //       selectedFrequency = value;
-              //     });
-              //   },
-              // ),
+              CustomLabelSelector(
+                label: 'Frequency',
+                hintText: 'Select frequency',
+                validator: (final String? value) {
+                  if (value == null) {
+                    return 'Please select a frequency';
+                  }
+                  return null;
+                },
+                selectedValue: selectedFrequency,
+                items: <String>[
+                  'Weekly',
+                  'Biweekly',
+                  'Monthly',
+                  'Yearly',
+                  'Specific Date',
+                ],
+                onChanged: (final String? value) {
+                  setState(() {
+                    selectedFrequency = value;
+                  });
+                },
+              ),
               CustomLabelInput(
-                label: context.translate('income_name'),
-                hintText: context.translate('enter_income_name'),
+                label: 'Expense Name',
+                hintText: 'Enter expense name',
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_income_name');
+                    return 'Please enter expense name';
                   }
                   return null;
                 },
                 controller: _nameController,
               ),
               CustomLabelInput(
-                label: context.translate('comment'),
-                hintText: context.translate('enter_comment'),
+                label: 'Comment',
+                hintText: 'Enter comment',
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_comment');
+                    return 'Please enter a comment';
                   }
                   return null;
                 },
                 controller: _commentController,
               ),
               CustomLabelSelector(
-                label: context.translate('currency'),
-                hintText: context.translate('select_currency'),
+                label: 'Currency',
+                hintText: 'Select currency',
                 validator: (final String? value) {
                   if (value == null) {
-                    return context.translate('please_select_currency');
+                    return 'Please select a currency';
                   }
                   return null;
                 },
@@ -128,8 +126,8 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                 },
               ),
               CustomLabelInput(
-                label: context.translate('amount'),
-                hintText: context.translate('enter_amount'),
+                label: 'Amount',
+                hintText: 'Enter amount',
                 keyboardType: TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -138,26 +136,26 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                 ],
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_amount');
+                    return 'Please enter an amount';
                   }
                   return null;
                 },
                 controller: _amountController,
               ),
               CustomLabelInput(
-                label: context.translate('date_to_receive'),
-                hintText: context.translate('enter_date_to_receive'),
+                label: 'Date to Receive',
+                hintText: 'Enter due date to pay the expense',
                 keyboardType: TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 isCalendar: true,
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_date_to_receive');
+                    return 'Please enter a due date to pay the expense';
                   }
                   return null;
                 },
-                controller: _dateToReceiveController,
+                controller: _dateDueController,
               ),
               SizedBox(
                 height: 20.0,
@@ -169,7 +167,7 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                   SizedBox(
                     width: 120,
                     child: CustomButton(
-                      text: context.translate('cancel'),
+                      text: 'Cancel',
                       isPrimary: false,
                       onPressed: () {
                         Navigator.of(context).pop();
@@ -179,11 +177,11 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                   SizedBox(
                     width: 120,
                     child: CustomButton(
-                      text: context.translate('save'),
+                      text: 'Save',
                       isPrimary: true,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          //TODO: Validate and add income integration
+                          //TODO: Validate and add expense integration
                           Navigator.of(context).pop();
                         }
                       },

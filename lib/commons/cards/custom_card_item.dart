@@ -21,7 +21,7 @@ class CustomCardItem extends StatelessWidget {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
-      width: screenWidth * 0.22,
+      width: screenWidth * 0.18,
       height: 80,
       margin: EdgeInsets.all(10.0),
       child: Card(

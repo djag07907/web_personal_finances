@@ -120,8 +120,8 @@ class _IncomesBodyState extends State<IncomesBody> {
                     ),
                   if (item.status)
                     PopupItem<CustomOptions>(
-                      title: CustomOptions.inactivate.toTranslate(context),
-                      value: CustomOptions.inactivate,
+                      title: CustomOptions.deactivate.toTranslate(context),
+                      value: CustomOptions.deactivate,
                     ),
                 ],
                 tooltip: context.translate('options'),
@@ -142,7 +142,7 @@ class _IncomesBodyState extends State<IncomesBody> {
                       // _confirmationActivateDialog();
                       break;
 
-                    case CustomOptions.inactivate:
+                    case CustomOptions.deactivate:
                       // _confirmationInactivateDialog();
                       break;
                   }

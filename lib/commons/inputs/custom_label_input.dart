@@ -9,8 +9,9 @@ class CustomLabelInput extends StatelessWidget {
   final TextEditingController controller;
   final TextInputType keyboardType;
   final List<TextInputFormatter>? inputFormatters;
+  final bool isCalendar;
 
-  const CustomLabelInput({
+  CustomLabelInput({
     super.key,
     required this.label,
     required this.hintText,
@@ -18,6 +19,7 @@ class CustomLabelInput extends StatelessWidget {
     required this.controller,
     this.keyboardType = TextInputType.text,
     this.inputFormatters,
+    this.isCalendar = false,
   });
 
   @override
@@ -46,6 +48,11 @@ class CustomLabelInput extends StatelessWidget {
               ),
               filled: true,
               fillColor: white,
+              suffixIcon: isCalendar
+                  ? Icon(
+                      Icons.calendar_month,
+                    )
+                  : null,
             ),
             validator: validator,
           ),
