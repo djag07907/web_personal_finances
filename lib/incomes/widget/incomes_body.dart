@@ -6,6 +6,7 @@ import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_status.dart';
 import 'package:web_personal_finances/commons/dialog/custom_confirmation_dialog.dart';
 import 'package:web_personal_finances/commons/enum/custom_action_options.dart';
+import 'package:web_personal_finances/commons/pagination/pagination_widget.dart';
 import 'package:web_personal_finances/commons/popupMenu/popup_item.dart';
 import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart';
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
@@ -130,25 +131,35 @@ class _IncomesBodyState extends State<IncomesBody> {
                 ) {
                   switch (option) {
                     case CustomOptions.edit:
-                      // _editIncome(
-                      // isEdit: true,
-                      // );
+                      _editIncome(
+                        item,
+                      );
                       break;
                     case CustomOptions.delete:
-                      // _removeIncome();
+                      _removeIncome(item);
                       break;
 
                     case CustomOptions.activate:
-                      // _confirmationActivateDialog();
+                      _activateIncome(item);
                       break;
 
                     case CustomOptions.deactivate:
-                      // _confirmationInactivateDialog();
+                      _deactivateIncome(item);
                       break;
                   }
                 },
               );
             },
+            paginator: PaginationWidget(
+              currentPage: _currentPage,
+              totalItems: _incomeItems.length,
+              itemsPerPage: _itemsPerPage,
+              onPageChanged: (final int newPage) {
+                setState(() {
+                  _currentPage = newPage;
+                });
+              },
+            ),
           ),
         ),
       ],
@@ -184,6 +195,14 @@ class _IncomesBodyState extends State<IncomesBody> {
     );
   }
 
+  Future<bool?> _showConfirmation(
+    final BuildContext context,
+    final String title,
+    final String content,
+  ) {
+    return showConfirmationDialog(context, title, content);
+  }
+
   void _addIncome() {
     showDialog(
       context: context,
@@ -197,12 +216,19 @@ class _IncomesBodyState extends State<IncomesBody> {
   }
 
   void _editIncome(final IncomeItem item) {
-    // Logic to open the right side menu with the selected income item data
-    showSnackbar(context, 'Edit Income functionality not implemented yet.');
+    showDialog(
+      context: context,
+      builder: (final BuildContext context) {
+        return Dialog(
+          backgroundColor: white,
+          child: AddIncomePage(incomeItem: item, isEdit: true),
+        );
+      },
+    );
   }
 
   void _removeIncome(final IncomeItem item) async {
-    final bool? confirmed = await showConfirmationDialog(
+    final bool? confirmed = await _showConfirmation(
       context,
       'Confirm Removal',
       'Are you sure you want to remove this income?',
@@ -212,6 +238,34 @@ class _IncomesBodyState extends State<IncomesBody> {
         _incomeItems.remove(item);
       });
       showSnackbar(context, 'Income removed successfully.');
+    }
+  }
+
+  void _activateIncome(final IncomeItem item) async {
+    final bool? confirmed = await _showConfirmation(
+      context,
+      'Confirm Activation',
+      'Are you sure you want to activate this income?',
+    );
+    if (confirmed == true) {
+      setState(() {
+        // item.status = true;
+      });
+      showSnackbar(context, 'Income activated successfully.');
+    }
+  }
+
+  void _deactivateIncome(final IncomeItem item) async {
+    final bool? confirmed = await _showConfirmation(
+      context,
+      'Confirm Deactivation',
+      'Are you sure you want to deactivate this income?',
+    );
+    if (confirmed == true) {
+      setState(() {
+        // item.status = false;
+      });
+      showSnackbar(context, 'Income deactivated successfully.');
     }
   }
 }

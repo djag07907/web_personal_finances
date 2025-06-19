@@ -6,6 +6,7 @@ import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_status.dart';
 import 'package:web_personal_finances/commons/dialog/custom_confirmation_dialog.dart';
 import 'package:web_personal_finances/commons/enum/custom_action_options.dart';
+import 'package:web_personal_finances/commons/pagination/pagination_widget.dart';
 import 'package:web_personal_finances/commons/popupMenu/popup_item.dart';
 import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart';
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
@@ -149,6 +150,16 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                 },
               );
             },
+            paginator: PaginationWidget(
+              currentPage: _currentPage,
+              totalItems: _expenseItems.length,
+              itemsPerPage: _itemsPerPage,
+              onPageChanged: (final int newPage) {
+                setState(() {
+                  _currentPage = newPage;
+                });
+              },
+            ),
           ),
         ),
       ],

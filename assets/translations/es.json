@@ -43,5 +43,8 @@
     "status": "Estado",
     "edit": "Editar",
     "delete": "Eliminar",
-    "deactivate": "Desactivar"
+    "deactivate": "Desactivar",
+    "date_due": "Fecha de Vencimiento",
+    "add_expense": "Agregar Gasto",
+    "change_theme": "Cambiar Tema"
 }

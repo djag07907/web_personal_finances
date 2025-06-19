@@ -43,5 +43,8 @@
     "status": "Status",
     "edit": "Edit",
     "delete": "Delete",
-    "deactivate": "Deactivate"
+    "deactivate": "Deactivate",
+    "date_due": "Date Due",
+    "add_expense": "Add Expense",
+    "change_theme": "Change Theme"
 }

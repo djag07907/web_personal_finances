@@ -4,11 +4,18 @@ import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
 import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
+import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/fonts_constants.dart';
 
 class AddIncomeBody extends StatefulWidget {
-  const AddIncomeBody({super.key});
+  final IncomeItem? incomeItem;
+  final bool isEdit;
+  const AddIncomeBody({
+    super.key,
+    this.incomeItem,
+    this.isEdit = false,
+  });
 
   @override
   State<AddIncomeBody> createState() => _AddIncomeBodyState();
@@ -30,6 +37,13 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
   @override
   void initState() {
     super.initState();
+    if (widget.isEdit && widget.incomeItem != null) {
+      _nameController.text = widget.incomeItem!.name;
+      _commentController.text = widget.incomeItem!.comment;
+      _amountController.text = widget.incomeItem!.amount.toString();
+      _dateToReceiveController.text = widget.incomeItem!.dateToReceive;
+      selectedCurrency = widget.incomeItem!.currency;
+    }
   }
 
   @override
@@ -53,7 +67,9 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                 ),
                 child: Center(
                   child: Text(
-                    context.translate('add_income'),
+                    context.translate(
+                      widget.isEdit ? 'edit_income' : 'add_income',
+                    ),
                     style: TextStyle(
                       fontSize: fontSize18,
                       color: LightColors.primary,
@@ -167,7 +183,8 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   SizedBox(
-                    width: 120,
+                    width: 150,
+                    height: 40,
                     child: CustomButton(
                       text: context.translate('cancel'),
                       isPrimary: false,
@@ -177,13 +194,21 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                     ),
                   ),
                   SizedBox(
-                    width: 120,
+                    width: 150,
+                    height: 40,
                     child: CustomButton(
                       text: context.translate('save'),
                       isPrimary: true,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          //TODO: Validate and add income integration
+                          //TODO: Validate and add/edit income integration
+                          if (widget.isEdit) {
+                            // Update the existing income item
+                            // You can access the updated values here
+                            // Example: Update logic here
+                          } else {
+                            // Add a new income item
+                          }
                           Navigator.of(context).pop();
                         }
                       },

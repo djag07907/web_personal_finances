@@ -6,7 +6,7 @@ class CustomDataTable<T> extends StatefulWidget {
   final List<String> dataColumns;
   final List<T> data;
   final List<Widget> Function(T) rowBuilder;
-  // final Widget paginator;
+  final Widget paginator;
   final Widget Function(T item)? popupMenuBuilder;
 
   const CustomDataTable({
@@ -15,7 +15,7 @@ class CustomDataTable<T> extends StatefulWidget {
     required this.dataColumns,
     required this.data,
     required this.rowBuilder,
-    // required this.paginator,
+    required this.paginator,
     this.popupMenuBuilder,
   });
 
