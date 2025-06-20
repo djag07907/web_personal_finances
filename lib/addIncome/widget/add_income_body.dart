@@ -11,6 +11,7 @@ import 'package:web_personal_finances/resources/fonts_constants.dart';
 class AddIncomeBody extends StatefulWidget {
   final IncomeItem? incomeItem;
   final bool isEdit;
+
   const AddIncomeBody({
     super.key,
     this.incomeItem,

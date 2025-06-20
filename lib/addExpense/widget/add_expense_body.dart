@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:internationalization/internationalization.dart';
+import 'package:web_personal_finances/addExpense/model/expense_item.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
@@ -7,7 +9,14 @@ import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/fonts_constants.dart';
 
 class AddExpenseBody extends StatefulWidget {
-  const AddExpenseBody({super.key});
+  final ExpenseItem? expenseItem;
+  final bool isEdit;
+
+  const AddExpenseBody({
+    super.key,
+    this.expenseItem,
+    this.isEdit = false,
+  });
 
   @override
   State<AddExpenseBody> createState() => _AddExpenseBodyState();
@@ -28,6 +37,13 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
   @override
   void initState() {
     super.initState();
+    if (widget.isEdit && widget.expenseItem != null) {
+      _nameController.text = widget.expenseItem!.name;
+      _commentController.text = widget.expenseItem!.comment;
+      _amountController.text = widget.expenseItem!.amount.toString();
+      _dateDueController.text = widget.expenseItem!.dateDue;
+      selectedCurrency = widget.expenseItem!.currency;
+    }
   }
 
   @override
@@ -51,7 +67,9 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                 ),
                 child: Center(
                   child: Text(
-                    'Add Expense',
+                    context.translate(
+                      widget.isEdit ? 'edit_expense' : 'add_expense',
+                    ),
                     style: TextStyle(
                       fontSize: fontSize18,
                       color: LightColors.primary,
@@ -61,21 +79,21 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                 ),
               ),
               CustomLabelSelector(
-                label: 'Frequency',
-                hintText: 'Select frequency',
+                label: context.translate('frequency'),
+                hintText: context.translate('select_frequency'),
                 validator: (final String? value) {
                   if (value == null) {
-                    return 'Please select a frequency';
+                    return context.translate('please_select_a_frequency');
                   }
                   return null;
                 },
                 selectedValue: selectedFrequency,
                 items: <String>[
-                  'Weekly',
-                  'Biweekly',
-                  'Monthly',
-                  'Yearly',
-                  'Specific Date',
+                  context.translate('weekly'),
+                  context.translate('biweekly'),
+                  context.translate('monthly'),
+                  context.translate('yearly'),
+                  context.translate('specific_date'),
                 ],
                 onChanged: (final String? value) {
                   setState(() {
@@ -84,33 +102,33 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                 },
               ),
               CustomLabelInput(
-                label: 'Expense Name',
-                hintText: 'Enter expense name',
+                label: context.translate('expense_name'),
+                hintText: context.translate('enter_expense_name'),
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter expense name';
+                    return context.translate('please_enter_expense_name');
                   }
                   return null;
                 },
                 controller: _nameController,
               ),
               CustomLabelInput(
-                label: 'Comment',
-                hintText: 'Enter comment',
+                label: context.translate('comment'),
+                hintText: context.translate('enter_comment'),
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter a comment';
+                    return context.translate('please_enter_a_comment');
                   }
                   return null;
                 },
                 controller: _commentController,
               ),
               CustomLabelSelector(
-                label: 'Currency',
-                hintText: 'Select currency',
+                label: context.translate('currency'),
+                hintText: context.translate('select_currency'),
                 validator: (final String? value) {
                   if (value == null) {
-                    return 'Please select a currency';
+                    return context.translate('please_select_a_currency');
                   }
                   return null;
                 },
@@ -126,8 +144,8 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                 },
               ),
               CustomLabelInput(
-                label: 'Amount',
-                hintText: 'Enter amount',
+                label: context.translate('amount'),
+                hintText: context.translate('enter_amount'),
                 keyboardType: TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -136,22 +154,22 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                 ],
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter an amount';
+                    return context.translate('please_enter_an_amount');
                   }
                   return null;
                 },
                 controller: _amountController,
               ),
               CustomLabelInput(
-                label: 'Date to Receive',
-                hintText: 'Enter due date to pay the expense',
+                label: context.translate('date_to_receive'),
+                hintText: context.translate('enter_due_date'),
                 keyboardType: TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 isCalendar: true,
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter a due date to pay the expense';
+                    return context.translate('please_enter_a_due_date');
                   }
                   return null;
                 },
@@ -165,9 +183,10 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   SizedBox(
-                    width: 120,
+                    width: 150,
+                    height: 40,
                     child: CustomButton(
-                      text: 'Cancel',
+                      text: context.translate('cancel'),
                       isPrimary: false,
                       onPressed: () {
                         Navigator.of(context).pop();
@@ -175,13 +194,21 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                     ),
                   ),
                   SizedBox(
-                    width: 120,
+                    width: 150,
+                    height: 40,
                     child: CustomButton(
-                      text: 'Save',
+                      text: context.translate('save'),
                       isPrimary: true,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           //TODO: Validate and add expense integration
+                          if (widget.isEdit) {
+                            // Update the existing expense item
+                            // You can access the updated values here
+                            // Example: Update logic here
+                          } else {
+                            // Add a new expense item
+                          }
                           Navigator.of(context).pop();
                         }
                       },

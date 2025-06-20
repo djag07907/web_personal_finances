@@ -166,35 +166,6 @@ class _IncomesBodyState extends State<IncomesBody> {
     );
   }
 
-  Widget _buildPagination() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: <Widget>[
-        IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: _currentPage > 0
-              ? () {
-                  setState(() {
-                    _currentPage--;
-                  });
-                }
-              : null,
-        ),
-        Text('Page ${_currentPage + 1}'),
-        IconButton(
-          icon: Icon(Icons.arrow_forward),
-          onPressed: (_currentPage + 1) * _itemsPerPage < _incomeItems.length
-              ? () {
-                  setState(() {
-                    _currentPage++;
-                  });
-                }
-              : null,
-        ),
-      ],
-    );
-  }
-
   Future<bool?> _showConfirmation(
     final BuildContext context,
     final String title,

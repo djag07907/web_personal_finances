@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/addExpense/add_expense_page.dart';
+import 'package:web_personal_finances/addExpense/model/expense_item.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_status.dart';
@@ -11,7 +12,6 @@ import 'package:web_personal_finances/commons/popupMenu/popup_item.dart';
 import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart';
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
-import 'package:web_personal_finances/expenses/model/expense_item.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 
 class ExpensesBody extends StatefulWidget {
@@ -131,20 +131,20 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                 ) {
                   switch (option) {
                     case CustomOptions.edit:
-                      // _editExpense(
-                      // isEdit: true,
-                      // );
+                      _editExpense(
+                        item,
+                      );
                       break;
                     case CustomOptions.delete:
-                      // _removeExpense();
+                      _removeExpense(item);
                       break;
 
                     case CustomOptions.activate:
-                      // _confirmationActivateDialog();
+                      _activateExpense(item);
                       break;
 
                     case CustomOptions.deactivate:
-                      // _confirmationInactivateDialog();
+                      _deactivateExpense(item);
                       break;
                   }
                 },
@@ -166,33 +166,12 @@ class _ExpensesBodyState extends State<ExpensesBody> {
     );
   }
 
-  Widget _buildPagination() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: <Widget>[
-        IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: _currentPage > 0
-              ? () {
-                  setState(() {
-                    _currentPage--;
-                  });
-                }
-              : null,
-        ),
-        Text('Page ${_currentPage + 1}'),
-        IconButton(
-          icon: Icon(Icons.arrow_forward),
-          onPressed: (_currentPage + 1) * _itemsPerPage < _expenseItems.length
-              ? () {
-                  setState(() {
-                    _currentPage++;
-                  });
-                }
-              : null,
-        ),
-      ],
-    );
+  Future<bool?> _showConfirmation(
+    final BuildContext context,
+    final String title,
+    final String content,
+  ) {
+    return showConfirmationDialog(context, title, content);
   }
 
   void _addExpense() {
@@ -208,12 +187,19 @@ class _ExpensesBodyState extends State<ExpensesBody> {
   }
 
   void _editExpense(final ExpenseItem item) {
-    // Logic to open the right side menu with the selected expense item data
-    showSnackbar(context, 'Edit Expense functionality not implemented yet.');
+    showDialog(
+      context: context,
+      builder: (final BuildContext context) {
+        return Dialog(
+          backgroundColor: white,
+          child: AddExpensePage(expenseItem: item, isEdit: true),
+        );
+      },
+    );
   }
 
   void _removeExpense(final ExpenseItem item) async {
-    final bool? confirmed = await showConfirmationDialog(
+    final bool? confirmed = await _showConfirmation(
       context,
       'Confirm Removal',
       'Are you sure you want to remove this expense?',
@@ -223,6 +209,34 @@ class _ExpensesBodyState extends State<ExpensesBody> {
         _expenseItems.remove(item);
       });
       showSnackbar(context, 'Expense removed successfully.');
+    }
+  }
+
+  void _activateExpense(final ExpenseItem item) async {
+    final bool? confirmed = await _showConfirmation(
+      context,
+      'Confirm Activation',
+      'Are you sure you want to activate this expense?',
+    );
+    if (confirmed == true) {
+      setState(() {
+        // item.status = true;
+      });
+      showSnackbar(context, 'Expense activated successfully.');
+    }
+  }
+
+  void _deactivateExpense(final ExpenseItem item) async {
+    final bool? confirmed = await _showConfirmation(
+      context,
+      'Confirm Deactivation',
+      'Are you sure you want to deactivate this expense?',
+    );
+    if (confirmed == true) {
+      setState(() {
+        // item.status = false;
+      });
+      showSnackbar(context, 'Expense deactivated successfully.');
     }
   }
 }
