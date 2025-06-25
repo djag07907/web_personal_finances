@@ -6,16 +6,19 @@ import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart'
 import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
-import 'package:web_personal_finances/resources/fonts_constants.dart';
 
 class AddIncomeBody extends StatefulWidget {
   final IncomeItem? incomeItem;
   final bool isEdit;
+  final void Function(IncomeItem) onSave;
+  final VoidCallback onClose;
 
   const AddIncomeBody({
     super.key,
     this.incomeItem,
     this.isEdit = false,
+    required this.onSave,
+    required this.onClose,
   });
 
   @override
@@ -62,23 +65,6 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(
-                  bottom: 20.0,
-                ),
-                child: Center(
-                  child: Text(
-                    context.translate(
-                      widget.isEdit ? 'edit_income' : 'add_income',
-                    ),
-                    style: TextStyle(
-                      fontSize: fontSize18,
-                      color: LightColors.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
               // CustomLabelSelector(
               //   label: 'Frequency',
               //   hintText: 'Select frequency',
@@ -189,9 +175,7 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                     child: CustomButton(
                       text: context.translate('cancel'),
                       isPrimary: false,
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
+                      onPressed: widget.onClose,
                     ),
                   ),
                   SizedBox(
@@ -202,15 +186,25 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                       isPrimary: true,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          //TODO: Validate and add/edit income integration
-                          if (widget.isEdit) {
-                            // Update the existing income item
-                            // You can access the updated values here
-                            // Example: Update logic here
-                          } else {
-                            // Add a new income item
-                          }
-                          Navigator.of(context).pop();
+                          final IncomeItem newItem = IncomeItem(
+                            id: widget.isEdit
+                                ? widget.incomeItem!.id
+                                : DateTime.now()
+                                    .millisecondsSinceEpoch
+                                    .toString(),
+                            name: _nameController.text,
+                            comment: _commentController.text,
+                            currency: selectedCurrency!,
+                            amount: double.tryParse(
+                                  _amountController.text.replaceAll(',', ''),
+                                ) ??
+                                0,
+                            dateToReceive: _dateToReceiveController.text,
+                            status: true,
+                          );
+
+                          widget.onSave(newItem);
+                          widget.onClose();
                         }
                       },
                     ),

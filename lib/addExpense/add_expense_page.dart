@@ -5,11 +5,15 @@ import 'package:web_personal_finances/addExpense/widget/add_expense_body.dart';
 class AddExpensePage extends StatelessWidget {
   final ExpenseItem? expenseItem;
   final bool isEdit;
+  final void Function(ExpenseItem) onSave;
+  final VoidCallback onClose;
 
   const AddExpensePage({
     super.key,
     this.expenseItem,
     this.isEdit = false,
+    required this.onSave,
+    required this.onClose,
   });
 
   @override
@@ -17,6 +21,8 @@ class AddExpensePage extends StatelessWidget {
     return AddExpenseBody(
       expenseItem: expenseItem,
       isEdit: isEdit,
+      onSave: onSave,
+      onClose: onClose,
     );
   }
 }

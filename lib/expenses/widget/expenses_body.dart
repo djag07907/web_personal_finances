@@ -6,6 +6,7 @@ import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_status.dart';
 import 'package:web_personal_finances/commons/dialog/custom_confirmation_dialog.dart';
+import 'package:web_personal_finances/commons/drawer/drawer_widget.dart';
 import 'package:web_personal_finances/commons/enum/custom_action_options.dart';
 import 'package:web_personal_finances/commons/pagination/pagination_widget.dart';
 import 'package:web_personal_finances/commons/popupMenu/popup_item.dart';
@@ -45,6 +46,9 @@ class _ExpensesBodyState extends State<ExpensesBody> {
 
   int _currentPage = 0;
   static const int _itemsPerPage = 5;
+  bool _showDrawer = false;
+  ExpenseItem? _editingItem;
+  bool _isEditing = false;
 
   @override
   Widget build(final BuildContext context) {
@@ -129,24 +133,30 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                 onSelect: (
                   final CustomOptions option,
                 ) {
-                  switch (option) {
-                    case CustomOptions.edit:
-                      _editExpense(
-                        item,
-                      );
-                      break;
-                    case CustomOptions.delete:
-                      _removeExpense(item);
-                      break;
+                  Navigator.of(context).pop();
+                  Future<void>.delayed(
+                    const Duration(milliseconds: 150),
+                    () {
+                      switch (option) {
+                        case CustomOptions.edit:
+                          _editExpense(
+                            item,
+                          );
+                          break;
+                        case CustomOptions.delete:
+                          _removeExpense(item);
+                          break;
 
-                    case CustomOptions.activate:
-                      _activateExpense(item);
-                      break;
+                        case CustomOptions.activate:
+                          _activateExpense(item);
+                          break;
 
-                    case CustomOptions.deactivate:
-                      _deactivateExpense(item);
-                      break;
-                  }
+                        case CustomOptions.deactivate:
+                          _deactivateExpense(item);
+                          break;
+                      }
+                    },
+                  );
                 },
               );
             },
@@ -162,6 +172,60 @@ class _ExpensesBodyState extends State<ExpensesBody> {
             ),
           ),
         ),
+        if (_showDrawer)
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _showDrawer = false;
+                });
+              },
+              child: Container(
+                color: black.withValues(alpha: 0.5),
+              ),
+            ),
+          ),
+        if (_showDrawer)
+          Positioned.fill(
+            child: DrawerWidget(
+              title: context
+                  .translate(_isEditing ? 'edit_expense' : 'add_expense'),
+              onClose: () {
+                setState(() {
+                  _showDrawer = false;
+                });
+              },
+              child: AddExpensePage(
+                expenseItem: _editingItem,
+                isEdit: _isEditing,
+                onSave: (final ExpenseItem item) {
+                  setState(() {
+                    if (_isEditing) {
+                      final int index = _expenseItems.indexWhere(
+                        (final ExpenseItem expenseItem) =>
+                            expenseItem.id == item.id,
+                      );
+                      if (index != -1) {
+                        _expenseItems[index] = item;
+                      }
+                    } else {
+                      _expenseItems.add(item);
+                    }
+                    _showDrawer = false;
+                  });
+                  showSnackbar(
+                    context,
+                    context.translate('expense_saved_successfully'),
+                  );
+                },
+                onClose: () {
+                  setState(() {
+                    _showDrawer = false;
+                  });
+                },
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -171,72 +235,76 @@ class _ExpensesBodyState extends State<ExpensesBody> {
     final String title,
     final String content,
   ) {
-    return showConfirmationDialog(context, title, content);
+    bool? confirmed;
+    CustomConfirmationDialog.showCustomConfirmationDialog(
+      context,
+      confirmationText: content,
+      onPrimaryButtonTap: () {
+        confirmed = true;
+        // Navigator.of(context).pop();
+      },
+      onSecondaryButtonTap: () {
+        confirmed = false;
+      },
+    );
+    return Future<bool>.value(confirmed);
   }
 
   void _addExpense() {
-    showDialog(
-      context: context,
-      builder: (final BuildContext context) {
-        return Dialog(
-          backgroundColor: white,
-          child: AddExpensePage(),
-        );
-      },
-    );
+    setState(() {
+      _showDrawer = true;
+      _editingItem = null;
+      _isEditing = false;
+    });
   }
 
   void _editExpense(final ExpenseItem item) {
-    showDialog(
-      context: context,
-      builder: (final BuildContext context) {
-        return Dialog(
-          backgroundColor: white,
-          child: AddExpensePage(expenseItem: item, isEdit: true),
-        );
-      },
-    );
+    setState(() {
+      _showDrawer = true;
+      _editingItem = item;
+      _isEditing = true;
+    });
   }
 
   void _removeExpense(final ExpenseItem item) async {
     final bool? confirmed = await _showConfirmation(
       context,
-      'Confirm Removal',
-      'Are you sure you want to remove this expense?',
+      context.translate('confirm_removal'),
+      context.translate('confirm_expense_delete'),
     );
     if (confirmed == true) {
       setState(() {
         _expenseItems.remove(item);
       });
-      showSnackbar(context, 'Expense removed successfully.');
+      showSnackbar(context, context.translate('expense_deleted'));
     }
   }
 
   void _activateExpense(final ExpenseItem item) async {
     final bool? confirmed = await _showConfirmation(
       context,
-      'Confirm Activation',
-      'Are you sure you want to activate this expense?',
+      context.translate('confirm_activation'),
+      context.translate('confirm_expense_activation'),
     );
     if (confirmed == true) {
       setState(() {
         // item.status = true;
       });
-      showSnackbar(context, 'Expense activated successfully.');
+      showSnackbar(context, context.translate('expense_activated'));
     }
   }
 
   void _deactivateExpense(final ExpenseItem item) async {
     final bool? confirmed = await _showConfirmation(
       context,
-      'Confirm Deactivation',
-      'Are you sure you want to deactivate this expense?',
+      context.translate('confirm_deactivation'),
+      context.translate('confirm_expense_deactivation'),
     );
     if (confirmed == true) {
       setState(() {
         // item.status = false;
       });
-      showSnackbar(context, 'Expense deactivated successfully.');
+      showSnackbar(context, context.translate('expense_deactivated'));
     }
   }
 }

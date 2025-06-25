@@ -6,16 +6,19 @@ import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
 import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
-import 'package:web_personal_finances/resources/fonts_constants.dart';
 
 class AddExpenseBody extends StatefulWidget {
   final ExpenseItem? expenseItem;
   final bool isEdit;
+  final void Function(ExpenseItem) onSave;
+  final VoidCallback onClose;
 
   const AddExpenseBody({
     super.key,
     this.expenseItem,
     this.isEdit = false,
+    required this.onSave,
+    required this.onClose,
   });
 
   @override
@@ -61,23 +64,6 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(
-                  bottom: 20.0,
-                ),
-                child: Center(
-                  child: Text(
-                    context.translate(
-                      widget.isEdit ? 'edit_expense' : 'add_expense',
-                    ),
-                    style: TextStyle(
-                      fontSize: fontSize18,
-                      color: LightColors.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
               CustomLabelSelector(
                 label: context.translate('frequency'),
                 hintText: context.translate('select_frequency'),
@@ -188,9 +174,7 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                     child: CustomButton(
                       text: context.translate('cancel'),
                       isPrimary: false,
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
+                      onPressed: widget.onClose,
                     ),
                   ),
                   SizedBox(
@@ -201,15 +185,25 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                       isPrimary: true,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          //TODO: Validate and add expense integration
-                          if (widget.isEdit) {
-                            // Update the existing expense item
-                            // You can access the updated values here
-                            // Example: Update logic here
-                          } else {
-                            // Add a new expense item
-                          }
-                          Navigator.of(context).pop();
+                          final ExpenseItem newItem = ExpenseItem(
+                            id: widget.isEdit
+                                ? widget.expenseItem!.id
+                                : DateTime.now()
+                                    .millisecondsSinceEpoch
+                                    .toString(),
+                            name: _nameController.text,
+                            comment: _commentController.text,
+                            currency: selectedCurrency!,
+                            amount: double.tryParse(
+                                  _amountController.text.replaceAll(',', ''),
+                                ) ??
+                                0,
+                            dateDue: _dateDueController.text,
+                            status: true,
+                          );
+
+                          widget.onSave(newItem);
+                          widget.onClose();
                         }
                       },
                     ),
