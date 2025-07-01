@@ -1,21 +1,21 @@
-class AccountToPayItem {
+class AccountReceivableItem {
   final String id;
-  final String creditorName;
+  final String debtorName;
   final String description;
   final double amount;
   final String currency;
   final String dueDate;
-  final String? paymentDate;
-  final bool isPaid;
+  final String? receivedDate;
+  final bool isReceived;
 
-  AccountToPayItem({
+  AccountReceivableItem({
     required this.id,
-    required this.creditorName,
+    required this.debtorName,
     required this.description,
     required this.amount,
     required this.currency,
     required this.dueDate,
-    this.paymentDate,
-    this.isPaid = false,
+    this.receivedDate,
+    this.isReceived = false,
   });
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
-import 'package:web_personal_finances/addExpense/add_expense_page.dart';
+import 'package:web_personal_finances/addExpense/add_expense_screen.dart';
 import 'package:web_personal_finances/addExpense/model/expense_item.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
@@ -195,7 +195,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                   _showDrawer = false;
                 });
               },
-              child: AddExpensePage(
+              child: AddExpenseScreen(
                 expenseItem: _editingItem,
                 isEdit: _isEditing,
                 onSave: (final ExpenseItem item) {

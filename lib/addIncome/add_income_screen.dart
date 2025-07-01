@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:web_personal_finances/addIncome/widget/add_income_body.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
 
-class AddIncomePage extends StatelessWidget {
+class AddIncomeScreen extends StatelessWidget {
   final IncomeItem? incomeItem;
   final bool isEdit;
   final void Function(IncomeItem) onSave;
   final VoidCallback onClose;
 
-  const AddIncomePage({
+  const AddIncomeScreen({
     super.key,
     this.incomeItem,
     this.isEdit = false,

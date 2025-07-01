@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:web_personal_finances/addExpense/model/expense_item.dart';
 import 'package:web_personal_finances/addExpense/widget/add_expense_body.dart';
 
-class AddExpensePage extends StatelessWidget {
+class AddExpenseScreen extends StatelessWidget {
   final ExpenseItem? expenseItem;
   final bool isEdit;
   final void Function(ExpenseItem) onSave;
   final VoidCallback onClose;
 
-  const AddExpensePage({
+  const AddExpenseScreen({
     super.key,
     this.expenseItem,
     this.isEdit = false,

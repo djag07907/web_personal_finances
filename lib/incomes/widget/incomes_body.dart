@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
-import 'package:web_personal_finances/addIncome/add_income_page.dart';
+import 'package:web_personal_finances/addIncome/add_income_screen.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_status.dart';
@@ -192,7 +192,7 @@ class _IncomesBodyState extends State<IncomesBody> {
                   _showDrawer = false;
                 });
               },
-              child: AddIncomePage(
+              child: AddIncomeScreen(
                 incomeItem: _editingItem,
                 isEdit: _isEditing,
                 onSave: (final IncomeItem item) {
