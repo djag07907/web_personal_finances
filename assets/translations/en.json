@@ -111,5 +111,10 @@
     "confirm_account_receivable_activation": "Are you sure you want to activate this account receivable?",
     "account_receivable_activated": "Account receivable activated successfully",
     "confirm_account_receivable_deactivation": "Are you sure you want to deactivate this account receivable?",
-    "account_receivable_deactivated": "Account receivable deactivated successfully"
+    "account_receivable_deactivated": "Account receivable deactivated successfully",
+    "add_saving": "Add Saving",
+    "saving_name": "Saving Name",
+    "enter_saving_name": "Enter saving name",
+    "goal_amount": "Goal Amount",
+    "enter_goal_amount": "Enter goal amount"
 }
