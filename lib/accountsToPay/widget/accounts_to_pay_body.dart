@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
-import 'package:web_personal_finances/addAccountToPay/add_account_to_pay_screen.dart';
-import 'package:web_personal_finances/addAccountToPay/model/account_to_pay_item.dart';
+import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_status.dart';
 import 'package:web_personal_finances/commons/dialog/custom_confirmation_dialog.dart';
 import 'package:web_personal_finances/commons/drawer/drawer_widget.dart';
 import 'package:web_personal_finances/commons/enum/custom_action_options.dart';
+import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
+import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
 import 'package:web_personal_finances/commons/pagination/pagination_widget.dart';
 import 'package:web_personal_finances/commons/popupMenu/popup_item.dart';
 import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart';
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
+import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+
+part 'form_widget.dart';
 
 class AccountsToPayBody extends StatefulWidget {
   const AccountsToPayBody({super.key});
@@ -200,7 +204,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                   _showDrawer = false;
                 });
               },
-              child: AddAccountToPayScreen(
+              child: FormWidget(
                 accountToPayItem: _editingItem,
                 isEdit: _isEditing,
                 onSave: (final AccountToPayItem item) {

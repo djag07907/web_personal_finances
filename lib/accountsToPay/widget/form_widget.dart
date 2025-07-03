@@ -1,54 +1,46 @@
-import 'package:flutter/material.dart';
-import 'package:internationalization/internationalization.dart';
-import 'package:web_personal_finances/addAccountReceivable/model/account_receivable_item.dart';
-import 'package:web_personal_finances/commons/button/custom_button.dart';
-import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
-import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
-import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
-import 'package:web_personal_finances/resources/colors_constants.dart';
+part of 'accounts_to_pay_body.dart';
 
-class AddAccountReceivableBody extends StatefulWidget {
-  final AccountReceivableItem? accountReceivableItem;
+class FormWidget extends StatefulWidget {
+  final AccountToPayItem? accountToPayItem;
   final bool isEdit;
-  final void Function(AccountReceivableItem) onSave;
+  final void Function(AccountToPayItem) onSave;
   final VoidCallback onClose;
 
-  const AddAccountReceivableBody({
+  const FormWidget({
     super.key,
-    this.accountReceivableItem,
+    this.accountToPayItem,
     this.isEdit = false,
     required this.onSave,
     required this.onClose,
   });
 
   @override
-  State<AddAccountReceivableBody> createState() =>
-      _AddAccountReceivableBodyState();
+  State<FormWidget> createState() => _FormWidgetState();
 }
 
-class _AddAccountReceivableBodyState extends State<AddAccountReceivableBody> {
+class _FormWidgetState extends State<FormWidget> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _dateToReceiveController =
       TextEditingController();
-  late String accountReceivableName;
-  late String accountReceivableDescription;
-  late double accountReceivableAmount;
+  late String accountToPayName;
+  late String accountToPayDescription;
+  late double accountToPayAmount;
   String? selectedCurrency;
   // String? selectedFrequency;
 
   @override
   void initState() {
     super.initState();
-    if (widget.isEdit && widget.accountReceivableItem != null) {
-      _nameController.text = widget.accountReceivableItem!.debtorName;
-      _commentController.text = widget.accountReceivableItem!.description;
-      _amountController.text = widget.accountReceivableItem!.amount.toString();
+    if (widget.isEdit && widget.accountToPayItem != null) {
+      _nameController.text = widget.accountToPayItem!.creditorName;
+      _commentController.text = widget.accountToPayItem!.description;
+      _amountController.text = widget.accountToPayItem!.amount.toString();
       _dateToReceiveController.text =
-          widget.accountReceivableItem!.dueDate.toString();
-      selectedCurrency = widget.accountReceivableItem!.currency;
+          widget.accountToPayItem!.dueDate.toString();
+      selectedCurrency = widget.accountToPayItem!.currency;
     }
   }
 
@@ -165,14 +157,13 @@ class _AddAccountReceivableBodyState extends State<AddAccountReceivableBody> {
                       isPrimary: true,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          final AccountReceivableItem newItem =
-                              AccountReceivableItem(
+                          final AccountToPayItem newItem = AccountToPayItem(
                             id: widget.isEdit
-                                ? widget.accountReceivableItem!.id
+                                ? widget.accountToPayItem!.id
                                 : DateTime.now()
                                     .millisecondsSinceEpoch
                                     .toString(),
-                            debtorName: _nameController.text,
+                            creditorName: _nameController.text,
                             description: _commentController.text,
                             currency: selectedCurrency!,
                             amount: double.tryParse(
@@ -181,7 +172,7 @@ class _AddAccountReceivableBodyState extends State<AddAccountReceivableBody> {
                                 0,
                             dueDate:
                                 DateTime.parse(_dateToReceiveController.text),
-                            isReceived: true,
+                            isPaid: true,
                           );
 
                           widget.onSave(newItem);

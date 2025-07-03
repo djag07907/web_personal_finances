@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
-import 'package:web_personal_finances/addExpense/add_expense_screen.dart';
-import 'package:web_personal_finances/addExpense/model/expense_item.dart';
+import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
+import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
+import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
+import 'package:web_personal_finances/expenses/model/expense_item.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_status.dart';
@@ -14,6 +16,8 @@ import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart'
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+
+part 'form_widget.dart';
 
 class ExpensesBody extends StatefulWidget {
   const ExpensesBody({super.key});
@@ -195,7 +199,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                   _showDrawer = false;
                 });
               },
-              child: AddExpenseScreen(
+              child: FormWidget(
                 expenseItem: _editingItem,
                 isEdit: _isEditing,
                 onSave: (final ExpenseItem item) {

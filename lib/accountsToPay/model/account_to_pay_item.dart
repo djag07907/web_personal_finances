@@ -44,7 +44,7 @@ class AccountToPayItem {
   }
 
   Map<String, dynamic> toMap() {
-    return {
+    return <String, dynamic>{
       'id': id,
       'creditorName': creditorName,
       'description': description,

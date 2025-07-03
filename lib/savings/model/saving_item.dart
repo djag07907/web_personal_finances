@@ -1,55 +1,56 @@
-class IncomeItem {
+import 'package:web_personal_finances/savings/model/saving_registry_item.dart';
+
+class SavingItem {
   final String id;
   final String name;
   final String comment;
   final String currency;
   final double amount;
-  final DateTime dateToReceive;
-  final bool status;
+  final double goalAmount;
+  final bool isGoalReached;
   final DateTime? createdDate;
   final List<String> tags;
-  final String? paymentMethod;
 
-  IncomeItem({
+  final List<SavingRegistryItem> registries;
+
+  SavingItem({
     required this.id,
     required this.name,
     required this.comment,
     required this.currency,
     required this.amount,
-    required this.dateToReceive,
-    required this.status,
+    required this.goalAmount,
+    required this.isGoalReached,
     this.createdDate,
     this.tags = const <String>[],
-    this.paymentMethod,
+    this.registries = const <SavingRegistryItem>[],
   });
 
-  factory IncomeItem.fromMap(final Map<String, dynamic> map) {
-    return IncomeItem(
+  factory SavingItem.fromMap(final Map<String, dynamic> map) {
+    return SavingItem(
       id: map['id'],
       name: map['name'],
       comment: map['comment'],
       currency: map['currency'],
       amount: map['amount'].toDouble(),
-      dateToReceive: DateTime.parse(map['dateToReceive']),
-      status: map['status'] ?? false,
+      goalAmount: map['goalAmount'].toDouble(),
+      isGoalReached: map['isGoalReached'] ?? false,
       createdDate: DateTime.parse(map['createdDate']),
-      tags: List<String>.from(map['tags'] ?? const <String>[]),
-      paymentMethod: map['paymentMethod'],
+      tags: List<String>.from(map['tags'] ?? <String>[]),
     );
   }
 
   Map<String, dynamic> toMap() {
-    return {
+    return <String, dynamic>{
       'id': id,
       'name': name,
       'comment': comment,
       'currency': currency,
       'amount': amount,
-      'dateToReceive': dateToReceive.toIso8601String(),
-      'status': status,
+      'goalAmount': goalAmount,
+      'isGoalReached': isGoalReached,
       'createdDate': createdDate?.toIso8601String(),
       'tags': tags,
-      'paymentMethod': paymentMethod,
     };
   }
 }

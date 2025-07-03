@@ -1,53 +1,44 @@
-import 'package:flutter/material.dart';
-import 'package:internationalization/internationalization.dart';
-import 'package:web_personal_finances/addAccountToPay/model/account_to_pay_item.dart';
-import 'package:web_personal_finances/commons/button/custom_button.dart';
-import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
-import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
-import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
-import 'package:web_personal_finances/resources/colors_constants.dart';
+part of 'expenses_body.dart';
 
-class AddAccountToPayBody extends StatefulWidget {
-  final AccountToPayItem? accountToPayItem;
+class FormWidget extends StatefulWidget {
+  final ExpenseItem? expenseItem;
   final bool isEdit;
-  final void Function(AccountToPayItem) onSave;
+  final void Function(ExpenseItem) onSave;
   final VoidCallback onClose;
 
-  const AddAccountToPayBody({
+  const FormWidget({
     super.key,
-    this.accountToPayItem,
+    this.expenseItem,
     this.isEdit = false,
     required this.onSave,
     required this.onClose,
   });
 
   @override
-  State<AddAccountToPayBody> createState() => _AddAccountToPayBodyState();
+  State<FormWidget> createState() => _FormWidgetState();
 }
 
-class _AddAccountToPayBodyState extends State<AddAccountToPayBody> {
+class _FormWidgetState extends State<FormWidget> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _dateToReceiveController =
-      TextEditingController();
-  late String accountToPayName;
-  late String accountToPayDescription;
-  late double accountToPayAmount;
+  final TextEditingController _dateDueController = TextEditingController();
+  late String expenseName;
+  late String expenseComment;
+  late double expenseAmount;
   String? selectedCurrency;
-  // String? selectedFrequency;
+  String? selectedFrequency;
 
   @override
   void initState() {
     super.initState();
-    if (widget.isEdit && widget.accountToPayItem != null) {
-      _nameController.text = widget.accountToPayItem!.creditorName;
-      _commentController.text = widget.accountToPayItem!.description;
-      _amountController.text = widget.accountToPayItem!.amount.toString();
-      _dateToReceiveController.text =
-          widget.accountToPayItem!.dueDate.toString();
-      selectedCurrency = widget.accountToPayItem!.currency;
+    if (widget.isEdit && widget.expenseItem != null) {
+      _nameController.text = widget.expenseItem!.name;
+      _commentController.text = widget.expenseItem!.comment;
+      _amountController.text = widget.expenseItem!.amount.toString();
+      _dateDueController.text = widget.expenseItem!.dateDue.toString();
+      selectedCurrency = widget.expenseItem!.currency;
     }
   }
 
@@ -66,23 +57,46 @@ class _AddAccountToPayBodyState extends State<AddAccountToPayBody> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
+              CustomLabelSelector(
+                label: context.translate('frequency'),
+                hintText: context.translate('select_frequency'),
+                validator: (final String? value) {
+                  if (value == null) {
+                    return context.translate('please_select_a_frequency');
+                  }
+                  return null;
+                },
+                selectedValue: selectedFrequency,
+                items: <String>[
+                  context.translate('weekly'),
+                  context.translate('biweekly'),
+                  context.translate('monthly'),
+                  context.translate('yearly'),
+                  context.translate('specific_date'),
+                ],
+                onChanged: (final String? value) {
+                  setState(() {
+                    selectedFrequency = value;
+                  });
+                },
+              ),
               CustomLabelInput(
-                label: context.translate('creditor_name'),
-                hintText: context.translate('enter_creditor_name'),
+                label: context.translate('expense_name'),
+                hintText: context.translate('enter_expense_name'),
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_creditor_name');
+                    return context.translate('please_enter_expense_name');
                   }
                   return null;
                 },
                 controller: _nameController,
               ),
               CustomLabelInput(
-                label: context.translate('description'),
-                hintText: context.translate('enter_description'),
+                label: context.translate('comment'),
+                hintText: context.translate('enter_comment'),
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_description');
+                    return context.translate('please_enter_a_comment');
                   }
                   return null;
                 },
@@ -93,7 +107,7 @@ class _AddAccountToPayBodyState extends State<AddAccountToPayBody> {
                 hintText: context.translate('select_currency'),
                 validator: (final String? value) {
                   if (value == null) {
-                    return context.translate('please_select_currency');
+                    return context.translate('please_select_a_currency');
                   }
                   return null;
                 },
@@ -119,26 +133,26 @@ class _AddAccountToPayBodyState extends State<AddAccountToPayBody> {
                 ],
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_amount');
+                    return context.translate('please_enter_an_amount');
                   }
                   return null;
                 },
                 controller: _amountController,
               ),
               CustomLabelInput(
-                label: context.translate('date_due'),
-                hintText: context.translate('enter_date_due'),
+                label: context.translate('date_to_receive'),
+                hintText: context.translate('enter_due_date'),
                 keyboardType: TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 isCalendar: true,
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_date_due');
+                    return context.translate('please_enter_a_due_date');
                   }
                   return null;
                 },
-                controller: _dateToReceiveController,
+                controller: _dateDueController,
               ),
               SizedBox(
                 height: 20.0,
@@ -164,22 +178,21 @@ class _AddAccountToPayBodyState extends State<AddAccountToPayBody> {
                       isPrimary: true,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          final AccountToPayItem newItem = AccountToPayItem(
+                          final ExpenseItem newItem = ExpenseItem(
                             id: widget.isEdit
-                                ? widget.accountToPayItem!.id
+                                ? widget.expenseItem!.id
                                 : DateTime.now()
                                     .millisecondsSinceEpoch
                                     .toString(),
-                            creditorName: _nameController.text,
-                            description: _commentController.text,
+                            name: _nameController.text,
+                            comment: _commentController.text,
                             currency: selectedCurrency!,
                             amount: double.tryParse(
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,
-                            dueDate:
-                                DateTime.parse(_dateToReceiveController.text),
-                            isPaid: true,
+                            dateDue: DateTime.parse(_dateDueController.text),
+                            status: true,
                           );
 
                           widget.onSave(newItem);

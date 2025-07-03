@@ -1,51 +1,45 @@
-import 'package:flutter/material.dart';
-import 'package:internationalization/internationalization.dart';
-import 'package:web_personal_finances/addExpense/model/expense_item.dart';
-import 'package:web_personal_finances/commons/button/custom_button.dart';
-import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
-import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
-import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
-import 'package:web_personal_finances/resources/colors_constants.dart';
+part of 'savings_body.dart';
 
-class AddExpenseBody extends StatefulWidget {
-  final ExpenseItem? expenseItem;
+class FormWidget extends StatefulWidget {
+  final SavingItem? savingItem;
   final bool isEdit;
-  final void Function(ExpenseItem) onSave;
+  final void Function(SavingItem) onSave;
   final VoidCallback onClose;
 
-  const AddExpenseBody({
+  const FormWidget({
     super.key,
-    this.expenseItem,
+    this.savingItem,
     this.isEdit = false,
     required this.onSave,
     required this.onClose,
   });
 
   @override
-  State<AddExpenseBody> createState() => _AddExpenseBodyState();
+  State<FormWidget> createState() => _FormWidgetState();
 }
 
-class _AddExpenseBodyState extends State<AddExpenseBody> {
+class _FormWidgetState extends State<FormWidget> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _dateDueController = TextEditingController();
-  late String expenseName;
-  late String expenseComment;
-  late double expenseAmount;
+  final TextEditingController _goalAmountController = TextEditingController();
+
+  late String incomeName;
+  late String incomeComment;
+  late double incomeAmount;
   String? selectedCurrency;
-  String? selectedFrequency;
+  // String? selectedFrequency;
 
   @override
   void initState() {
     super.initState();
-    if (widget.isEdit && widget.expenseItem != null) {
-      _nameController.text = widget.expenseItem!.name;
-      _commentController.text = widget.expenseItem!.comment;
-      _amountController.text = widget.expenseItem!.amount.toString();
-      _dateDueController.text = widget.expenseItem!.dateDue.toString();
-      selectedCurrency = widget.expenseItem!.currency;
+    if (widget.isEdit && widget.savingItem != null) {
+      _nameController.text = widget.savingItem!.name;
+      _commentController.text = widget.savingItem!.comment;
+      _amountController.text = widget.savingItem!.amount.toString();
+      _goalAmountController.text = widget.savingItem!.goalAmount.toString();
+      selectedCurrency = widget.savingItem!.currency;
     }
   }
 
@@ -64,35 +58,35 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              CustomLabelSelector(
-                label: context.translate('frequency'),
-                hintText: context.translate('select_frequency'),
-                validator: (final String? value) {
-                  if (value == null) {
-                    return context.translate('please_select_a_frequency');
-                  }
-                  return null;
-                },
-                selectedValue: selectedFrequency,
-                items: <String>[
-                  context.translate('weekly'),
-                  context.translate('biweekly'),
-                  context.translate('monthly'),
-                  context.translate('yearly'),
-                  context.translate('specific_date'),
-                ],
-                onChanged: (final String? value) {
-                  setState(() {
-                    selectedFrequency = value;
-                  });
-                },
-              ),
+              // CustomLabelSelector(
+              //   label: 'Frequency',
+              //   hintText: 'Select frequency',
+              //   validator: (final String? value) {
+              //     if (value == null) {
+              //       return 'Please select a frequency';
+              //     }
+              //     return null;
+              //   },
+              //   selectedValue: selectedFrequency,
+              //   items: <String>[
+              //     'Weekly',
+              //     'Biweekly',
+              //     'Monthly',
+              //     'Yearly',
+              //     'Specific Date',
+              //   ],
+              //   onChanged: (final String? value) {
+              //     setState(() {
+              //       selectedFrequency = value;
+              //     });
+              //   },
+              // ),
               CustomLabelInput(
-                label: context.translate('expense_name'),
-                hintText: context.translate('enter_expense_name'),
+                label: context.translate('saving_name'),
+                hintText: context.translate('enter_saving_name'),
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_expense_name');
+                    return context.translate('please_enter_saving_name');
                   }
                   return null;
                 },
@@ -103,7 +97,7 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                 hintText: context.translate('enter_comment'),
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_a_comment');
+                    return context.translate('please_enter_comment');
                   }
                   return null;
                 },
@@ -114,7 +108,7 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                 hintText: context.translate('select_currency'),
                 validator: (final String? value) {
                   if (value == null) {
-                    return context.translate('please_select_a_currency');
+                    return context.translate('please_select_currency');
                   }
                   return null;
                 },
@@ -140,26 +134,28 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                 ],
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_an_amount');
+                    return context.translate('please_enter_amount');
                   }
                   return null;
                 },
                 controller: _amountController,
               ),
               CustomLabelInput(
-                label: context.translate('date_to_receive'),
-                hintText: context.translate('enter_due_date'),
+                label: context.translate('goal_amount'),
+                hintText: context.translate('enter_goal_amount'),
                 keyboardType: TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                isCalendar: true,
+                inputFormatters: <MoneyInputFormatter>[
+                  MoneyInputFormatter(),
+                ],
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_a_due_date');
+                    return context.translate('please_enter_goal_amount');
                   }
                   return null;
                 },
-                controller: _dateDueController,
+                controller: _goalAmountController,
               ),
               SizedBox(
                 height: 20.0,
@@ -185,9 +181,9 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                       isPrimary: true,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          final ExpenseItem newItem = ExpenseItem(
+                          final SavingItem newItem = SavingItem(
                             id: widget.isEdit
-                                ? widget.expenseItem!.id
+                                ? widget.savingItem!.id
                                 : DateTime.now()
                                     .millisecondsSinceEpoch
                                     .toString(),
@@ -198,8 +194,12 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,
-                            dateDue: DateTime.parse(_dateDueController.text),
-                            status: true,
+                            goalAmount: double.tryParse(
+                                  _goalAmountController.text
+                                      .replaceAll(',', ''),
+                                ) ??
+                                0,
+                            isGoalReached: true,
                           );
 
                           widget.onSave(newItem);

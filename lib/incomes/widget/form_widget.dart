@@ -1,37 +1,30 @@
-import 'package:flutter/material.dart';
-import 'package:internationalization/internationalization.dart';
-import 'package:web_personal_finances/addSavings/model/saving_item.dart';
-import 'package:web_personal_finances/commons/button/custom_button.dart';
-import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
-import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
-import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
-import 'package:web_personal_finances/resources/colors_constants.dart';
+part of 'incomes_body.dart';
 
-class AddSavingBody extends StatefulWidget {
-  final SavingItem? savingItem;
+class FormWidget extends StatefulWidget {
+  final IncomeItem? incomeItem;
   final bool isEdit;
-  final void Function(SavingItem) onSave;
+  final void Function(IncomeItem) onSave;
   final VoidCallback onClose;
 
-  const AddSavingBody({
+  const FormWidget({
     super.key,
-    this.savingItem,
+    this.incomeItem,
     this.isEdit = false,
     required this.onSave,
     required this.onClose,
   });
 
   @override
-  State<AddSavingBody> createState() => _AddSavingBodyState();
+  State<FormWidget> createState() => _FormWidgetState();
 }
 
-class _AddSavingBodyState extends State<AddSavingBody> {
+class _FormWidgetState extends State<FormWidget> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _goalAmountController = TextEditingController();
-
+  final TextEditingController _dateToReceiveController =
+      TextEditingController();
   late String incomeName;
   late String incomeComment;
   late double incomeAmount;
@@ -41,12 +34,13 @@ class _AddSavingBodyState extends State<AddSavingBody> {
   @override
   void initState() {
     super.initState();
-    if (widget.isEdit && widget.savingItem != null) {
-      _nameController.text = widget.savingItem!.name;
-      _commentController.text = widget.savingItem!.comment;
-      _amountController.text = widget.savingItem!.amount.toString();
-      _goalAmountController.text = widget.savingItem!.goalAmount.toString();
-      selectedCurrency = widget.savingItem!.currency;
+    if (widget.isEdit && widget.incomeItem != null) {
+      _nameController.text = widget.incomeItem!.name;
+      _commentController.text = widget.incomeItem!.comment;
+      _amountController.text = widget.incomeItem!.amount.toString();
+      _dateToReceiveController.text =
+          widget.incomeItem!.dateToReceive.toString();
+      selectedCurrency = widget.incomeItem!.currency;
     }
   }
 
@@ -89,11 +83,11 @@ class _AddSavingBodyState extends State<AddSavingBody> {
               //   },
               // ),
               CustomLabelInput(
-                label: context.translate('saving_name'),
-                hintText: context.translate('enter_saving_name'),
+                label: context.translate('income_name'),
+                hintText: context.translate('enter_income_name'),
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_saving_name');
+                    return context.translate('please_enter_income_name');
                   }
                   return null;
                 },
@@ -148,21 +142,19 @@ class _AddSavingBodyState extends State<AddSavingBody> {
                 controller: _amountController,
               ),
               CustomLabelInput(
-                label: context.translate('goal_amount'),
-                hintText: context.translate('enter_goal_amount'),
+                label: context.translate('date_to_receive'),
+                hintText: context.translate('enter_date_to_receive'),
                 keyboardType: TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                inputFormatters: <MoneyInputFormatter>[
-                  MoneyInputFormatter(),
-                ],
+                isCalendar: true,
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_goal_amount');
+                    return context.translate('please_enter_date_to_receive');
                   }
                   return null;
                 },
-                controller: _goalAmountController,
+                controller: _dateToReceiveController,
               ),
               SizedBox(
                 height: 20.0,
@@ -188,9 +180,9 @@ class _AddSavingBodyState extends State<AddSavingBody> {
                       isPrimary: true,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          final SavingItem newItem = SavingItem(
+                          final IncomeItem newItem = IncomeItem(
                             id: widget.isEdit
-                                ? widget.savingItem!.id
+                                ? widget.incomeItem!.id
                                 : DateTime.now()
                                     .millisecondsSinceEpoch
                                     .toString(),
@@ -201,12 +193,9 @@ class _AddSavingBodyState extends State<AddSavingBody> {
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,
-                            goalAmount: double.tryParse(
-                                  _goalAmountController.text
-                                      .replaceAll(',', ''),
-                                ) ??
-                                0,
-                            isGoalReached: true,
+                            dateToReceive:
+                                DateTime.parse(_dateToReceiveController.text),
+                            status: true,
                           );
 
                           widget.onSave(newItem);

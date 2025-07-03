@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
-import 'package:web_personal_finances/addIncome/add_income_screen.dart';
-import 'package:web_personal_finances/addIncome/model/income_item.dart';
+import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
+import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
+import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
+import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_status.dart';
@@ -14,6 +16,8 @@ import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart'
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+
+part 'form_widget.dart';
 
 class IncomesBody extends StatefulWidget {
   const IncomesBody({super.key});
@@ -192,7 +196,7 @@ class _IncomesBodyState extends State<IncomesBody> {
                   _showDrawer = false;
                 });
               },
-              child: AddIncomeScreen(
+              child: FormWidget(
                 incomeItem: _editingItem,
                 isEdit: _isEditing,
                 onSave: (final IncomeItem item) {

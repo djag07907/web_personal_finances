@@ -1,42 +1,40 @@
-import 'package:web_personal_finances/addSavings/model/saving_registry_item.dart';
-
-class SavingItem {
+class IncomeItem {
   final String id;
   final String name;
   final String comment;
   final String currency;
   final double amount;
-  final double goalAmount;
-  final bool isGoalReached;
+  final DateTime dateToReceive;
+  final bool status;
   final DateTime? createdDate;
   final List<String> tags;
+  final String? paymentMethod;
 
-  final List<SavingRegistryItem> registries;
-
-  SavingItem({
+  IncomeItem({
     required this.id,
     required this.name,
     required this.comment,
     required this.currency,
     required this.amount,
-    required this.goalAmount,
-    required this.isGoalReached,
+    required this.dateToReceive,
+    required this.status,
     this.createdDate,
     this.tags = const <String>[],
-    this.registries = const <SavingRegistryItem>[],
+    this.paymentMethod,
   });
 
-  factory SavingItem.fromMap(final Map<String, dynamic> map) {
-    return SavingItem(
+  factory IncomeItem.fromMap(final Map<String, dynamic> map) {
+    return IncomeItem(
       id: map['id'],
       name: map['name'],
       comment: map['comment'],
       currency: map['currency'],
       amount: map['amount'].toDouble(),
-      goalAmount: map['goalAmount'].toDouble(),
-      isGoalReached: map['isGoalReached'] ?? false,
+      dateToReceive: DateTime.parse(map['dateToReceive']),
+      status: map['status'] ?? false,
       createdDate: DateTime.parse(map['createdDate']),
-      tags: List<String>.from(map['tags'] ?? <String>[]),
+      tags: List<String>.from(map['tags'] ?? const <String>[]),
+      paymentMethod: map['paymentMethod'],
     );
   }
 
@@ -47,10 +45,11 @@ class SavingItem {
       'comment': comment,
       'currency': currency,
       'amount': amount,
-      'goalAmount': goalAmount,
-      'isGoalReached': isGoalReached,
+      'dateToReceive': dateToReceive.toIso8601String(),
+      'status': status,
       'createdDate': createdDate?.toIso8601String(),
       'tags': tags,
+      'paymentMethod': paymentMethod,
     };
   }
 }

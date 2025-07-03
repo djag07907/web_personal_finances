@@ -1,53 +1,46 @@
-import 'package:flutter/material.dart';
-import 'package:internationalization/internationalization.dart';
-import 'package:web_personal_finances/addIncome/model/income_item.dart';
-import 'package:web_personal_finances/commons/button/custom_button.dart';
-import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
-import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
-import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
-import 'package:web_personal_finances/resources/colors_constants.dart';
+part of 'accounts_receivable_body.dart';
 
-class AddIncomeBody extends StatefulWidget {
-  final IncomeItem? incomeItem;
+class FormWidget extends StatefulWidget {
+  final AccountReceivableItem? accountReceivableItem;
   final bool isEdit;
-  final void Function(IncomeItem) onSave;
+  final void Function(AccountReceivableItem) onSave;
   final VoidCallback onClose;
 
-  const AddIncomeBody({
+  const FormWidget({
     super.key,
-    this.incomeItem,
+    this.accountReceivableItem,
     this.isEdit = false,
     required this.onSave,
     required this.onClose,
   });
 
   @override
-  State<AddIncomeBody> createState() => _AddIncomeBodyState();
+  State<FormWidget> createState() => _FormWidgetState();
 }
 
-class _AddIncomeBodyState extends State<AddIncomeBody> {
+class _FormWidgetState extends State<FormWidget> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _dateToReceiveController =
       TextEditingController();
-  late String incomeName;
-  late String incomeComment;
-  late double incomeAmount;
+  late String accountReceivableName;
+  late String accountReceivableDescription;
+  late double accountReceivableAmount;
   String? selectedCurrency;
   // String? selectedFrequency;
 
   @override
   void initState() {
     super.initState();
-    if (widget.isEdit && widget.incomeItem != null) {
-      _nameController.text = widget.incomeItem!.name;
-      _commentController.text = widget.incomeItem!.comment;
-      _amountController.text = widget.incomeItem!.amount.toString();
+    if (widget.isEdit && widget.accountReceivableItem != null) {
+      _nameController.text = widget.accountReceivableItem!.debtorName;
+      _commentController.text = widget.accountReceivableItem!.description;
+      _amountController.text = widget.accountReceivableItem!.amount.toString();
       _dateToReceiveController.text =
-          widget.incomeItem!.dateToReceive.toString();
-      selectedCurrency = widget.incomeItem!.currency;
+          widget.accountReceivableItem!.dueDate.toString();
+      selectedCurrency = widget.accountReceivableItem!.currency;
     }
   }
 
@@ -66,46 +59,23 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              // CustomLabelSelector(
-              //   label: 'Frequency',
-              //   hintText: 'Select frequency',
-              //   validator: (final String? value) {
-              //     if (value == null) {
-              //       return 'Please select a frequency';
-              //     }
-              //     return null;
-              //   },
-              //   selectedValue: selectedFrequency,
-              //   items: <String>[
-              //     'Weekly',
-              //     'Biweekly',
-              //     'Monthly',
-              //     'Yearly',
-              //     'Specific Date',
-              //   ],
-              //   onChanged: (final String? value) {
-              //     setState(() {
-              //       selectedFrequency = value;
-              //     });
-              //   },
-              // ),
               CustomLabelInput(
-                label: context.translate('income_name'),
-                hintText: context.translate('enter_income_name'),
+                label: context.translate('creditor_name'),
+                hintText: context.translate('enter_creditor_name'),
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_income_name');
+                    return context.translate('please_enter_creditor_name');
                   }
                   return null;
                 },
                 controller: _nameController,
               ),
               CustomLabelInput(
-                label: context.translate('comment'),
-                hintText: context.translate('enter_comment'),
+                label: context.translate('description'),
+                hintText: context.translate('enter_description'),
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_comment');
+                    return context.translate('please_enter_description');
                   }
                   return null;
                 },
@@ -149,15 +119,15 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                 controller: _amountController,
               ),
               CustomLabelInput(
-                label: context.translate('date_to_receive'),
-                hintText: context.translate('enter_date_to_receive'),
+                label: context.translate('date_due'),
+                hintText: context.translate('enter_date_due'),
                 keyboardType: TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 isCalendar: true,
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
-                    return context.translate('please_enter_date_to_receive');
+                    return context.translate('please_enter_date_due');
                   }
                   return null;
                 },
@@ -187,22 +157,23 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                       isPrimary: true,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          final IncomeItem newItem = IncomeItem(
+                          final AccountReceivableItem newItem =
+                              AccountReceivableItem(
                             id: widget.isEdit
-                                ? widget.incomeItem!.id
+                                ? widget.accountReceivableItem!.id
                                 : DateTime.now()
                                     .millisecondsSinceEpoch
                                     .toString(),
-                            name: _nameController.text,
-                            comment: _commentController.text,
+                            debtorName: _nameController.text,
+                            description: _commentController.text,
                             currency: selectedCurrency!,
                             amount: double.tryParse(
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,
-                            dateToReceive:
+                            dueDate:
                                 DateTime.parse(_dateToReceiveController.text),
-                            status: true,
+                            isReceived: true,
                           );
 
                           widget.onSave(newItem);
