@@ -117,25 +117,28 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   Widget _buildCustomCardItems() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <Widget>[
-        CustomCardItem(
-          leadingIcon: Icons.attach_money,
-          titleText: 'Total Income',
-          subtitleText: 'Lempiras: 10,000',
-        ),
-        CustomCardItem(
-          leadingIcon: Icons.money_off,
-          titleText: 'Total Expenses',
-          subtitleText: 'Lempiras: 5,000',
-        ),
-        CustomCardItem(
-          leadingIcon: Icons.pie_chart,
-          titleText: 'Savings',
-          subtitleText: 'Lempiras: 5,000',
-        ),
-      ],
+    return Container(
+      height: 100,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          CustomCardItem(
+            leadingIcon: Icons.attach_money,
+            titleText: 'Total Income',
+            subtitleText: 'Lempiras: 10,000',
+          ),
+          CustomCardItem(
+            leadingIcon: Icons.money_off,
+            titleText: 'Total Expenses',
+            subtitleText: 'Lempiras: 5,000',
+          ),
+          CustomCardItem(
+            leadingIcon: Icons.pie_chart,
+            titleText: 'Savings',
+            subtitleText: 'Lempiras: 5,000',
+          ),
+        ],
+      ),
     );
   }
 

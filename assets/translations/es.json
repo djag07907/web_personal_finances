@@ -111,5 +111,10 @@
     "confirm_account_receivable_activation": "¿Está seguro de que desea activar esta cuenta por cobrar?",
     "account_receivable_activated": "Cuenta por cobrar activada con éxito",
     "confirm_account_receivable_deactivation": "¿Está seguro de que desea desactivar esta cuenta por cobrar?",
-    "account_receivable_deactivated": "Cuenta por cobrar desactivada con éxito"
+    "account_receivable_deactivated": "Cuenta por cobrar desactivada con éxito",
+    "add_saving": "Agregar Ahorro",
+    "saving_name": "Nombre del Ahorro",
+    "enter_saving_name": "Ingrese nombre de ahorro",
+    "goal_amount": "Monto objetivo",
+    "enter_goal_amount": "Enter goal amount"
 }
