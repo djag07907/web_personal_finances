@@ -38,6 +38,11 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
       icon: Icons.request_quote,
       pagePath: accountsReceivableRoute,
     ),
+    MenuOptions(
+      title: 'savings',
+      icon: Icons.savings,
+      pagePath: savingsRoute,
+    ),
   ];
   double get _menuHeight {
     return _isCollapsed ? 440.0 : MediaQuery.of(context).size.height;
@@ -93,14 +98,27 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                       minWidth: 95.0,
                       imagePath: '${imagePath}logo.jpg',
                     ),
-                    Text(
-                      _isCollapsed ? emptyString : 'Daniel Alvarez',
-                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                            fontSize: fontSize20,
-                            color: LightColors.primary,
-                            fontWeight: FontWeight.bold,
+                    _isCollapsed
+                        ? const SizedBox.shrink()
+                        : Text(
+                            'Daniel Alvarez',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge!
+                                .copyWith(
+                                  fontSize: fontSize20,
+                                  color: LightColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
-                    ),
+                    // Text(
+                    //   _isCollapsed ? emptyString : 'Daniel Alvarez',
+                    //   style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                    //         fontSize: _isCollapsed ? zeroFontSize : fontSize20,
+                    //         color: LightColors.primary,
+                    //         fontWeight: FontWeight.bold,
+                    //       ),
+                    // ),
                   ],
                 ),
               ),
@@ -109,9 +127,11 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                 visible: !_isCollapsed,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Image.asset(
-                    '${imagePath}logo.jpg',
-                    height: 45.0,
+                  child: Text(
+                    'Financings Manager v1.0.0',
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                          color: LightColors.textSecondary,
+                        ),
                   ),
                 ),
               ),

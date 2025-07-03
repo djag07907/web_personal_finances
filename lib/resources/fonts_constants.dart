@@ -1,3 +1,4 @@
+const double zeroFontSize = 0.0;
 const double fontSize8 = 8.0;
 const double fontSize11 = 11.0;
 const double fontSize12 = 12.0;

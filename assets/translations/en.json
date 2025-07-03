@@ -90,7 +90,7 @@
     "description": "Description",
     "due_date": "Due Date",
     "is_paid": "Is Paid",
-    "current_debt": "Current Debt",
+    "current_debt": "Active Debt",
     "paid": "Paid",
     "enter_creditor_name": "Enter creditor name",
     "enter_description": "Enter description",
@@ -105,5 +105,11 @@
     "date_received": "Date Received",
     "is_received": "Is Received",
     "current_receivable": "Current Receivable",
-    "add_account_receivable": "Add Account Receivable"
+    "add_account_receivable": "Add Account Receivable",
+    "confirm_account_receivable_delete": "Are you sure you want to delete this account receivable?",
+    "account_receivable_deleted": "Account receivable deleted successfully",
+    "confirm_account_receivable_activation": "Are you sure you want to activate this account receivable?",
+    "account_receivable_activated": "Account receivable activated successfully",
+    "confirm_account_receivable_deactivation": "Are you sure you want to deactivate this account receivable?",
+    "account_receivable_deactivated": "Account receivable deactivated successfully"
 }

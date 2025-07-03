@@ -90,7 +90,7 @@
     "description": "Descripción",
     "due_date": "Fecha de Pago",
     "is_paid": "Está pagado",
-    "current_debt": "Deuda corriente",
+    "current_debt": "Deuda activa",
     "paid": "Pagado",
     "enter_creditor_name": "Ingrese nombre de acreditador",
     "enter_description": "Ingrese descripción",
@@ -105,5 +105,11 @@
     "date_received": "Fecha de Recepción",
     "is_received": "Está pagado",
     "current_receivable": "Recepción pendiente",
-    "add_account_receivable": "Agregar Cuenta por Pagar"
+    "add_account_receivable": "Agregar Cuenta por Cobrar",
+    "confirm_account_receivable_delete": "¿Está seguro de que desea eliminar esta cuenta por cobrar?",
+    "account_receivable_deleted": "Cuenta por cobrar eliminada con éxito",
+    "confirm_account_receivable_activation": "¿Está seguro de que desea activar esta cuenta por cobrar?",
+    "account_receivable_activated": "Cuenta por cobrar activada con éxito",
+    "confirm_account_receivable_deactivation": "¿Está seguro de que desea desactivar esta cuenta por cobrar?",
+    "account_receivable_deactivated": "Cuenta por cobrar desactivada con éxito"
 }

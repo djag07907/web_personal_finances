@@ -8,6 +8,7 @@ import 'package:web_personal_finances/incomes/incomes_screen.dart';
 import 'package:web_personal_finances/login/login_screen.dart';
 import 'package:web_personal_finances/menu/menu_screen.dart';
 import 'package:web_personal_finances/profile/profile_screen.dart';
+import 'package:web_personal_finances/savings/savings_screen.dart';
 import 'package:web_personal_finances/signUp/signup_screen.dart';
 
 part 'landing_constants.dart';
@@ -71,6 +72,12 @@ final GoRouter appRoutes = GoRouter(
           path: accountsReceivableRoute,
           builder: (final BuildContext context, final GoRouterState state) {
             return const AccountsReceivableScreen();
+          },
+        ),
+        GoRoute(
+          path: savingsRoute,
+          builder: (final BuildContext context, final GoRouterState state) {
+            return const SavingsScreen();
           },
         ),
         GoRoute(

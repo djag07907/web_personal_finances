@@ -81,7 +81,7 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
                     Padding(
                       padding: const EdgeInsets.all(15.0),
                       child: SizedBox(
-                        width: 220,
+                        width: 265,
                         height: 40,
                         child: CustomButton(
                           text: context.translate('add_account_receivable'),
@@ -104,9 +104,13 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
                 Text(data.currency),
                 Text(data.amount.toString()),
                 Text(data.dueDate),
-                CustomChipStatus(
-                  isActive: data.isReceived,
-                  isAccount: true,
+                SizedBox(
+                  width: 120,
+                  height: 26,
+                  child: CustomChipStatus(
+                    isActive: data.isReceived,
+                    isAccount: true,
+                  ),
                 ),
               ];
             },
@@ -274,13 +278,13 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
     final bool? confirmed = await _showConfirmation(
       context,
       context.translate('confirm_removal'),
-      context.translate('confirm_account_to_pay_delete'),
+      context.translate('confirm_account_receivable_delete'),
     );
     if (confirmed == true) {
       setState(() {
         _accountsReceivableItems.remove(item);
       });
-      showSnackbar(context, context.translate('account_to_pay_deleted'));
+      showSnackbar(context, context.translate('account_receivable_deleted'));
     }
   }
 
@@ -288,13 +292,13 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
     final bool? confirmed = await _showConfirmation(
       context,
       context.translate('confirm_activation'),
-      context.translate('confirm_account_to_pay_activation'),
+      context.translate('confirm_account_receivable_activation'),
     );
     if (confirmed == true) {
       setState(() {
         // item.status = true;
       });
-      showSnackbar(context, context.translate('account_to_pay_activated'));
+      showSnackbar(context, context.translate('account_receivable_activated'));
     }
   }
 
@@ -302,13 +306,14 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
     final bool? confirmed = await _showConfirmation(
       context,
       context.translate('confirm_deactivation'),
-      context.translate('confirm_account_to_pay_deactivation'),
+      context.translate('confirm_account_receivable_deactivation'),
     );
     if (confirmed == true) {
       setState(() {
         // item.status = false;
       });
-      showSnackbar(context, context.translate('account_to_pay_deactivated'));
+      showSnackbar(
+          context, context.translate('account_receivable_deactivated'));
     }
   }
 }

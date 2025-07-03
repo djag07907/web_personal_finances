@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
-import 'package:web_personal_finances/addAccountToPay/add_account_to_pay_screen.dart';
-import 'package:web_personal_finances/addAccountToPay/model/account_to_pay_item.dart';
+import 'package:web_personal_finances/addSavings/add_saving_screen.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_status.dart';
@@ -14,35 +13,34 @@ import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart'
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+import 'package:web_personal_finances/savings/model/saving_item.dart';
 
-class AccountsToPayBody extends StatefulWidget {
-  const AccountsToPayBody({super.key});
+class SavingsBody extends StatefulWidget {
+  const SavingsBody({super.key});
 
   @override
-  State<AccountsToPayBody> createState() => _AccountsToPayBodyState();
+  State<SavingsBody> createState() => _SavingsBodyState();
 }
 
-class _AccountsToPayBodyState extends State<AccountsToPayBody> {
-  final List<AccountToPayItem> _accountsToPayItems = <AccountToPayItem>[
-    AccountToPayItem(
+class _SavingsBodyState extends State<SavingsBody> {
+  final List<SavingItem> _savingsItems = <SavingItem>[
+    SavingItem(
       id: '1',
-      creditorName: 'Juan Perez',
-      description: 'Money owed for services',
+      name: 'Vacation Fund',
+      comment: 'Family Trip',
       currency: 'USD',
       amount: 3000,
-      dueDate: '2023-10-01',
-      paymentDate: '2023-10-01',
-      isPaid: true,
+      goalAmount: 10000,
+      status: true,
     ),
-    AccountToPayItem(
+    SavingItem(
       id: '2',
-      creditorName: 'Carlos Lopez',
-      description: 'Money owed for goods',
-      currency: 'HNL',
-      amount: 5000,
-      dueDate: '2023-10-01',
-      paymentDate: '2023-10-01',
-      isPaid: false,
+      name: 'To buy a Car',
+      comment: 'For the RAV4',
+      currency: 'USD',
+      amount: 1500,
+      goalAmount: 9000,
+      status: false,
     ),
   ];
 
@@ -50,7 +48,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
   static const int _itemsPerPage = 5;
 
   bool _showDrawer = false;
-  AccountToPayItem? _editingItem;
+  SavingItem? _editingItem;
   bool _isEditing = false;
 
   @override
@@ -60,17 +58,17 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
         CustomCardBody(
           isMain: false,
           isMenu: true,
-          title: context.translate('accounts_to_pay'),
-          body: CustomDataTable<AccountToPayItem>(
-            data: _accountsToPayItems,
+          title: context.translate('savings'),
+          body: CustomDataTable<SavingItem>(
+            data: _savingsItems,
             dataColumns: <String>[
               context.translate('id').toUpperCase(),
-              context.translate('creditor_name'),
-              context.translate('description'),
+              context.translate('name'),
+              context.translate('comment'),
               context.translate('currency'),
               context.translate('amount'),
-              context.translate('due_date'),
-              context.translate('is_paid'),
+              context.translate('goal_amount'),
+              context.translate('status'),
             ],
             headers: <Widget>[
               Expanded(
@@ -80,12 +78,12 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                     Padding(
                       padding: const EdgeInsets.all(15.0),
                       child: SizedBox(
-                        width: 260,
+                        width: 180,
                         height: 40,
                         child: CustomButton(
-                          text: context.translate('add_account_to_pay'),
+                          text: context.translate('add_saving'),
                           isPrimary: true,
-                          onPressed: _addAccountToPay,
+                          onPressed: _addSaving,
                         ),
                       ),
                     ),
@@ -94,27 +92,22 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
               ),
             ],
             rowBuilder: (
-              final AccountToPayItem data,
+              final SavingItem data,
             ) {
               return <Widget>[
                 Text(data.id),
-                Text(data.creditorName),
-                Text(data.description),
+                Text(data.name),
+                Text(data.comment),
                 Text(data.currency),
                 Text(data.amount.toString()),
-                Text(data.dueDate),
-                SizedBox(
-                  width: 120,
-                  height: 26,
-                  child: CustomChipStatus(
-                    isActive: data.isPaid,
-                    isAccount: true,
-                  ),
+                Text(data.goalAmount.toString()),
+                CustomChipStatus(
+                  isActive: data.status,
                 ),
               ];
             },
             popupMenuBuilder: (
-              final AccountToPayItem item,
+              final SavingItem item,
             ) {
               return PrimaryPopupMenu<CustomOptions>(
                 popupItems: <PopupItem<CustomOptions>>[
@@ -126,12 +119,12 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                     title: CustomOptions.delete.toTranslate(context),
                     value: CustomOptions.delete,
                   ),
-                  if (!item.isPaid)
+                  if (!item.status)
                     PopupItem<CustomOptions>(
                       title: CustomOptions.activate.toTranslate(context),
                       value: CustomOptions.activate,
                     ),
-                  if (item.isPaid)
+                  if (item.status)
                     PopupItem<CustomOptions>(
                       title: CustomOptions.deactivate.toTranslate(context),
                       value: CustomOptions.deactivate,
@@ -147,16 +140,16 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                     () {
                       switch (option) {
                         case CustomOptions.edit:
-                          _editAccountToPay(item);
+                          _editSaving(item);
                           break;
                         case CustomOptions.delete:
-                          _removeAccountToPay(item);
+                          _removeSaving(item);
                           break;
                         case CustomOptions.activate:
-                          _activateAccountToPay(item);
+                          _activateSaving(item);
                           break;
                         case CustomOptions.deactivate:
-                          _deactivateAccountToPay(item);
+                          _deactivateSaving(item);
                           break;
                       }
                     },
@@ -166,7 +159,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
             },
             paginator: PaginationWidget(
               currentPage: _currentPage,
-              totalItems: _accountsToPayItems.length,
+              totalItems: _savingsItems.length,
               itemsPerPage: _itemsPerPage,
               onPageChanged: (final int newPage) {
                 setState(() {
@@ -192,35 +185,34 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
         if (_showDrawer)
           Positioned.fill(
             child: DrawerWidget(
-              title: context.translate(
-                _isEditing ? 'edit_account_to_pay' : 'add_account_to_pay',
-              ),
+              title:
+                  context.translate(_isEditing ? 'edit_saving' : 'add_saving'),
               onClose: () {
                 setState(() {
                   _showDrawer = false;
                 });
               },
-              child: AddAccountToPayScreen(
-                accountToPayItem: _editingItem,
+              child: AddSavingScreen(
+                savingItem: _editingItem,
                 isEdit: _isEditing,
-                onSave: (final AccountToPayItem item) {
+                onSave: (final SavingItem item) {
                   setState(() {
                     if (_isEditing) {
-                      final int index = _accountsToPayItems.indexWhere(
-                        (final AccountToPayItem accountToPayItem) =>
-                            accountToPayItem.id == item.id,
+                      final int index = _savingsItems.indexWhere(
+                        (final SavingItem savingItem) =>
+                            savingItem.id == item.id,
                       );
                       if (index != -1) {
-                        _accountsToPayItems[index] = item;
+                        _savingsItems[index] = item;
                       }
                     } else {
-                      _accountsToPayItems.add(item);
+                      _savingsItems.add(item);
                     }
                     _showDrawer = false;
                   });
                   showSnackbar(
                     context,
-                    context.translate('account_to_pay_saved_successfully'),
+                    context.translate('saving_saved_successfully'),
                   );
                 },
                 onClose: () {
@@ -255,7 +247,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
     return Future<bool>.value(confirmed);
   }
 
-  void _addAccountToPay() {
+  void _addSaving() {
     setState(() {
       _showDrawer = true;
       _editingItem = null;
@@ -263,7 +255,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
     });
   }
 
-  void _editAccountToPay(final AccountToPayItem item) {
+  void _editSaving(final SavingItem item) {
     setState(() {
       _showDrawer = true;
       _editingItem = item;
@@ -271,45 +263,45 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
     });
   }
 
-  void _removeAccountToPay(final AccountToPayItem item) async {
+  void _removeSaving(final SavingItem item) async {
     final bool? confirmed = await _showConfirmation(
       context,
       context.translate('confirm_removal'),
-      context.translate('confirm_account_to_pay_delete'),
+      context.translate('confirm_saving_delete'),
     );
     if (confirmed == true) {
       setState(() {
-        _accountsToPayItems.remove(item);
+        _savingsItems.remove(item);
       });
-      showSnackbar(context, context.translate('account_to_pay_deleted'));
+      showSnackbar(context, context.translate('saving_deleted'));
     }
   }
 
-  void _activateAccountToPay(final AccountToPayItem item) async {
+  void _activateSaving(final SavingItem item) async {
     final bool? confirmed = await _showConfirmation(
       context,
       context.translate('confirm_activation'),
-      context.translate('confirm_account_to_pay_activation'),
+      context.translate('confirm_saving_activation'),
     );
     if (confirmed == true) {
       setState(() {
         // item.status = true;
       });
-      showSnackbar(context, context.translate('account_to_pay_activated'));
+      showSnackbar(context, context.translate('saving_activated'));
     }
   }
 
-  void _deactivateAccountToPay(final AccountToPayItem item) async {
+  void _deactivateSaving(final SavingItem item) async {
     final bool? confirmed = await _showConfirmation(
       context,
       context.translate('confirm_deactivation'),
-      context.translate('confirm_account_to_pay_deactivation'),
+      context.translate('confirm_saving_deactivation'),
     );
     if (confirmed == true) {
       setState(() {
         // item.status = false;
       });
-      showSnackbar(context, context.translate('account_to_pay_deactivated'));
+      showSnackbar(context, context.translate('saving_deactivated'));
     }
   }
 }
