@@ -30,8 +30,8 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
       description: 'Money owed for services',
       currency: 'USD',
       amount: 3000,
-      dueDate: '2023-10-01',
-      paymentDate: '2023-10-01',
+      dueDate: DateTime.parse('2023-10-01'),
+      paymentDate: DateTime.parse('2023-10-01'),
       isPaid: true,
     ),
     AccountToPayItem(
@@ -40,8 +40,8 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
       description: 'Money owed for goods',
       currency: 'HNL',
       amount: 5000,
-      dueDate: '2023-10-01',
-      paymentDate: '2023-10-01',
+      dueDate: DateTime.parse('2023-10-01'),
+      paymentDate: DateTime.parse('2023-10-01'),
       isPaid: false,
     ),
   ];
@@ -102,7 +102,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                 Text(data.description),
                 Text(data.currency),
                 Text(data.amount.toString()),
-                Text(data.dueDate),
+                Text(data.dueDate.toString()),
                 SizedBox(
                   width: 120,
                   height: 26,

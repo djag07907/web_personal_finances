@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:web_personal_finances/addIncome/model/income_item.dart';
 import 'package:web_personal_finances/addIncome/widget/add_income_body.dart';
-import 'package:web_personal_finances/incomes/model/income_item.dart';
 
 class AddIncomeScreen extends StatelessWidget {
   final IncomeItem? incomeItem;

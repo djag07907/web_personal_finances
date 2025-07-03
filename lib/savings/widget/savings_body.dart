@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/addSavings/add_saving_screen.dart';
+import 'package:web_personal_finances/addSavings/model/saving_item.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_status.dart';
@@ -13,7 +14,6 @@ import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart'
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
-import 'package:web_personal_finances/savings/model/saving_item.dart';
 
 class SavingsBody extends StatefulWidget {
   const SavingsBody({super.key});
@@ -31,7 +31,7 @@ class _SavingsBodyState extends State<SavingsBody> {
       currency: 'USD',
       amount: 3000,
       goalAmount: 10000,
-      status: true,
+      isGoalReached: true,
     ),
     SavingItem(
       id: '2',
@@ -40,7 +40,7 @@ class _SavingsBodyState extends State<SavingsBody> {
       currency: 'USD',
       amount: 1500,
       goalAmount: 9000,
-      status: false,
+      isGoalReached: false,
     ),
   ];
 
@@ -102,7 +102,7 @@ class _SavingsBodyState extends State<SavingsBody> {
                 Text(data.amount.toString()),
                 Text(data.goalAmount.toString()),
                 CustomChipStatus(
-                  isActive: data.status,
+                  isActive: data.isGoalReached,
                 ),
               ];
             },
@@ -119,12 +119,12 @@ class _SavingsBodyState extends State<SavingsBody> {
                     title: CustomOptions.delete.toTranslate(context),
                     value: CustomOptions.delete,
                   ),
-                  if (!item.status)
+                  if (!item.isGoalReached)
                     PopupItem<CustomOptions>(
                       title: CustomOptions.activate.toTranslate(context),
                       value: CustomOptions.activate,
                     ),
-                  if (item.status)
+                  if (item.isGoalReached)
                     PopupItem<CustomOptions>(
                       title: CustomOptions.deactivate.toTranslate(context),
                       value: CustomOptions.deactivate,

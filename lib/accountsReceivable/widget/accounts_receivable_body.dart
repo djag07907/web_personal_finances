@@ -31,8 +31,8 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
       description: 'Money owed for services',
       currency: 'USD',
       amount: 3000,
-      dueDate: '2023-10-01',
-      receivedDate: '2023-10-01',
+      dueDate: DateTime.parse('2023-10-01'),
+      receivedDate: DateTime.parse('2023-10-01'),
       isReceived: true,
     ),
     AccountReceivableItem(
@@ -41,8 +41,8 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
       description: 'Money owed for goods',
       currency: 'HNL',
       amount: 5000,
-      dueDate: '2023-10-01',
-      receivedDate: '2023-10-01',
+      dueDate: DateTime.parse('2023-10-01'),
+      receivedDate: DateTime.parse('2023-10-01'),
       isReceived: false,
     ),
   ];
@@ -103,7 +103,7 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
                 Text(data.description),
                 Text(data.currency),
                 Text(data.amount.toString()),
-                Text(data.dueDate),
+                Text(data.dueDate.toString()),
                 SizedBox(
                   width: 120,
                   height: 26,

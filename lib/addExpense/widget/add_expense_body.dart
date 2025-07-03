@@ -44,7 +44,7 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
       _nameController.text = widget.expenseItem!.name;
       _commentController.text = widget.expenseItem!.comment;
       _amountController.text = widget.expenseItem!.amount.toString();
-      _dateDueController.text = widget.expenseItem!.dateDue;
+      _dateDueController.text = widget.expenseItem!.dateDue.toString();
       selectedCurrency = widget.expenseItem!.currency;
     }
   }
@@ -198,7 +198,7 @@ class _AddExpenseBodyState extends State<AddExpenseBody> {
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,
-                            dateDue: _dateDueController.text,
+                            dateDue: DateTime.parse(_dateDueController.text),
                             status: true,
                           );
 

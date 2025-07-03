@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:web_personal_finances/addSavings/model/saving_item.dart';
 import 'package:web_personal_finances/addSavings/widget/add_saving_body.dart';
-import 'package:web_personal_finances/savings/model/saving_item.dart';
 
 class AddSavingScreen extends StatelessWidget {
   final SavingItem? savingItem;

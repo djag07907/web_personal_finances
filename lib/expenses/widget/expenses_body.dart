@@ -30,7 +30,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
       comment: 'Monthly Rent',
       currency: 'USD',
       amount: 1200,
-      dateDue: '2023-10-01',
+      dateDue: DateTime.parse('2023-10-01'),
       status: true,
     ),
     ExpenseItem(
@@ -39,7 +39,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
       comment: 'Web Development',
       currency: 'USD',
       amount: 1500,
-      dateDue: '2023-10-15',
+      dateDue: DateTime.parse('2023-10-15'),
       status: false,
     ),
   ];
@@ -99,7 +99,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                 Text(data.comment),
                 Text(data.currency),
                 Text(data.amount.toString()),
-                Text(data.dateDue),
+                Text(data.dateDue.toString()),
                 CustomChipStatus(
                   isActive: data.status,
                 ),

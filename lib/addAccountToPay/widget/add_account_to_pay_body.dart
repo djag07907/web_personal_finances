@@ -45,7 +45,8 @@ class _AddAccountToPayBodyState extends State<AddAccountToPayBody> {
       _nameController.text = widget.accountToPayItem!.creditorName;
       _commentController.text = widget.accountToPayItem!.description;
       _amountController.text = widget.accountToPayItem!.amount.toString();
-      _dateToReceiveController.text = widget.accountToPayItem!.dueDate;
+      _dateToReceiveController.text =
+          widget.accountToPayItem!.dueDate.toString();
       selectedCurrency = widget.accountToPayItem!.currency;
     }
   }
@@ -176,7 +177,8 @@ class _AddAccountToPayBodyState extends State<AddAccountToPayBody> {
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,
-                            dueDate: _dateToReceiveController.text,
+                            dueDate:
+                                DateTime.parse(_dateToReceiveController.text),
                             isPaid: true,
                           );
 

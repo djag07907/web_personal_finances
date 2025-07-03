@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
+import 'package:web_personal_finances/addIncome/model/income_item.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
 import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
-import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 
 class AddIncomeBody extends StatefulWidget {
@@ -45,7 +45,8 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
       _nameController.text = widget.incomeItem!.name;
       _commentController.text = widget.incomeItem!.comment;
       _amountController.text = widget.incomeItem!.amount.toString();
-      _dateToReceiveController.text = widget.incomeItem!.dateToReceive;
+      _dateToReceiveController.text =
+          widget.incomeItem!.dateToReceive.toString();
       selectedCurrency = widget.incomeItem!.currency;
     }
   }
@@ -199,7 +200,8 @@ class _AddIncomeBodyState extends State<AddIncomeBody> {
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,
-                            dateToReceive: _dateToReceiveController.text,
+                            dateToReceive:
+                                DateTime.parse(_dateToReceiveController.text),
                             status: true,
                           );
 

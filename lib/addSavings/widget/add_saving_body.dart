@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
+import 'package:web_personal_finances/addSavings/model/saving_item.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
 import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
-import 'package:web_personal_finances/savings/model/saving_item.dart';
 
 class AddSavingBody extends StatefulWidget {
   final SavingItem? savingItem;
@@ -206,7 +206,7 @@ class _AddSavingBodyState extends State<AddSavingBody> {
                                       .replaceAll(',', ''),
                                 ) ??
                                 0,
-                            status: true,
+                            isGoalReached: true,
                           );
 
                           widget.onSave(newItem);

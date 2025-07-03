@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/addIncome/add_income_screen.dart';
+import 'package:web_personal_finances/addIncome/model/income_item.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_status.dart';
@@ -12,7 +13,6 @@ import 'package:web_personal_finances/commons/popupMenu/popup_item.dart';
 import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart';
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
-import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 
 class IncomesBody extends StatefulWidget {
@@ -30,7 +30,7 @@ class _IncomesBodyState extends State<IncomesBody> {
       comment: 'Monthly Salary',
       currency: 'USD',
       amount: 3000,
-      dateToReceive: '2023-10-01',
+      dateToReceive: DateTime.parse('2023-10-01'),
       status: true,
     ),
     IncomeItem(
@@ -39,7 +39,7 @@ class _IncomesBodyState extends State<IncomesBody> {
       comment: 'Web Development',
       currency: 'USD',
       amount: 1500,
-      dateToReceive: '2023-10-15',
+      dateToReceive: DateTime.parse('2023-10-15'),
       status: false,
     ),
   ];
@@ -100,7 +100,7 @@ class _IncomesBodyState extends State<IncomesBody> {
                 Text(data.comment),
                 Text(data.currency),
                 Text(data.amount.toString()),
-                Text(data.dateToReceive),
+                Text(data.dateToReceive.toString()),
                 CustomChipStatus(
                   isActive: data.status,
                 ),

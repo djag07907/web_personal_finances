@@ -46,7 +46,8 @@ class _AddAccountReceivableBodyState extends State<AddAccountReceivableBody> {
       _nameController.text = widget.accountReceivableItem!.debtorName;
       _commentController.text = widget.accountReceivableItem!.description;
       _amountController.text = widget.accountReceivableItem!.amount.toString();
-      _dateToReceiveController.text = widget.accountReceivableItem!.dueDate;
+      _dateToReceiveController.text =
+          widget.accountReceivableItem!.dueDate.toString();
       selectedCurrency = widget.accountReceivableItem!.currency;
     }
   }
@@ -178,7 +179,8 @@ class _AddAccountReceivableBodyState extends State<AddAccountReceivableBody> {
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,
-                            dueDate: _dateToReceiveController.text,
+                            dueDate:
+                                DateTime.parse(_dateToReceiveController.text),
                             isReceived: true,
                           );
 
