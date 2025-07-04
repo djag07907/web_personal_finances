@@ -59,50 +59,61 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
           ],
         ),
         Expanded(
-          child: ListView(
-            children: widget.data.map((final T rowItem) {
-              final int index = widget.data.indexOf(rowItem);
-              final List<Widget> cell = widget.rowBuilder(rowItem);
-              final bool isHovered = _hoveredIndex == index;
-
-              return MouseRegion(
-                onEnter: (final PointerEvent row) {
-                  setState(() => _hoveredIndex = index);
-                },
-                onExit: (final PointerEvent row) {
-                  setState(() => _hoveredIndex = null);
-                },
-                child: Container(
-                  color: index.isEven ? LightColors.background : transparent,
-                  child: Container(
-                    color: isHovered
-                        ? LightColors.primary.withValues(
-                            alpha: 0.1,
-                          )
-                        : transparent,
-                    height: 50.0,
-                    child: Row(
-                      children: <Widget>[
-                        ...cell.map((final Widget cell) {
-                          return Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 25.0),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: cell,
-                              ),
-                            ),
-                          );
-                        }),
-                        if (widget.popupMenuBuilder != null)
-                          widget.popupMenuBuilder!(rowItem),
-                      ],
-                    ),
+          child: widget.data.isEmpty
+              ? Center(
+                  child: Text(
+                    'No data to display',
+                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                          color: greyHard,
+                          fontWeight: FontWeight.w500,
+                        ),
                   ),
+                )
+              : ListView(
+                  children: widget.data.map((final T rowItem) {
+                    final int index = widget.data.indexOf(rowItem);
+                    final List<Widget> cell = widget.rowBuilder(rowItem);
+                    final bool isHovered = _hoveredIndex == index;
+
+                    return MouseRegion(
+                      onEnter: (final PointerEvent row) {
+                        setState(() => _hoveredIndex = index);
+                      },
+                      onExit: (final PointerEvent row) {
+                        setState(() => _hoveredIndex = null);
+                      },
+                      child: Container(
+                        color:
+                            index.isEven ? LightColors.background : transparent,
+                        child: Container(
+                          color: isHovered
+                              ? LightColors.primary.withValues(
+                                  alpha: 0.1,
+                                )
+                              : transparent,
+                          height: 50.0,
+                          child: Row(
+                            children: <Widget>[
+                              ...cell.map((final Widget cell) {
+                                return Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 25.0),
+                                    child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: cell,
+                                    ),
+                                  ),
+                                );
+                              }),
+                              if (widget.popupMenuBuilder != null)
+                                widget.popupMenuBuilder!(rowItem),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            }).toList(),
-          ),
         ),
         // widget.paginator,
       ],

@@ -4,11 +4,11 @@ class IncomeItem {
   final String comment;
   final String currency;
   final double amount;
-  final DateTime dateToReceive;
+  final String dateToReceive;
   final bool status;
   final DateTime? createdDate;
-  final List<String> tags;
-  final String? paymentMethod;
+  // final List<String> tags;
+  // final String? paymentMethod;
 
   IncomeItem({
     required this.id,
@@ -19,8 +19,8 @@ class IncomeItem {
     required this.dateToReceive,
     required this.status,
     this.createdDate,
-    this.tags = const <String>[],
-    this.paymentMethod,
+    // this.tags = const <String>[],
+    // this.paymentMethod,
   });
 
   factory IncomeItem.fromMap(final Map<String, dynamic> map) {
@@ -30,11 +30,14 @@ class IncomeItem {
       comment: map['comment'],
       currency: map['currency'],
       amount: map['amount'].toDouble(),
-      dateToReceive: DateTime.parse(map['dateToReceive']),
+      dateToReceive: map['dateToReceive'],
       status: map['status'] ?? false,
-      createdDate: DateTime.parse(map['createdDate']),
-      tags: List<String>.from(map['tags'] ?? const <String>[]),
-      paymentMethod: map['paymentMethod'],
+      // createdDate: DateTime.parse(map['createdDate']),
+      createdDate: map['createdDate'] != null
+          ? DateTime.parse(map['createdDate'])
+          : null,
+      // tags: List<String>.from(map['tags'] ?? const <String>[]),
+      // paymentMethod: map['paymentMethod'],
     );
   }
 
@@ -45,11 +48,11 @@ class IncomeItem {
       'comment': comment,
       'currency': currency,
       'amount': amount,
-      'dateToReceive': dateToReceive.toIso8601String(),
+      'dateToReceive': dateToReceive,
       'status': status,
       'createdDate': createdDate?.toIso8601String(),
-      'tags': tags,
-      'paymentMethod': paymentMethod,
+      // 'tags': tags,
+      // 'paymentMethod': paymentMethod,
     };
   }
 }

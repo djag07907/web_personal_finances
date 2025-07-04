@@ -193,8 +193,7 @@ class _FormWidgetState extends State<FormWidget> {
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,
-                            dateToReceive:
-                                DateTime.parse(_dateToReceiveController.text),
+                            dateToReceive: _dateToReceiveController.text,
                             status: true,
                           );
 

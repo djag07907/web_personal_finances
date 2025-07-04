@@ -14,3 +14,4 @@ const List<Locale> supportedLocales = <Locale>[
   Locale('es'),
   Locale('en'),
 ];
+const String serviceMessage = 'message';
