@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/bloc/base_state.dart';
+import 'package:web_personal_finances/commons/calendar/calendar_widget.dart';
+import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
 import 'package:web_personal_finances/commons/loader/loader.dart';
@@ -20,6 +22,7 @@ import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart'
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+import 'package:web_personal_finances/resources/constants.dart';
 
 part 'form_widget.dart';
 
@@ -76,7 +79,7 @@ class _IncomesBodyState extends State<IncomesBody> {
             body: CustomDataTable<IncomeItem>(
               data: _incomeItems,
               dataColumns: <String>[
-                context.translate('id').toUpperCase(),
+                // context.translate('id').toUpperCase(),
                 context.translate('name'),
                 context.translate('comment'),
                 context.translate('currency'),
@@ -109,7 +112,7 @@ class _IncomesBodyState extends State<IncomesBody> {
                 final IncomeItem data,
               ) {
                 return <Widget>[
-                  Text(data.id),
+                  // Text(data.id),
                   Text(data.name),
                   Text(data.comment),
                   Text(data.currency),
@@ -215,12 +218,10 @@ class _IncomesBodyState extends State<IncomesBody> {
                     } else {
                       _incomesBloc.add(IncomesAdded(incomeItem: item));
                     }
-                    // _refetchIncomes();
                     showSnackbar(
                       context,
                       context.translate('income_saved_successfully'),
                     );
-                    // _showDrawer = false;
                   },
                   onClose: () {
                     setState(() {
@@ -251,10 +252,6 @@ class _IncomesBodyState extends State<IncomesBody> {
     );
   }
 
-  // void _refetchIncomes() {
-  //   _incomesBloc.add(IncomesFetched());
-  // }
-
   Future<bool?> _showConfirmation(
     final BuildContext context,
     final String title,
@@ -266,7 +263,6 @@ class _IncomesBodyState extends State<IncomesBody> {
       confirmationText: content,
       onPrimaryButtonTap: () {
         confirmed = true;
-        // Navigator.of(context).pop();
       },
       onSecondaryButtonTap: () {
         confirmed = false;

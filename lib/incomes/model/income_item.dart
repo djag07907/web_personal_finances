@@ -1,3 +1,5 @@
+import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
+
 class IncomeItem {
   final String id;
   final String name;
@@ -7,6 +9,7 @@ class IncomeItem {
   final String dateToReceive;
   final bool status;
   final DateTime? createdDate;
+  final CustomFrequencyOptions frequency;
   // final List<String> tags;
   // final String? paymentMethod;
 
@@ -19,6 +22,7 @@ class IncomeItem {
     required this.dateToReceive,
     required this.status,
     this.createdDate,
+    required this.frequency,
     // this.tags = const <String>[],
     // this.paymentMethod,
   });
@@ -32,10 +36,14 @@ class IncomeItem {
       amount: map['amount'].toDouble(),
       dateToReceive: map['dateToReceive'],
       status: map['status'] ?? false,
-      // createdDate: DateTime.parse(map['createdDate']),
+      frequency: CustomFrequencyOptions.values.firstWhere(
+        (final CustomFrequencyOptions element) =>
+            element.name == map['frequency'],
+        orElse: () => CustomFrequencyOptions.once,
+      ),
       createdDate: map['createdDate'] != null
           ? DateTime.parse(map['createdDate'])
-          : null,
+          : DateTime.now(),
       // tags: List<String>.from(map['tags'] ?? const <String>[]),
       // paymentMethod: map['paymentMethod'],
     );
@@ -51,6 +59,7 @@ class IncomeItem {
       'dateToReceive': dateToReceive,
       'status': status,
       'createdDate': createdDate?.toIso8601String(),
+      'frequency': frequency.name,
       // 'tags': tags,
       // 'paymentMethod': paymentMethod,
     };

@@ -10,6 +10,8 @@ class CustomLabelInput extends StatelessWidget {
   final TextInputType keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final bool isCalendar;
+  final bool isReadOnly;
+  final VoidCallback? onTap;
 
   CustomLabelInput({
     super.key,
@@ -20,6 +22,8 @@ class CustomLabelInput extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.inputFormatters,
     this.isCalendar = false,
+    this.isReadOnly = false,
+    this.onTap,
   });
 
   @override
@@ -41,6 +45,8 @@ class CustomLabelInput extends StatelessWidget {
             controller: controller,
             keyboardType: keyboardType,
             inputFormatters: inputFormatters,
+            readOnly: isReadOnly,
+            onTap: isCalendar ? onTap : null,
             decoration: InputDecoration(
               hintText: hintText,
               border: OutlineInputBorder(

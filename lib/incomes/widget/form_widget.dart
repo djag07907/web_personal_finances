@@ -29,6 +29,7 @@ class _FormWidgetState extends State<FormWidget> {
   late String incomeComment;
   late double incomeAmount;
   String? selectedCurrency;
+  CustomFrequencyOptions? selectedFrequency;
   // String? selectedFrequency;
 
   @override
@@ -41,6 +42,9 @@ class _FormWidgetState extends State<FormWidget> {
       _dateToReceiveController.text =
           widget.incomeItem!.dateToReceive.toString();
       selectedCurrency = widget.incomeItem!.currency;
+      if (widget.isEdit && widget.incomeItem != null) {
+        selectedFrequency = widget.incomeItem!.frequency;
+      }
     }
   }
 
@@ -59,29 +63,32 @@ class _FormWidgetState extends State<FormWidget> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              // CustomLabelSelector(
-              //   label: 'Frequency',
-              //   hintText: 'Select frequency',
-              //   validator: (final String? value) {
-              //     if (value == null) {
-              //       return 'Please select a frequency';
-              //     }
-              //     return null;
-              //   },
-              //   selectedValue: selectedFrequency,
-              //   items: <String>[
-              //     'Weekly',
-              //     'Biweekly',
-              //     'Monthly',
-              //     'Yearly',
-              //     'Specific Date',
-              //   ],
-              //   onChanged: (final String? value) {
-              //     setState(() {
-              //       selectedFrequency = value;
-              //     });
-              //   },
-              // ),
+              CustomLabelSelector(
+                label: context.translate('frequency'),
+                hintText: context.translate('select_frequency'),
+                validator: (final String? value) {
+                  if (value == null) {
+                    return context.translate('please_select_frequency');
+                  }
+                  return null;
+                },
+                selectedValue: selectedFrequency?.toTranslate(context),
+                items: CustomFrequencyOptions.values
+                    .map(
+                      (final CustomFrequencyOptions element) =>
+                          element.toTranslate(context),
+                    )
+                    .toList(),
+                onChanged: (final String? selectedLabel) {
+                  setState(() {
+                    selectedFrequency =
+                        CustomFrequencyOptions.values.firstWhere(
+                      (final CustomFrequencyOptions element) =>
+                          element.toTranslate(context) == selectedLabel,
+                    );
+                  });
+                },
+              ),
               CustomLabelInput(
                 label: context.translate('income_name'),
                 hintText: context.translate('enter_income_name'),
@@ -144,10 +151,20 @@ class _FormWidgetState extends State<FormWidget> {
               CustomLabelInput(
                 label: context.translate('date_to_receive'),
                 hintText: context.translate('enter_date_to_receive'),
-                keyboardType: TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                isReadOnly: true,
                 isCalendar: true,
+                onTap: () async {
+                  final CustomCalendarDialog calendar = CustomCalendarDialog();
+                  final DateTime? selectedDate = await calendar.showDateDialog(
+                    context: context,
+                    dateController: _dateToReceiveController,
+                  );
+                  if (selectedDate != null) {
+                    final String formatted =
+                        DateFormat(dayMonthYearFormat).format(selectedDate);
+                    _dateToReceiveController.text = formatted;
+                  }
+                },
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
                     return context.translate('please_enter_date_to_receive');
@@ -189,10 +206,12 @@ class _FormWidgetState extends State<FormWidget> {
                             name: _nameController.text,
                             comment: _commentController.text,
                             currency: selectedCurrency!,
+                            createdDate: DateTime.now(),
                             amount: double.tryParse(
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,
+                            frequency: selectedFrequency!,
                             dateToReceive: _dateToReceiveController.text,
                             status: true,
                           );
