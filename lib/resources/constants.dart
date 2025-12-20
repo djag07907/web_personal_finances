@@ -8,7 +8,7 @@ const int minDesktopWidth = 960;
 
 const String emptyString = '';
 const int emptyInt = 0;
-const emptyArray = [];
+const List<Object> emptyArray = <Object>[];
 
 const List<Locale> supportedLocales = <Locale>[
   Locale('es'),
@@ -42,3 +42,6 @@ const String saturdayShortEs = 'Sáb';
 const String datePickerFormat = 'MMMM yyyy';
 const String dayMonthYearFormat = 'dd/MM/yyyy';
 const String yearMonthDayFormat = 'yyyy-MM-dd';
+const String dollarValue = '1 USD =';
+const String hnlCurrency = 'HNL';
+const String welcomeMessage = 'Welcome to your personal finances, {username}';

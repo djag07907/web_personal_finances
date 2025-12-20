@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.4
+  sdk: ^3.7.2
 
 dependencies:
   flutter:
@@ -37,10 +37,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
   assets:
-  - assets/.env
-  - assets/images/
-  - assets/translations/
-  - assets/animations/
-  #   - images/a_dot_ham.jpeg
+    - .env
+    - assets/images/
+    - assets/translations/
+    - assets/animations/

@@ -46,7 +46,7 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
                     column,
                     textAlign: TextAlign.left,
                     style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                          color: Colors.grey,
+                          color: greyHard,
                           fontWeight: FontWeight.w600,
                         ),
                   ),

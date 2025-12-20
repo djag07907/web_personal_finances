@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/bloc/base_state.dart';
 import 'package:web_personal_finances/commons/calendar/calendar_widget.dart';
+import 'package:web_personal_finances/commons/chip/custom_chip_tag.dart';
 import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
@@ -81,6 +82,7 @@ class _IncomesBodyState extends State<IncomesBody> {
               dataColumns: <String>[
                 // context.translate('id').toUpperCase(),
                 context.translate('name'),
+                context.translate('frequency'),
                 context.translate('comment'),
                 context.translate('currency'),
                 context.translate('amount'),
@@ -114,6 +116,7 @@ class _IncomesBodyState extends State<IncomesBody> {
                 return <Widget>[
                   // Text(data.id),
                   Text(data.name),
+                  Text(data.frequency.toTranslate(context)),
                   Text(data.comment),
                   Text(data.currency),
                   Text(data.amount.toString()),

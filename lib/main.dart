@@ -14,14 +14,14 @@ import 'package:web_personal_finances/routes/landing_routes.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: 'assets/.env');
+
+  await dotenv.load(fileName: '.env');
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(
-    const MyApp(),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -31,11 +31,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    return RepositoryProvider(
+    return RepositoryProvider<AuthRepository>(
       create: (final _) => AuthRepository(),
       child: MaterialApp.router(
         routerConfig: appRoutes,
-        title: 'Web Personal Finances',
+        title: 'Pecunia',
         theme: lightTheme,
         darkTheme: darkTheme,
         themeMode: ThemeMode.system,

@@ -30,7 +30,6 @@ class CustomCardBody extends StatelessWidget {
         borderRadius: BorderRadius.circular(30.0),
       ),
       child: Column(
-        spacing: 10.0,
         children: <Widget>[
           Visibility(
             visible: !isMain,
@@ -39,6 +38,7 @@ class CustomCardBody extends StatelessWidget {
               isMenu: isMenu,
             ),
           ),
+          SizedBox(height: 10.0),
           Expanded(
             child: Container(
               color: white,

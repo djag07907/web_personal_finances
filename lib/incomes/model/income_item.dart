@@ -10,7 +10,7 @@ class IncomeItem {
   final bool status;
   final DateTime? createdDate;
   final CustomFrequencyOptions frequency;
-  // final List<String> tags;
+  final List<String> tags;
   // final String? paymentMethod;
 
   IncomeItem({
@@ -23,7 +23,7 @@ class IncomeItem {
     required this.status,
     this.createdDate,
     required this.frequency,
-    // this.tags = const <String>[],
+    this.tags = const <String>[],
     // this.paymentMethod,
   });
 
@@ -44,7 +44,9 @@ class IncomeItem {
       createdDate: map['createdDate'] != null
           ? DateTime.parse(map['createdDate'])
           : DateTime.now(),
-      // tags: List<String>.from(map['tags'] ?? const <String>[]),
+      tags: map['tags'] != null
+          ? List<String>.from(map['tags'])
+          : const <String>[],
       // paymentMethod: map['paymentMethod'],
     );
   }
@@ -60,7 +62,7 @@ class IncomeItem {
       'status': status,
       'createdDate': createdDate?.toIso8601String(),
       'frequency': frequency.name,
-      // 'tags': tags,
+      'tags': tags,
       // 'paymentMethod': paymentMethod,
     };
   }

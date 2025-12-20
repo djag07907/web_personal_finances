@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
-const Color transparent = Colors.transparent;
-const Color white = Colors.white;
-const Color black = Colors.black;
+const Color transparent = Color(0x00000000);
+const Color white = Color(0xFFFFFFFF);
+const Color black = Color(0xFF000000);
 const Color redAlert = Color(0xFFD50000);
 const Color greyHard = Color.fromARGB(255, 104, 109, 111);
+
+// Financial Status Colors
+const Color healthyGreen = Color(0xFF2ECC71);
+const Color cautionOrange = Color(0xFFF39C12);
+const Color unhealthyRed = Color(0xFFE74C3C);
 
 class LightColors {
   static const Color primary = Color(0xFF4CAF90);

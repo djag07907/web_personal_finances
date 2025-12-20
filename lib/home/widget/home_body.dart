@@ -10,6 +10,7 @@ import 'package:web_personal_finances/commons/cards/custom_card_item.dart';
 import 'package:web_personal_finances/home/model/financial_data.dart';
 import 'package:web_personal_finances/home/widget/expense_income_bar.dart';
 import 'package:web_personal_finances/home/widget/indicator.dart';
+import 'package:web_personal_finances/resources/api_constants.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/resources/fonts_constants.dart';
@@ -29,7 +30,7 @@ class _HomeBodyState extends State<HomeBody> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    fetchExchangeRate();
+    // fetchExchangeRate();
   }
 
   @override
@@ -55,9 +56,11 @@ class _HomeBodyState extends State<HomeBody> {
                   : Padding(
                       padding: const EdgeInsets.only(bottom: 10.0),
                       child: Text(
-                        '1 USD = ${exchangeRate?.toStringAsFixed(2)} HNL',
+                        '$dollarValue ${exchangeRate?.toStringAsFixed(2)} $hnlCurrency',
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
             ),
@@ -83,7 +86,7 @@ class _HomeBodyState extends State<HomeBody> {
         ),
         child: Center(
           child: Text(
-            'Welcome to your personal finances, {username}',
+            welcomeMessage,
             style: Theme.of(context).textTheme.headlineMedium!.copyWith(
                   fontSize: fontSize24,
                   color: white,
@@ -96,13 +99,14 @@ class _HomeBodyState extends State<HomeBody> {
 
   Widget _buildCharts(final FinancialData financialData) {
     return Column(
-      spacing: 10,
       children: <Widget>[
         _buildCustomCardItems(),
+        SizedBox(height: 10),
         ExpenseToIncomeBar(
           totalIncomes: financialData.totalIncomesLempiras.toDouble(),
           totalExpenses: financialData.totalExpensesLempiras.toDouble(),
         ),
+        SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
@@ -111,34 +115,74 @@ class _HomeBodyState extends State<HomeBody> {
             Expanded(child: _buildPieChart(financialData)),
           ],
         ),
+        SizedBox(height: 10),
         _buildIndicators(financialData),
       ],
     );
   }
 
   Widget _buildCustomCardItems() {
-    return Container(
-      height: 100,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          CustomCardItem(
-            leadingIcon: Icons.attach_money,
-            titleText: 'Total Income',
-            subtitleText: 'Lempiras: 10,000',
-          ),
-          CustomCardItem(
-            leadingIcon: Icons.money_off,
-            titleText: 'Total Expenses',
-            subtitleText: 'Lempiras: 5,000',
-          ),
-          CustomCardItem(
-            leadingIcon: Icons.pie_chart,
-            titleText: 'Savings',
-            subtitleText: 'Lempiras: 5,000',
-          ),
-        ],
-      ),
+    return LayoutBuilder(
+      builder: (final BuildContext context, final BoxConstraints constraints) {
+        final double screenWidth = constraints.maxWidth;
+        final bool isSmallScreen = screenWidth < 900;
+
+        // For small screens, stack cards vertically or in 2 columns
+        if (isSmallScreen) {
+          return Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  CustomCardItem(
+                    leadingIcon: Icons.attach_money,
+                    titleText: context.translate('total_incomes'),
+                    subtitleText: 'HNL 10,000',
+                  ),
+                  CustomCardItem(
+                    leadingIcon: Icons.money_off,
+                    titleText: context.translate('total_expenses'),
+                    subtitleText: 'HNL 5,000',
+                  ),
+                ],
+              ),
+              Row(
+                children: <Widget>[
+                  CustomCardItem(
+                    leadingIcon: Icons.pie_chart,
+                    titleText: context.translate('savings'),
+                    subtitleText: 'HNL 5,000',
+                  ),
+                  Flexible(
+                    fit: FlexFit.tight,
+                    child: SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ],
+          );
+        }
+
+        // For larger screens, show in a single row
+        return Row(
+          children: <Widget>[
+            CustomCardItem(
+              leadingIcon: Icons.attach_money,
+              titleText: context.translate('total_incomes'),
+              subtitleText: 'HNL 10,000',
+            ),
+            CustomCardItem(
+              leadingIcon: Icons.money_off,
+              titleText: context.translate('total_expenses'),
+              subtitleText: 'HNL 5,000',
+            ),
+            CustomCardItem(
+              leadingIcon: Icons.pie_chart,
+              titleText: context.translate('savings'),
+              subtitleText: 'HNL 5,000',
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -179,13 +223,13 @@ class _HomeBodyState extends State<HomeBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Indicator(
-          color: Colors.green,
+          color: healthyGreen,
           text: 'Incomes: ${financialData.totalIncomes}',
           isSquare: true,
         ),
         SizedBox(height: 4),
         Indicator(
-          color: Colors.red,
+          color: unhealthyRed,
           text: 'Expenses: ${financialData.totalExpenses}',
           isSquare: true,
         ),
@@ -196,7 +240,7 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   List<PieChartSectionData> showingSections(final FinancialData financialData) {
-    return List.generate(2, (final int i) {
+    return List<PieChartSectionData>.generate(2, (final int i) {
       final bool isTouched = i == touchedIndex;
       final double fontSize = isTouched ? 25.0 : 16.0;
       final double radius = isTouched ? 60.0 : 50.0;
@@ -206,7 +250,7 @@ class _HomeBodyState extends State<HomeBody> {
       switch (i) {
         case 0:
           return PieChartSectionData(
-            color: Colors.green,
+            color: healthyGreen,
             value: financialData.totalIncomes,
             title: '${financialData.totalIncomes}',
             radius: radius,
@@ -219,7 +263,7 @@ class _HomeBodyState extends State<HomeBody> {
           );
         case 1:
           return PieChartSectionData(
-            color: Colors.red,
+            color: unhealthyRed,
             value: financialData.totalExpenses,
             title: '${financialData.totalExpenses}',
             radius: radius,
@@ -241,7 +285,7 @@ class _HomeBodyState extends State<HomeBody> {
 
     final http.Response response = await http.get(
       Uri.parse(
-        'https://v6.exchangerate-api.com/v6/$apiKey/latest/USD',
+        '$apiRoute$apiKey$latestUsdRoute',
       ),
     );
 
@@ -260,11 +304,12 @@ class _HomeBodyState extends State<HomeBody> {
   }
 }
 
+//TODO: Aqui se puede testear
 FinancialData getFinancialData() {
   return FinancialData(
     totalExpensesLempiras: 3000,
-    totalExpensesDollars: 200,
+    // totalExpensesDollars: 200,
     totalIncomesLempiras: 10000,
-    totalIncomesDollars: 300,
+    // totalIncomesDollars: 300,
   );
 }

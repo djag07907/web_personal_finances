@@ -1,7 +1,7 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
-  exclude: [ test/**.mocks.dart, lib_old/**.dart, test_old/**.dart ]
+  exclude: [test/**.mocks.dart, lib_old/**.dart, test_old/**.dart]
   language:
     strict-casts: false
     strict-raw-types: true
@@ -22,4 +22,3 @@ linter:
     prefer_final_fields: true
     prefer_final_parameters: true
     always_specify_types: true
-   

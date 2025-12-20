@@ -317,7 +317,9 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
         // item.status = false;
       });
       showSnackbar(
-          context, context.translate('account_receivable_deactivated'));
+        context,
+        context.translate('account_receivable_deactivated'),
+      );
     }
   }
 }

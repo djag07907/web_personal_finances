@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:internationalization/internationalization.dart';
+import 'package:web_personal_finances/resources/colors_constants.dart';
 
 class ExpenseToIncomeBar extends StatelessWidget {
   final double totalIncomes;
@@ -18,20 +20,22 @@ class ExpenseToIncomeBar extends StatelessWidget {
     String feedbackText;
 
     if (percentage < 20) {
-      barColor = Colors.green; // Healthy
+      barColor = healthyGreen;
+      final String raw = context.translate('expenses_low');
       feedbackText =
-          'Your expenses are ${percentage.toStringAsFixed(1)}% of your income. Well done!';
+          raw.replaceAll('{percentage}', percentage.toStringAsFixed(1));
     } else if (percentage < 40) {
-      barColor = Colors.orange; // Caution
+      barColor = cautionOrange;
+      final String raw = context.translate('expenses_moderate');
       feedbackText =
-          'Your expenses are ${percentage.toStringAsFixed(1)}% of your income. Keep an eye on your spending!';
+          raw.replaceAll('{percentage}', percentage.toStringAsFixed(1));
     } else {
-      barColor = Colors.red; // Unhealthy
+      barColor = unhealthyRed;
+      final String raw = context.translate('expenses_high');
       feedbackText =
-          'Your expenses are ${percentage.toStringAsFixed(1)}% of your income. Consider reducing your expenses!';
+          raw.replaceAll('{percentage}', percentage.toStringAsFixed(1));
     }
     return Column(
-      spacing: 10.0,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
         Container(
@@ -51,6 +55,7 @@ class ExpenseToIncomeBar extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 10.0),
         Text(
           feedbackText,
           style: TextStyle(fontSize: 16),
