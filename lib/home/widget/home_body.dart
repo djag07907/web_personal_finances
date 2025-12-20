@@ -7,13 +7,19 @@ import 'package:http/http.dart' as http;
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_item.dart';
+import 'package:web_personal_finances/commons/items/bill_item.dart';
+import 'package:web_personal_finances/commons/items/transaction_item.dart';
 import 'package:web_personal_finances/home/model/financial_data.dart';
 import 'package:web_personal_finances/home/widget/expense_income_bar.dart';
-import 'package:web_personal_finances/home/widget/indicator.dart';
 import 'package:web_personal_finances/resources/api_constants.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/resources/fonts_constants.dart';
+
+part 'expense_breakdown_card.dart';
+part 'income_sources_card.dart';
+part 'recent_transactions_card.dart';
+part 'upcoming_bills_card.dart';
 
 class HomeBody extends StatefulWidget {
   const HomeBody({super.key});
@@ -28,9 +34,8 @@ class _HomeBodyState extends State<HomeBody> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    // fetchExchangeRate();
+    fetchExchangeRate();
   }
 
   @override
@@ -98,27 +103,213 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   Widget _buildCharts(final FinancialData financialData) {
-    return Column(
-      children: <Widget>[
-        _buildCustomCardItems(),
-        SizedBox(height: 10),
-        ExpenseToIncomeBar(
-          totalIncomes: financialData.totalIncomesLempiras.toDouble(),
-          totalExpenses: financialData.totalExpensesLempiras.toDouble(),
-        ),
-        SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Expanded(child: _buildPieChart(financialData)),
-            SizedBox(width: 16),
-            Expanded(child: _buildPieChart(financialData)),
+            _buildCustomCardItems(),
+            SizedBox(height: 24),
+            ExpenseToIncomeBar(
+              totalIncomes: financialData.totalIncomesLempiras.toDouble(),
+              totalExpenses: financialData.totalExpensesLempiras.toDouble(),
+            ),
+            SizedBox(height: 24),
+            _buildChartsSection(),
+            SizedBox(height: 24),
+            _buildTransactionsAndBillsSection(),
           ],
         ),
-        SizedBox(height: 10),
-        _buildIndicators(financialData),
-      ],
+      ),
     );
+  }
+
+  Widget _buildChartsSection() {
+    return LayoutBuilder(
+      builder: (final BuildContext context, final BoxConstraints constraints) {
+        final double screenWidth = constraints.maxWidth;
+        final bool isSmallScreen = screenWidth < 900;
+
+        if (isSmallScreen) {
+          return Column(
+            children: <Widget>[
+              SizedBox(
+                height: 320,
+                child: ExpenseBreakdownCard(
+                  expenseData: <String, double>{
+                    'Housing': 45.0,
+                    'Food': 25.0,
+                    'Others': 30.0,
+                  },
+                ),
+              ),
+              SizedBox(height: 16),
+              SizedBox(
+                height: 320,
+                child: IncomeSourcesCard(
+                  incomeData: <String, double>{
+                    'Salary': 60.0,
+                    'Freelance': 25.0,
+                    'Invest': 15.0,
+                  },
+                  totalIncome: 5240.0,
+                ),
+              ),
+            ],
+          );
+        }
+
+        return SizedBox(
+          height: 320,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: ExpenseBreakdownCard(
+                  expenseData: <String, double>{
+                    'Housing': 45.0,
+                    'Food': 25.0,
+                    'Others': 30.0,
+                  },
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: IncomeSourcesCard(
+                  incomeData: <String, double>{
+                    'Salary': 60.0,
+                    'Freelance': 25.0,
+                    'Invest': 15.0,
+                  },
+                  totalIncome: 5240.0,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTransactionsAndBillsSection() {
+    return LayoutBuilder(
+      builder: (final BuildContext context, final BoxConstraints constraints) {
+        final double screenWidth = constraints.maxWidth;
+        final bool isSmallScreen = screenWidth < 900;
+
+        if (isSmallScreen) {
+          return Column(
+            children: <Widget>[
+              SizedBox(
+                height: 400,
+                child: RecentTransactionsCard(
+                  transactions: _getSampleTransactions(),
+                  onViewAll: () {
+                    // TODO: Navigate to transactions page
+                  },
+                ),
+              ),
+              SizedBox(height: 16),
+              SizedBox(
+                height: 400,
+                child: UpcomingBillsCard(
+                  bills: _getSampleBills(),
+                  onAddBill: () {
+                    // TODO: Show add bill dialog
+                  },
+                ),
+              ),
+            ],
+          );
+        }
+
+        return SizedBox(
+          height: 450,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Expanded(
+                child: RecentTransactionsCard(
+                  transactions: _getSampleTransactions(),
+                  onViewAll: () {
+                    // TODO: Navigate to transactions page
+                  },
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: UpcomingBillsCard(
+                  bills: _getSampleBills(),
+                  onAddBill: () {
+                    // TODO: Show add bill dialog
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  List<TransactionItem> _getSampleTransactions() {
+    return <TransactionItem>[
+      TransactionItem(
+        title: 'Netflix Subscription',
+        category: 'Entertainment',
+        date: 'Today',
+        amount: 15.99,
+        isIncome: false,
+        icon: Icons.movie,
+        iconColor: Colors.red[600]!,
+      ),
+      TransactionItem(
+        title: 'Whole Foods Market',
+        category: 'Groceries',
+        date: 'Yesterday',
+        amount: 124.50,
+        isIncome: false,
+        icon: Icons.shopping_cart,
+        iconColor: Colors.green[600]!,
+      ),
+      TransactionItem(
+        title: 'Upwork Earnings',
+        category: 'Income',
+        date: 'Mar 20',
+        amount: 850.00,
+        isIncome: true,
+        icon: Icons.work,
+        iconColor: Colors.blue[600]!,
+      ),
+      TransactionItem(
+        title: 'Downtown Diner',
+        category: 'Food',
+        date: 'Mar 18',
+        amount: 42.80,
+        isIncome: false,
+        icon: Icons.restaurant,
+        iconColor: Colors.orange[600]!,
+      ),
+    ];
+  }
+
+  List<BillItem> _getSampleBills() {
+    return <BillItem>[
+      BillItem(
+        title: 'Electric Bill',
+        provider: 'Utility Company',
+        dueDate: '28',
+        dueMonth: 'Mar',
+        amount: 85.00,
+      ),
+      BillItem(
+        title: 'Apartment Rent',
+        provider: 'Monthly',
+        dueDate: '01',
+        dueMonth: 'Apr',
+        amount: 1200.00,
+      ),
+    ];
   }
 
   Widget _buildCustomCardItems() {
@@ -127,7 +318,6 @@ class _HomeBodyState extends State<HomeBody> {
         final double screenWidth = constraints.maxWidth;
         final bool isSmallScreen = screenWidth < 900;
 
-        // For small screens, stack cards vertically or in 2 columns
         if (isSmallScreen) {
           return Column(
             children: <Widget>[
@@ -162,7 +352,6 @@ class _HomeBodyState extends State<HomeBody> {
           );
         }
 
-        // For larger screens, show in a single row
         return Row(
           children: <Widget>[
             CustomCardItem(
@@ -184,100 +373,6 @@ class _HomeBodyState extends State<HomeBody> {
         );
       },
     );
-  }
-
-  Widget _buildPieChart(final FinancialData financialData) {
-    return SizedBox(
-      height: 200,
-      child: PieChart(
-        PieChartData(
-          pieTouchData: PieTouchData(
-            touchCallback: (
-              final FlTouchEvent event,
-              final PieTouchResponse? pieTouchResponse,
-            ) {
-              setState(() {
-                if (!event.isInterestedForInteractions ||
-                    pieTouchResponse == null ||
-                    pieTouchResponse.touchedSection == null) {
-                  touchedIndex = -1;
-                  return;
-                }
-                touchedIndex =
-                    pieTouchResponse.touchedSection!.touchedSectionIndex;
-              });
-            },
-          ),
-          borderData: FlBorderData(show: false),
-          sectionsSpace: 0,
-          centerSpaceRadius: 40,
-          sections: showingSections(financialData),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildIndicators(final FinancialData financialData) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Indicator(
-          color: healthyGreen,
-          text: 'Incomes: ${financialData.totalIncomes}',
-          isSquare: true,
-        ),
-        SizedBox(height: 4),
-        Indicator(
-          color: unhealthyRed,
-          text: 'Expenses: ${financialData.totalExpenses}',
-          isSquare: true,
-        ),
-        SizedBox(height: 4),
-        SizedBox(height: 18),
-      ],
-    );
-  }
-
-  List<PieChartSectionData> showingSections(final FinancialData financialData) {
-    return List<PieChartSectionData>.generate(2, (final int i) {
-      final bool isTouched = i == touchedIndex;
-      final double fontSize = isTouched ? 25.0 : 16.0;
-      final double radius = isTouched ? 60.0 : 50.0;
-      const List<Shadow> shadows = <Shadow>[
-        Shadow(color: black, blurRadius: 2),
-      ];
-      switch (i) {
-        case 0:
-          return PieChartSectionData(
-            color: healthyGreen,
-            value: financialData.totalIncomes,
-            title: '${financialData.totalIncomes}',
-            radius: radius,
-            titleStyle: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: black,
-              shadows: shadows,
-            ),
-          );
-        case 1:
-          return PieChartSectionData(
-            color: unhealthyRed,
-            value: financialData.totalExpenses,
-            title: '${financialData.totalExpenses}',
-            radius: radius,
-            titleStyle: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: black,
-              shadows: shadows,
-            ),
-          );
-        default:
-          throw Error();
-      }
-    });
   }
 
   Future<void> fetchExchangeRate() async {
