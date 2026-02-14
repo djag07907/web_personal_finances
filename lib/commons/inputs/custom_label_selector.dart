@@ -35,7 +35,7 @@ class CustomLabelSelector extends StatelessWidget {
             ),
           ),
           DropdownButtonFormField<String>(
-            value: selectedValue,
+            initialValue: selectedValue,
             hint: Text(
               hintText,
               style: TextStyle(

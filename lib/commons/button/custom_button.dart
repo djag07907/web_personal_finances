@@ -5,12 +5,14 @@ import 'package:web_personal_finances/resources/fonts_constants.dart';
 class CustomButton extends StatelessWidget {
   final String text;
   final bool isPrimary;
+  final bool? isAdd;
   final VoidCallback onPressed;
 
   const CustomButton({
     super.key,
     required this.text,
     required this.isPrimary,
+    this.isAdd,
     required this.onPressed,
   });
 
@@ -22,7 +24,8 @@ class CustomButton extends StatelessWidget {
         foregroundColor: isPrimary ? white : LightColors.primary,
         backgroundColor: isPrimary ? LightColors.primary : white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.0),
+          borderRadius:
+              isAdd! ? BorderRadius.circular(8.0) : BorderRadius.circular(20.0),
           side: BorderSide(
             color: LightColors.primary,
           ),
@@ -31,7 +34,7 @@ class CustomButton extends StatelessWidget {
       child: Text(
         text,
         style: TextStyle(
-          fontSize: fontSize18,
+          fontSize: isAdd! ? fontSize14 : fontSize18,
         ),
       ),
     );
