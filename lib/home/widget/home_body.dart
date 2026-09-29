@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:internationalization/internationalization.dart';
@@ -9,13 +10,17 @@ import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_item.dart';
 import 'package:web_personal_finances/commons/items/bill_item.dart';
 import 'package:web_personal_finances/commons/items/transaction_item.dart';
+import 'package:web_personal_finances/commons/layout/empty_content_widget.dart';
 import 'package:web_personal_finances/commons/loader/loader.dart';
+import 'package:web_personal_finances/home/bloc/home_bloc.dart';
+import 'package:web_personal_finances/home/bloc/home_state.dart';
 import 'package:web_personal_finances/home/model/financial_data.dart';
 import 'package:web_personal_finances/home/widget/expense_income_bar.dart';
 import 'package:web_personal_finances/resources/api_constants.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/resources/fonts_constants.dart';
+import 'package:web_personal_finances/user/model/user_model.dart';
 
 part 'expense_breakdown_card.dart';
 part 'income_sources_card.dart';
@@ -42,6 +47,11 @@ class _HomeBodyState extends State<HomeBody> {
   @override
   Widget build(final BuildContext context) {
     final FinancialData financialData = getFinancialData();
+    final HomeState homeState = context.watch<HomeBloc>().state;
+    final UserModel? profile = homeState is HomeLoaded
+        ? homeState.profile
+        : null;
+
     return Stack(
       children: <Widget>[
         Column(
@@ -51,7 +61,7 @@ class _HomeBodyState extends State<HomeBody> {
               child: CustomCardBody(
                 isMain: true,
                 title: context.translate('home'),
-                body: _buildCharts(financialData),
+                body: _buildCharts(financialData, profile),
               ),
             ),
             if (!isLoading)
@@ -70,7 +80,7 @@ class _HomeBodyState extends State<HomeBody> {
               ),
           ],
         ),
-        if (isLoading) const Loader(),
+        if (isLoading || homeState is HomeLoading) const Loader(),
       ],
     );
   }
@@ -78,15 +88,26 @@ class _HomeBodyState extends State<HomeBody> {
   Widget _buildHeader(final BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final HomeState homeState = context.watch<HomeBloc>().state;
+    final String displayName = homeState is HomeLoaded
+        ? (homeState.profile.fullName.isNotEmpty
+              ? homeState.profile.fullName
+              : homeState.profile.email)
+        : emptyString;
+
+    final String greeting = displayName.isNotEmpty
+        ? 'Welcome back, $displayName'
+        : 'Welcome back';
+
     return Align(
       alignment: Alignment.topRight,
       child: Container(
         height: 50.0,
-        margin: EdgeInsets.only(top: 10.0),
+        margin: const EdgeInsets.only(top: 10.0),
         width: MediaQuery.of(context).size.width * 0.45,
         decoration: BoxDecoration(
           color: isDark ? DarkColors.primary : LightColors.primary,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(300.0),
             bottomLeft: Radius.circular(300.0),
           ),
@@ -102,7 +123,7 @@ class _HomeBodyState extends State<HomeBody> {
         ),
         child: Center(
           child: Text(
-            welcomeMessage,
+            greeting,
             style: Theme.of(context).textTheme.headlineMedium!.copyWith(
               fontSize: fontSize24,
               color: white,
@@ -113,34 +134,52 @@ class _HomeBodyState extends State<HomeBody> {
     );
   }
 
-  Widget _buildCharts(final FinancialData financialData) {
+  Widget _buildCharts(
+    final FinancialData financialData,
+    final UserModel? profile,
+  ) {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            _buildCustomCardItems(),
-            SizedBox(height: 24),
+            _buildCustomCardItems(profile),
+            const SizedBox(height: 24),
             ExpenseToIncomeBar(
               totalIncomes: financialData.totalIncomesLempiras.toDouble(),
               totalExpenses: financialData.totalExpensesLempiras.toDouble(),
             ),
-            SizedBox(height: 24),
-            _buildChartsSection(),
-            SizedBox(height: 24),
-            _buildTransactionsAndBillsSection(),
+            const SizedBox(height: 24),
+            _buildChartsSection(profile),
+            const SizedBox(height: 24),
+            _buildTransactionsAndBillsSection(profile),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildChartsSection() {
+  Widget _buildChartsSection(final UserModel? profile) {
+    // No real data yet → show empty state.
+    final bool hasNoData = profile == null;
+
     return LayoutBuilder(
       builder: (final BuildContext context, final BoxConstraints constraints) {
         final double screenWidth = constraints.maxWidth;
         final bool isSmallScreen = screenWidth < 900;
+
+        if (hasNoData) {
+          return SizedBox(
+            height: 320,
+            child: EmptyContentWidget(
+              icon: Icons.bar_chart_rounded,
+              title: 'No chart data yet',
+              subtitle:
+                  'Start recording your incomes and expenses to see your financial breakdown here.',
+            ),
+          );
+        }
 
         if (isSmallScreen) {
           return Column(
@@ -155,7 +194,7 @@ class _HomeBodyState extends State<HomeBody> {
                   },
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               SizedBox(
                 height: 320,
                 child: IncomeSourcesCard(
@@ -184,7 +223,7 @@ class _HomeBodyState extends State<HomeBody> {
                   },
                 ),
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Expanded(
                 child: IncomeSourcesCard(
                   incomeData: <String, double>{
@@ -202,11 +241,25 @@ class _HomeBodyState extends State<HomeBody> {
     );
   }
 
-  Widget _buildTransactionsAndBillsSection() {
+  Widget _buildTransactionsAndBillsSection(final UserModel? profile) {
+    final bool hasNoData = profile == null;
+
     return LayoutBuilder(
       builder: (final BuildContext context, final BoxConstraints constraints) {
         final double screenWidth = constraints.maxWidth;
         final bool isSmallScreen = screenWidth < 900;
+
+        if (hasNoData) {
+          return SizedBox(
+            height: 280,
+            child: EmptyContentWidget(
+              icon: Icons.receipt_long_outlined,
+              title: 'No transactions yet',
+              subtitle:
+                  'Your recent transactions and upcoming bills will appear here once you start recording.',
+            ),
+          );
+        }
 
         if (isSmallScreen) {
           return Column(
@@ -215,19 +268,15 @@ class _HomeBodyState extends State<HomeBody> {
                 height: 400,
                 child: RecentTransactionsCard(
                   transactions: _getSampleTransactions(),
-                  onViewAll: () {
-                    // TODO: Navigate to transactions page
-                  },
+                  onViewAll: () {},
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               SizedBox(
                 height: 400,
                 child: UpcomingBillsCard(
                   bills: _getSampleBills(),
-                  onAddBill: () {
-                    // TODO: Show add bill dialog
-                  },
+                  onAddBill: () {},
                 ),
               ),
             ],
@@ -242,18 +291,14 @@ class _HomeBodyState extends State<HomeBody> {
               Expanded(
                 child: RecentTransactionsCard(
                   transactions: _getSampleTransactions(),
-                  onViewAll: () {
-                    // TODO: Navigate to transactions page
-                  },
+                  onViewAll: () {},
                 ),
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Expanded(
                 child: UpcomingBillsCard(
                   bills: _getSampleBills(),
-                  onAddBill: () {
-                    // TODO: Show add bill dialog
-                  },
+                  onAddBill: () {},
                 ),
               ),
             ],
@@ -323,11 +368,19 @@ class _HomeBodyState extends State<HomeBody> {
     ];
   }
 
-  Widget _buildCustomCardItems() {
+  Widget _buildCustomCardItems(final UserModel? profile) {
+    final bool hasNoData = profile == null;
+
     return LayoutBuilder(
       builder: (final BuildContext context, final BoxConstraints constraints) {
         final double screenWidth = constraints.maxWidth;
         final bool isSmallScreen = screenWidth < 900;
+
+        final String currencyLabel = profile?.primaryCurrency ?? hnlCurrency;
+
+        final String incomesLabel = hasNoData ? '--' : '$currencyLabel 10,000';
+        final String expensesLabel = hasNoData ? '--' : '$currencyLabel 5,000';
+        final String savingsLabel = hasNoData ? '--' : '$currencyLabel 5,000';
 
         if (isSmallScreen) {
           return Column(
@@ -337,12 +390,12 @@ class _HomeBodyState extends State<HomeBody> {
                   CustomCardItem(
                     leadingIcon: Icons.attach_money,
                     titleText: context.translate('total_incomes'),
-                    subtitleText: 'HNL 10,000',
+                    subtitleText: incomesLabel,
                   ),
                   CustomCardItem(
                     leadingIcon: Icons.money_off,
                     titleText: context.translate('total_expenses'),
-                    subtitleText: 'HNL 5,000',
+                    subtitleText: expensesLabel,
                   ),
                 ],
               ),
@@ -351,9 +404,9 @@ class _HomeBodyState extends State<HomeBody> {
                   CustomCardItem(
                     leadingIcon: Icons.pie_chart,
                     titleText: context.translate('savings'),
-                    subtitleText: 'HNL 5,000',
+                    subtitleText: savingsLabel,
                   ),
-                  Flexible(fit: FlexFit.tight, child: SizedBox.shrink()),
+                  const Flexible(fit: FlexFit.tight, child: SizedBox.shrink()),
                 ],
               ),
             ],
@@ -365,17 +418,17 @@ class _HomeBodyState extends State<HomeBody> {
             CustomCardItem(
               leadingIcon: Icons.attach_money,
               titleText: context.translate('total_incomes'),
-              subtitleText: 'HNL 10,000',
+              subtitleText: incomesLabel,
             ),
             CustomCardItem(
               leadingIcon: Icons.money_off,
               titleText: context.translate('total_expenses'),
-              subtitleText: 'HNL 5,000',
+              subtitleText: expensesLabel,
             ),
             CustomCardItem(
               leadingIcon: Icons.pie_chart,
               titleText: context.translate('savings'),
-              subtitleText: 'HNL 5,000',
+              subtitleText: savingsLabel,
             ),
           ],
         );
@@ -391,7 +444,8 @@ class _HomeBodyState extends State<HomeBody> {
     );
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      final Map<String, dynamic> data =
+          json.decode(response.body) as Map<String, dynamic>;
       setState(() {
         exchangeRate = data['conversion_rates']['HNL'];
         isLoading = false;
