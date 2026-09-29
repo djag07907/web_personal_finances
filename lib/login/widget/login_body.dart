@@ -1,18 +1,17 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web_personal_finances/commons/dialog/custom_status_dialog.dart';
+import 'package:web_personal_finances/commons/enum/status_dialog_types.dart';
 import 'package:web_personal_finances/commons/loader/loader.dart';
 import 'package:web_personal_finances/login/bloc/login_bloc.dart';
 import 'package:web_personal_finances/login/bloc/login_event.dart';
 import 'package:web_personal_finances/login/bloc/login_state.dart';
-import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/routes/landing_routes.dart';
-import 'package:web_personal_finances/user/model/user_model.dart';
 
 class LoginBody extends StatefulWidget {
   const LoginBody({super.key});
@@ -41,27 +40,6 @@ class _LoginBodyState extends State<LoginBody> {
     super.dispose();
   }
 
-  Future<void> _checkUserOnboarded(final BuildContext context) async {
-    final User? currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      final UserRepository userRepository = context.read<UserRepository>();
-      final UserModel? userModel = await userRepository.getUser(
-        currentUser.uid,
-      );
-      if (context.mounted) {
-        if (userModel != null && userModel.isOnboarded) {
-          context.go(homeRoute);
-        } else {
-          context.go(onboardingRoute);
-        }
-      }
-    } else {
-      if (context.mounted) {
-        context.go(homeRoute);
-      }
-    }
-  }
-
   @override
   Widget build(final BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
@@ -75,16 +53,16 @@ class _LoginBodyState extends State<LoginBody> {
           body: BlocListener<LoginBloc, LoginState>(
             listener: (final BuildContext context, final LoginState state) {
               if (state is LoginError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    backgroundColor: redAlert,
-                    content: Text('Login Failed: ${state.error}'),
-                  ),
+                CustomStatusDialog.show(
+                  context,
+                  type: StatusDialogType.error,
+                  title: 'Sign-in Failed',
+                  message: state.error,
+                  dismissLabel: 'Try Again',
                 );
               }
-              if (state is LoginSuccess) {
-                _checkUserOnboarded(context);
-              }
+              // LoginSuccess: navigation is handled by the router redirect
+              // via AppAuthNotifier — no manual context.go needed here.
             },
             child: LayoutBuilder(
               builder:

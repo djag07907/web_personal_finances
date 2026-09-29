@@ -85,9 +85,7 @@ class _SignUpBodyState extends State<SignUpBody> {
                   dismissLabel: 'Try Again',
                 );
               }
-              if (state is SignUpSuccess) {
-                context.go(onboardingRoute);
-              }
+              // SignUpSuccess: router redirect via AppAuthNotifier handles navigation.
             },
             child: LayoutBuilder(
               builder:

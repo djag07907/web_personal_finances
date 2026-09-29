@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:internationalization/internationalization.dart';
+import 'package:web_personal_finances/commons/bloc/app_auth_notifier.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/calendar/calendar_widget.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
@@ -14,7 +14,6 @@ import 'package:web_personal_finances/onboarding/bloc/onboarding_event.dart';
 import 'package:web_personal_finances/onboarding/bloc/onboarding_state.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
-import 'package:web_personal_finances/routes/landing_routes.dart';
 import 'package:web_personal_finances/user/model/user_model.dart';
 
 class OnboardingBody extends StatefulWidget {
@@ -109,7 +108,9 @@ class _OnboardingBodyState extends State<OnboardingBody> {
       listener: (final BuildContext context, final OnboardingState state) {
         if (state is OnboardingSuccess) {
           showSnackbar(context, context.translate('income_saved_successfully'));
-          context.go(homeRoute);
+          // Refresh the notifier so GoRouter's redirect picks up
+          // isOnboarded == true and navigates to home automatically.
+          context.read<AppAuthNotifier>().refreshProfile();
         } else if (state is OnboardingFailure) {
           showSnackbar(context, state.errorMessage);
         }
