@@ -28,6 +28,8 @@ class CustomCardBody extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       clipBehavior: Clip.hardEdge,
       margin: const EdgeInsets.only(
@@ -36,9 +38,7 @@ class CustomCardBody extends StatelessWidget {
         right: 50.0,
         bottom: 20.0,
       ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30.0),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30.0)),
       child: Column(
         children: <Widget>[
           Visibility(
@@ -56,7 +56,7 @@ class CustomCardBody extends StatelessWidget {
           SizedBox(height: 10.0),
           Expanded(
             child: Container(
-              color: white,
+              color: isDark ? DarkColors.surface : white,
               width: double.infinity,
               padding: const EdgeInsets.symmetric(
                 vertical: 20.0,

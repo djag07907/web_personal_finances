@@ -17,25 +17,22 @@ part 'side_menu.dart';
 class MenuBody extends StatelessWidget {
   final Widget body;
 
-  const MenuBody({
-    super.key,
-    required this.body,
-  });
+  const MenuBody({super.key, required this.body});
 
   @override
   Widget build(final BuildContext context) {
     return Stack(
       children: <Widget>[
+        // Dark background base
+        Positioned.fill(child: Container(color: darkBackgroundColor)),
         Positioned.fill(
           child: Row(
             children: <Widget>[
-              SideMenuWidget(),
+              const RepaintBoundary(child: SideMenuWidget()),
               Expanded(
                 child: Stack(
                   fit: StackFit.expand,
-                  children: <Widget>[
-                    body,
-                  ],
+                  children: <Widget>[RepaintBoundary(child: body)],
                 ),
               ),
             ],

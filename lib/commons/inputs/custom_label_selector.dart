@@ -21,6 +21,8 @@ class CustomLabelSelector extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 15.0),
       child: Column(
@@ -32,6 +34,7 @@ class CustomLabelSelector extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
+              color: isDark ? DarkColors.textPrimary : null,
             ),
           ),
           DropdownButtonFormField<String>(
@@ -40,25 +43,41 @@ class CustomLabelSelector extends StatelessWidget {
               hintText,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[400],
+                color: isDark ? DarkColors.textSecondary : Colors.grey[400],
               ),
             ),
+            dropdownColor: isDark ? DarkColors.surface : white,
+            style: TextStyle(color: isDark ? DarkColors.textPrimary : null),
             items: items.map((final String item) {
-              return DropdownMenuItem<String>(
-                value: item,
-                child: Text(item),
-              );
+              return DropdownMenuItem<String>(value: item, child: Text(item));
             }).toList(),
             onChanged: onChanged,
             validator: validator,
             decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15.0),
+                borderSide: BorderSide(
+                  color: isDark ? DarkColors.border : Colors.grey.shade400,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15.0),
+                borderSide: BorderSide(
+                  color: isDark ? DarkColors.border : Colors.grey.shade400,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15.0),
+                borderSide: BorderSide(
+                  color: isDark ? DarkColors.primary : LightColors.primary,
+                  width: 2,
+                ),
               ),
               filled: true,
-              fillColor: white,
+              fillColor: isDark ? DarkColors.surface : white,
               suffixIcon: Icon(
                 Icons.arrow_drop_down,
+                color: isDark ? DarkColors.textSecondary : null,
               ),
             ),
           ),

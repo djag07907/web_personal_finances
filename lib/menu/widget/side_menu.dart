@@ -12,12 +12,9 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
   final List<SideMenuItemData> _options = <SideMenuItemData>[];
   int _currentPage = emptyInt;
   bool _isCollapsed = true;
+  bool _isHoveringLogout = false;
   final List<MenuOptions> _navItems = <MenuOptions>[
-    MenuOptions(
-      title: 'home',
-      icon: Icons.home,
-      pagePath: homeRoute,
-    ),
+    MenuOptions(title: 'home', icon: Icons.home, pagePath: homeRoute),
     MenuOptions(
       title: 'incomes',
       icon: Icons.trending_up,
@@ -38,18 +35,15 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
       icon: Icons.request_quote,
       pagePath: accountsReceivableRoute,
     ),
-    MenuOptions(
-      title: 'savings',
-      icon: Icons.savings,
-      pagePath: savingsRoute,
-    ),
+    MenuOptions(title: 'savings', icon: Icons.savings, pagePath: savingsRoute),
   ];
   double get _menuHeight {
-    return _isCollapsed ? 440.0 : MediaQuery.of(context).size.height;
+    return _isCollapsed ? 530.0 : MediaQuery.of(context).size.height;
   }
 
   @override
   Widget build(final BuildContext context) {
+    final String currentLocation = GoRouterState.of(context).uri.path;
     return MouseRegion(
       onEnter: (final PointerEvent event) {
         setState(() {
@@ -71,12 +65,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
             topRight: Radius.circular(20.0),
             bottomRight: Radius.circular(20.0),
           ),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              blurRadius: 4,
-              color: black.withValues(alpha: 0.25),
-            ),
-          ],
+          boxShadow: <BoxShadow>[BoxShadow(blurRadius: 4, color: shadowLight)],
         ),
         child: SideMenu(
           minWidth: 80.0,
@@ -85,7 +74,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
           hasResizerToggle: false,
           mode: SideMenuMode.compact,
           controller: _menuController,
-          backgroundColor: white,
+          backgroundColor: surfaceDark,
           builder: (final SideMenuBuilderData data) {
             return SideMenuData(
               header: Padding(
@@ -93,73 +82,76 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                 child: Column(
                   spacing: 16.0,
                   children: <Widget>[
-                    CircularImageBorder(
-                      minHeight: 95.0,
-                      minWidth: 95.0,
-                      imagePath: '${imagePath}logo.jpg',
+                    Container(
+                      width: 95,
+                      height: 95,
+                      decoration: BoxDecoration(
+                        color: transparent,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: primaryColor, width: 2),
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                            color: primaryColor.withValues(alpha: 0.25),
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: CircularImageBorder(
+                          minHeight: 85.0,
+                          minWidth: 85.0,
+                          imagePath: '${imagePath}logo.jpg',
+                        ),
+                      ),
                     ),
                     _isCollapsed
                         ? const SizedBox.shrink()
                         : Text(
                             'Daniel Alvarez',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge!
+                            style: Theme.of(context).textTheme.titleLarge!
                                 .copyWith(
                                   fontSize: fontSize20,
-                                  color: LightColors.primary,
+                                  color: white,
                                   fontWeight: FontWeight.bold,
                                 ),
                           ),
-                    // Text(
-                    //   _isCollapsed ? emptyString : 'Daniel Alvarez',
-                    //   style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    //         fontSize: _isCollapsed ? zeroFontSize : fontSize20,
-                    //         color: LightColors.primary,
-                    //         fontWeight: FontWeight.bold,
-                    //       ),
-                    // ),
                   ],
                 ),
               ),
-              items: _buildMenuItems(context),
+              items: _buildMenuItems(currentLocation),
               footer: Visibility(
                 visible: !_isCollapsed,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Text(
-                    'Financings Manager v1.0.0',
-                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                          color: LightColors.textSecondary,
-                        ),
+                    'Pecunia v1.0.0',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall!.copyWith(color: textSecondaryDark),
                   ),
                 ),
               ),
               defaultTileData: SideMenuItemTileDefaults(
-                hoverColor: LightColors.primary.withValues(alpha: 0.6),
-                decoration: BoxDecoration(
+                hoverColor: white.withValues(alpha: 0.5),
+                decoration: const BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(22.5),
                     bottomRight: Radius.circular(22.5),
                   ),
                 ),
                 selectedDecoration: BoxDecoration(
-                  color: _isCollapsed
-                      ? white
-                      : LightColors.primary.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.only(
+                  color: white,
+                  borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(22.5),
                     bottomRight: Radius.circular(22.5),
                   ),
                 ),
-                titleStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                      color: LightColors.textSecondary,
-                    ),
-                selectedTitleStyle:
-                    Theme.of(context).textTheme.bodyLarge!.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: white,
-                        ),
+                titleStyle: Theme.of(
+                  context,
+                ).textTheme.bodyLarge!.copyWith(color: textMedium),
+                selectedTitleStyle: Theme.of(context).textTheme.bodyLarge!
+                    .copyWith(fontWeight: FontWeight.w700, color: primaryColor),
               ),
             );
           },
@@ -168,20 +160,22 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
     );
   }
 
-  List<SideMenuItemData> _buildMenuItems(final BuildContext context) {
-    if (_options.isNotEmpty) return _options;
+  List<SideMenuItemData> _buildMenuItems(final String currentLocation) {
+    _options.clear();
+
     for (MenuOptions item in _navItems) {
       final int index = _navItems.indexOf(item);
+      final bool isSelected = item.pagePath == homeRoute
+          ? currentLocation == homeRoute
+          : currentLocation.startsWith(item.pagePath);
+
       _options.add(
         SideMenuItemDataTile(
           hasSelectedLine: false,
           title: context.translate(item.title),
-          isSelected: _currentPage == index,
+          isSelected: isSelected,
           icon: Icon(item.icon),
-          selectedIcon: Icon(
-            item.icon,
-            color: LightColors.primary,
-          ),
+          selectedIcon: Icon(item.icon, color: primaryColor),
           onTap: () => _handleNavigationMenu(
             routePath: item.pagePath,
             page: index,
@@ -190,54 +184,70 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
         ),
       );
     }
+
     _options.add(
       SideMenuItemDataDivider(
-        divider: SizedBox(
-          height: 100.0,
-        ),
+        divider: SizedBox(height: _isCollapsed ? 20.0 : 100.0),
       ),
     );
-    _options.addAll(<SideMenuItemData>[
-      SideMenuItemDataTile(
-        onTap: () {
-          //TODO: Implement theme change
-        },
-        isSelected: false,
-        hasSelectedLine: false,
-        hoverColor: LightColors.primary.withValues(alpha: 0.6),
-        title: context.translate('change_theme'),
-        icon: Icon(
-          Icons.dark_mode,
-          color: LightColors.textSecondary,
-        ),
-      ),
+
+    final bool isProfileSelected = currentLocation.startsWith(profileRoute);
+
+    _options.add(
       SideMenuItemDataTile(
         onTap: () {
           context.go(profileRoute);
         },
-        isSelected: false,
+        isSelected: isProfileSelected,
         hasSelectedLine: false,
-        hoverColor: LightColors.primary.withValues(alpha: 0.6),
+        hoverColor: white.withValues(alpha: 0.5),
         title: context.translate('profile'),
-        icon: CircularImageBorder(
-          minHeight: 50.0,
-          minWidth: 50.0,
-          labelImage: context.translate('Daniel Alvarez'),
-          borderWidth: 3,
+        icon: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isProfileSelected
+                ? primaryColor.withValues(alpha: 0.4)
+                : primaryColor.withValues(alpha: 0.2),
+            border: Border.all(
+              color: isProfileSelected ? white : primaryColor,
+              width: 3,
+            ),
+          ),
+          child: ClipOval(
+            child: Icon(
+              Icons.person,
+              color: isProfileSelected ? white : primaryColor,
+            ),
+          ),
         ),
       ),
-      SideMenuItemDataTile(
-        onTap: _handleLogout,
-        isSelected: false,
-        hasSelectedLine: false,
-        hoverColor: LightColors.primary.withValues(alpha: 0.6),
-        title: context.translate('logout'),
-        icon: Icon(
-          Icons.logout_outlined,
-          color: LightColors.textSecondary,
+    );
+
+    if (!_isCollapsed) {
+      _options.add(
+        SideMenuItemDataTile(
+          onTap: _handleLogout,
+          isSelected: false,
+          hasSelectedLine: false,
+          hoverColor: redAccentColor.withValues(alpha: 0.6),
+          title: context.translate('logout'),
+          titleStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
+            color: _isHoveringLogout ? white : textMedium,
+          ),
+          icon: IconTheme(
+            data: IconThemeData(color: _isHoveringLogout ? white : textMedium),
+            child: const Icon(Icons.logout_outlined),
+          ),
+          tooltipBuilder: (final Widget tile) => MouseRegion(
+            onEnter: (_) => setState(() => _isHoveringLogout = true),
+            onExit: (_) => setState(() => _isHoveringLogout = false),
+            child: tile,
+          ),
         ),
-      ),
-    ]);
+      );
+    }
 
     return _options;
   }
@@ -247,9 +257,12 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
     required final int page,
     required final BuildContext context,
   }) {
-    setState(() => _currentPage = page);
-    _options.clear();
-    context.go(routePath);
+    if (_currentPage != page) {
+      setState(() => _currentPage = page);
+    }
+    if (mounted) {
+      context.go(routePath);
+    }
   }
 
   Future<void> _handleLogout() async {

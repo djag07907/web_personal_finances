@@ -11,6 +11,8 @@ class CustomConfirmationDialog {
     required final void Function()? onPrimaryButtonTap,
     final void Function()? onSecondaryButtonTap,
   }) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (final BuildContext context) {
@@ -18,16 +20,15 @@ class CustomConfirmationDialog {
           clipBehavior: Clip.none,
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(
-                20.0,
-              ),
-              color: LightColors.background,
+              borderRadius: BorderRadius.circular(20.0),
+              color: isDark ? DarkColors.surface : LightColors.background,
+              border: isDark
+                  ? Border.all(color: DarkColors.border, width: 1)
+                  : null,
             ),
             width: 440.0,
             height: 415.0,
-            constraints: BoxConstraints(
-              maxWidth: 550.0,
-            ),
+            constraints: BoxConstraints(maxWidth: 550.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               spacing: 25.0,
@@ -47,9 +48,9 @@ class CustomConfirmationDialog {
                   confirmationText,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        color: greyHard,
-                        fontWeight: FontWeight.w400,
-                      ),
+                    color: isDark ? DarkColors.textSecondary : greyHard,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,

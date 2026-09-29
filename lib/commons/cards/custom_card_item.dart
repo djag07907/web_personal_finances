@@ -48,7 +48,7 @@ class CustomCardItem extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
             side: BorderSide(
-              color: LightColors.primary,
+              color: isDark ? DarkColors.border : LightColors.primary,
               width: 1.0,
             ),
           ),
@@ -65,7 +65,7 @@ class CustomCardItem extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.all(iconPadding),
                   decoration: BoxDecoration(
-                    color: LightColors.primary,
+                    color: isDark ? DarkColors.primary : LightColors.primary,
                     shape: BoxShape.circle,
                   ),
                   child: Builder(
@@ -77,11 +77,7 @@ class CustomCardItem extends StatelessWidget {
                           height: iconSize,
                         );
                       } else if (leadingIcon != null) {
-                        return Icon(
-                          leadingIcon,
-                          color: white,
-                          size: iconSize,
-                        );
+                        return Icon(leadingIcon, color: white, size: iconSize);
                       }
                       return Icon(
                         Icons.warning_amber_outlined,
@@ -104,12 +100,12 @@ class CustomCardItem extends StatelessWidget {
                         maxLines: isExtraSmall ? 1 : 2,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                              color: isDark
-                                  ? DarkColors.textPrimary
-                                  : LightColors.textPrimary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: isExtraSmall ? 12 : (isSmall ? 13 : 14),
-                            ),
+                          color: isDark
+                              ? DarkColors.textPrimary
+                              : LightColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: isExtraSmall ? 12 : (isSmall ? 13 : 14),
+                        ),
                       ),
                       SizedBox(height: 4),
                       Text(
@@ -117,12 +113,12 @@ class CustomCardItem extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                              color: isDark
-                                  ? DarkColors.textSecondary
-                                  : LightColors.textSecondary,
-                              fontSize: isExtraSmall ? 11 : (isSmall ? 12 : 13),
-                              fontWeight: FontWeight.w500,
-                            ),
+                          color: isDark
+                              ? DarkColors.textSecondary
+                              : LightColors.textSecondary,
+                          fontSize: isExtraSmall ? 11 : (isSmall ? 12 : 13),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),

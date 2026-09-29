@@ -49,14 +49,17 @@ class _CustomChipTagState extends State<CustomChipTag> {
 
   @override
   Widget build(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
           widget.label,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
+            color: isDark ? DarkColors.textPrimary : null,
           ),
         ),
         const SizedBox(height: 8),
@@ -67,16 +70,11 @@ class _CustomChipTagState extends State<CustomChipTag> {
               .map(
                 (final String tag) => Chip(
                   label: Text(tag),
-                  labelStyle: const TextStyle(
-                    color: white,
-                  ),
-                  deleteIcon: const Icon(
-                    Icons.close,
-                    color: white,
-                  ),
-                  backgroundColor: LightColors.primary.withValues(
-                    alpha: 20,
-                  ),
+                  labelStyle: const TextStyle(color: white),
+                  deleteIcon: const Icon(Icons.close, color: white),
+                  backgroundColor:
+                      (isDark ? DarkColors.primary : LightColors.primary)
+                          .withValues(alpha: 0.8),
                   onDeleted: () => _removeTag(tag),
                 ),
               )
@@ -84,22 +82,41 @@ class _CustomChipTagState extends State<CustomChipTag> {
         ),
         const SizedBox(height: 8),
         Padding(
-          padding: const EdgeInsets.only(
-            bottom: 10.0,
-          ),
+          padding: const EdgeInsets.only(bottom: 10.0),
           child: TextField(
             controller: _tagController,
+            style: TextStyle(color: isDark ? DarkColors.textPrimary : null),
             decoration: InputDecoration(
               hintText: widget.hintText,
-              fillColor: white,
+              hintStyle: TextStyle(
+                color: isDark ? DarkColors.textSecondary : null,
+              ),
+              fillColor: isDark ? DarkColors.surface : white,
               suffixIcon: IconButton(
-                icon: const Icon(Icons.add),
-                onPressed: () => _addTag(
-                  _tagController.text,
+                icon: Icon(
+                  Icons.add,
+                  color: isDark ? DarkColors.primary : null,
                 ),
+                onPressed: () => _addTag(_tagController.text),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark ? DarkColors.border : Colors.grey.shade400,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark ? DarkColors.border : Colors.grey.shade400,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark ? DarkColors.primary : LightColors.primary,
+                  width: 2,
+                ),
               ),
               filled: true,
             ),

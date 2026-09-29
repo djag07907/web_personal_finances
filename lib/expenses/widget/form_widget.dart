@@ -44,10 +44,14 @@ class _FormWidgetState extends State<FormWidget> {
 
   @override
   Widget build(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: 400,
       decoration: BoxDecoration(
-        color: white,
+        color: isDark ? DarkColors.surface : white,
+        borderRadius: BorderRadius.circular(12.0),
+        border: isDark ? Border.all(color: DarkColors.border, width: 1) : null,
       ),
       padding: const EdgeInsets.all(16.0),
       margin: EdgeInsets.all(20.0),
@@ -112,10 +116,7 @@ class _FormWidgetState extends State<FormWidget> {
                   return null;
                 },
                 selectedValue: selectedCurrency,
-                items: <String>[
-                  'USD',
-                  'HNL',
-                ],
+                items: <String>['USD', 'HNL'],
                 onChanged: (final String? value) {
                   setState(() {
                     selectedCurrency = value;
@@ -125,12 +126,8 @@ class _FormWidgetState extends State<FormWidget> {
               CustomLabelInput(
                 label: context.translate('amount'),
                 hintText: context.translate('enter_amount'),
-                keyboardType: TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: <MoneyInputFormatter>[
-                  MoneyInputFormatter(),
-                ],
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: <MoneyInputFormatter>[MoneyInputFormatter()],
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
                     return context.translate('please_enter_an_amount');
@@ -142,9 +139,7 @@ class _FormWidgetState extends State<FormWidget> {
               CustomLabelInput(
                 label: context.translate('date_to_receive'),
                 hintText: context.translate('enter_due_date'),
-                keyboardType: TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
                 isCalendar: true,
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
@@ -154,9 +149,7 @@ class _FormWidgetState extends State<FormWidget> {
                 },
                 controller: _dateDueController,
               ),
-              SizedBox(
-                height: 20.0,
-              ),
+              SizedBox(height: 20.0),
               Row(
                 spacing: 15.0,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -181,13 +174,13 @@ class _FormWidgetState extends State<FormWidget> {
                           final ExpenseItem newItem = ExpenseItem(
                             id: widget.isEdit
                                 ? widget.expenseItem!.id
-                                : DateTime.now()
-                                    .millisecondsSinceEpoch
-                                    .toString(),
+                                : DateTime.now().millisecondsSinceEpoch
+                                      .toString(),
                             name: _nameController.text,
                             comment: _commentController.text,
                             currency: selectedCurrency!,
-                            amount: double.tryParse(
+                            amount:
+                                double.tryParse(
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,

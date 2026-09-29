@@ -45,10 +45,14 @@ class _FormWidgetState extends State<FormWidget> {
 
   @override
   Widget build(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: 400,
       decoration: BoxDecoration(
-        color: white,
+        color: isDark ? DarkColors.surface : white,
+        borderRadius: BorderRadius.circular(12.0),
+        border: isDark ? Border.all(color: DarkColors.border, width: 1) : null,
       ),
       padding: const EdgeInsets.all(16.0),
       margin: EdgeInsets.all(20.0),
@@ -113,10 +117,7 @@ class _FormWidgetState extends State<FormWidget> {
                   return null;
                 },
                 selectedValue: selectedCurrency,
-                items: <String>[
-                  'USD',
-                  'HNL',
-                ],
+                items: <String>['USD', 'HNL'],
                 onChanged: (final String? value) {
                   setState(() {
                     selectedCurrency = value;
@@ -126,12 +127,8 @@ class _FormWidgetState extends State<FormWidget> {
               CustomLabelInput(
                 label: context.translate('amount'),
                 hintText: context.translate('enter_amount'),
-                keyboardType: TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: <MoneyInputFormatter>[
-                  MoneyInputFormatter(),
-                ],
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: <MoneyInputFormatter>[MoneyInputFormatter()],
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
                     return context.translate('please_enter_amount');
@@ -143,12 +140,8 @@ class _FormWidgetState extends State<FormWidget> {
               CustomLabelInput(
                 label: context.translate('goal_amount'),
                 hintText: context.translate('enter_goal_amount'),
-                keyboardType: TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: <MoneyInputFormatter>[
-                  MoneyInputFormatter(),
-                ],
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: <MoneyInputFormatter>[MoneyInputFormatter()],
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
                     return context.translate('please_enter_goal_amount');
@@ -157,9 +150,7 @@ class _FormWidgetState extends State<FormWidget> {
                 },
                 controller: _goalAmountController,
               ),
-              SizedBox(
-                height: 20.0,
-              ),
+              SizedBox(height: 20.0),
               Row(
                 spacing: 15.0,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -184,19 +175,22 @@ class _FormWidgetState extends State<FormWidget> {
                           final SavingItem newItem = SavingItem(
                             id: widget.isEdit
                                 ? widget.savingItem!.id
-                                : DateTime.now()
-                                    .millisecondsSinceEpoch
-                                    .toString(),
+                                : DateTime.now().millisecondsSinceEpoch
+                                      .toString(),
                             name: _nameController.text,
                             comment: _commentController.text,
                             currency: selectedCurrency!,
-                            amount: double.tryParse(
+                            amount:
+                                double.tryParse(
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,
-                            goalAmount: double.tryParse(
-                                  _goalAmountController.text
-                                      .replaceAll(',', ''),
+                            goalAmount:
+                                double.tryParse(
+                                  _goalAmountController.text.replaceAll(
+                                    ',',
+                                    '',
+                                  ),
                                 ) ??
                                 0,
                             isGoalReached: true,

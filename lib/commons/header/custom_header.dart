@@ -26,9 +26,7 @@ class CustomHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(
-    final BuildContext context,
-  ) {
+  Widget build(final BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isSmallScreen = screenWidth < 900;
@@ -57,12 +55,12 @@ class CustomHeader extends StatelessWidget {
                         children: <Widget>[
                           Text(
                             title.toUpperCase(),
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineLarge!
+                            style: Theme.of(context).textTheme.headlineLarge!
                                 .copyWith(
                                   fontSize: fontSize22,
-                                  color: LightColors.primary,
+                                  color: isDark
+                                      ? DarkColors.primary
+                                      : LightColors.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                           ),
@@ -107,9 +105,7 @@ class CustomHeader extends StatelessWidget {
                 // Back button
                 Visibility(
                   visible: !isMenu,
-                  child: CustomBackButton(
-                    fnOnPressButton: () => context.pop(),
-                  ),
+                  child: CustomBackButton(fnOnPressButton: () => context.pop()),
                 ),
                 // Title and description
                 Expanded(
@@ -120,12 +116,14 @@ class CustomHeader extends StatelessWidget {
                       Text(
                         title.toUpperCase(),
                         textAlign: TextAlign.start,
-                        style:
-                            Theme.of(context).textTheme.headlineLarge!.copyWith(
-                                  fontSize: fontSize22,
-                                  color: LightColors.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        style: Theme.of(context).textTheme.headlineLarge!
+                            .copyWith(
+                              fontSize: fontSize22,
+                              color: isDark
+                                  ? DarkColors.primary
+                                  : LightColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       if (description != null) ...<Widget>[
                         SizedBox(height: 4),

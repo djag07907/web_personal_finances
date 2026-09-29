@@ -5,14 +5,14 @@ class CircularImageBorder extends StatelessWidget {
   final double minHeight;
   final double minWidth;
   final double borderWidth;
-  final Color borderColor;
+  final Color? borderColor;
   final String? imagePath;
   final String? labelImage;
 
   const CircularImageBorder({
     super.key,
     this.borderWidth = 5,
-    this.borderColor = LightColors.primary,
+    this.borderColor,
     this.imagePath,
     this.labelImage,
     required this.minHeight,
@@ -21,31 +21,34 @@ class CircularImageBorder extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final Color resolvedBorderColor = borderColor ?? primaryColor;
+
     return Container(
       clipBehavior: Clip.hardEdge,
-      constraints: BoxConstraints(
-        minHeight: minHeight,
-        minWidth: minWidth,
-      ),
+      constraints: BoxConstraints(minHeight: minHeight, minWidth: minWidth),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
           width: borderWidth,
-          color: borderColor.withValues(alpha: 0.6),
+          color: resolvedBorderColor.withValues(alpha: 0.6),
         ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: resolvedBorderColor.withValues(alpha: 0.2),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: CircleAvatar(
-        backgroundColor: LightColors.primary.withValues(alpha: 0.8),
+        backgroundColor: primaryColor.withValues(alpha: 0.8),
         child: imagePath != null ? _buildImageAsset() : _buildTextImage(),
       ),
     );
   }
 
   Widget _buildImageAsset() {
-    return Image.asset(
-      imagePath!,
-      fit: BoxFit.contain,
-    );
+    return Image.asset(imagePath!, fit: BoxFit.contain);
   }
 
   Widget _buildTextImage() {

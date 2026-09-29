@@ -8,16 +8,18 @@ class Loader extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
-      color: white.withValues(alpha: 0.6),
+      color: isDark
+          ? black.withValues(alpha: 0.7)
+          : white.withValues(alpha: 0.6),
       child: Center(
         child: SizedBox(
           width: 150.0,
-          child: Lottie.asset(
-            '${animationPath}loader.json',
-          ),
+          child: Lottie.asset('${animationPath}loader.json'),
         ),
       ),
     );

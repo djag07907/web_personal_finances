@@ -49,9 +49,7 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
 
     return Column(
       children: <Widget>[
-        Row(
-          children: widget.headers ?? <Widget>[],
-        ),
+        Row(children: widget.headers ?? <Widget>[]),
         const SizedBox(height: 16.0),
         if (widget.showToolbar) _buildToolbar(context, isDark),
         const SizedBox(height: 16.0),
@@ -65,16 +63,14 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
                     column,
                     textAlign: TextAlign.left,
                     style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                          color: greyHard,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      color: isDark ? DarkColors.textSecondary : greyHard,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(
-              width: 40.0,
-            ),
+            const SizedBox(width: 40.0),
           ],
         ),
         const SizedBox(height: 12.0),
@@ -84,9 +80,9 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
                   child: Text(
                     'No data to display',
                     style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                          color: greyHard,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      color: isDark ? DarkColors.textSecondary : greyHard,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 )
               : ListView(
@@ -103,13 +99,18 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
                         setState(() => _hoveredIndex = null);
                       },
                       child: Container(
-                        color:
-                            index.isEven ? LightColors.background : transparent,
+                        color: index.isEven
+                            ? (isDark
+                                  ? DarkColors.background
+                                  : LightColors.background)
+                            : transparent,
                         child: Container(
                           color: isHovered
-                              ? LightColors.primary.withValues(
-                                  alpha: 0.1,
-                                )
+                              ? (isDark
+                                    ? DarkColors.primary.withValues(alpha: 0.1)
+                                    : LightColors.primary.withValues(
+                                        alpha: 0.1,
+                                      ))
                               : transparent,
                           height: 60.0,
                           child: Row(
@@ -152,7 +153,7 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
             : Color(0xFFF9FAFB),
         border: Border(
           bottom: BorderSide(
-            color: isDark ? Colors.grey[800]! : Color(0xFFE5E7EB),
+            color: isDark ? DarkColors.border : Color(0xFFE5E7EB),
           ),
         ),
         borderRadius: BorderRadius.only(
@@ -170,7 +171,7 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
                 color: isDark ? DarkColors.background : white,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: isDark ? Colors.grey[700]! : Color(0xFFE5E7EB),
+                  color: isDark ? DarkColors.border : Color(0xFFE5E7EB),
                 ),
               ),
               child: TextField(
@@ -183,12 +184,12 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
                   hintText: widget.searchHint ?? 'Search...',
                   hintStyle: TextStyle(
                     fontSize: 14,
-                    color: isDark ? Colors.grey[500] : Colors.grey[400],
+                    color: isDark ? DarkColors.textSecondary : Colors.grey[400],
                   ),
                   prefixIcon: Icon(
                     Icons.search,
                     size: 20,
-                    color: isDark ? Colors.grey[500] : Colors.grey[400],
+                    color: isDark ? DarkColors.textSecondary : Colors.grey[400],
                   ),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(
@@ -246,7 +247,7 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
             color: isDark ? DarkColors.background : white,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isDark ? Colors.grey[700]! : Color(0xFFE5E7EB),
+              color: isDark ? DarkColors.border : Color(0xFFE5E7EB),
             ),
           ),
           child: Row(
@@ -255,7 +256,7 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
               Icon(
                 icon,
                 size: 18,
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                color: isDark ? DarkColors.textSecondary : Colors.grey[600],
               ),
               SizedBox(width: 8),
               Text(
@@ -263,7 +264,7 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: isDark ? Colors.grey[300] : Colors.grey[700],
+                  color: isDark ? DarkColors.textPrimary : Colors.grey[700],
                 ),
               ),
             ],

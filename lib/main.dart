@@ -17,17 +17,13 @@ Future<void> main() async {
 
   await dotenv.load(fileName: '.env');
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({
-    super.key,
-  });
+  const MyApp({super.key});
 
   @override
   Widget build(final BuildContext context) {
@@ -38,25 +34,24 @@ class MyApp extends StatelessWidget {
         title: 'Pecunia',
         theme: lightTheme,
         darkTheme: darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.dark,
         debugShowCheckedModeBanner: false,
         localizationsDelegates: <LocalizationsDelegate<dynamic>>[
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
-          InternationalizationDelegate(
-            suportedLocales: supportedLocales,
-          ),
+          InternationalizationDelegate(suportedLocales: supportedLocales),
         ],
         supportedLocales: supportedLocales,
-        localeResolutionCallback: (
-          final ui.Locale? locale,
-          final Iterable<ui.Locale> supportedLocales,
-        ) {
-          return Locale(
-            locale?.languageCode ?? supportedLocales.first.languageCode,
-          );
-        },
+        localeResolutionCallback:
+            (
+              final ui.Locale? locale,
+              final Iterable<ui.Locale> supportedLocales,
+            ) {
+              return Locale(
+                locale?.languageCode ?? supportedLocales.first.languageCode,
+              );
+            },
       ),
     );
   }

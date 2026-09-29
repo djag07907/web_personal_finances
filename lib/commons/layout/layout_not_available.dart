@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 
 class LayoutNotAvailable extends StatelessWidget {
@@ -6,8 +7,9 @@ class LayoutNotAvailable extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    return Center(
-      child: Image.asset('${imagePath}logo.jpg'),
+    return Container(
+      color: darkBackgroundColor,
+      child: Center(child: Image.asset('${imagePath}logo.jpg')),
     );
   }
 }

@@ -18,24 +18,29 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        foregroundColor: isPrimary ? white : LightColors.primary,
-        backgroundColor: isPrimary ? LightColors.primary : white,
+        foregroundColor: isPrimary
+            ? white
+            : (isDark ? DarkColors.primary : LightColors.primary),
+        backgroundColor: isPrimary
+            ? (isDark ? DarkColors.primary : LightColors.primary)
+            : (isDark ? DarkColors.surface : white),
         shape: RoundedRectangleBorder(
-          borderRadius:
-              isAdd! ? BorderRadius.circular(8.0) : BorderRadius.circular(20.0),
+          borderRadius: (isAdd ?? false)
+              ? BorderRadius.circular(8.0)
+              : BorderRadius.circular(20.0),
           side: BorderSide(
-            color: LightColors.primary,
+            color: isDark ? DarkColors.primary : LightColors.primary,
           ),
         ),
       ),
       child: Text(
         text,
-        style: TextStyle(
-          fontSize: isAdd! ? fontSize14 : fontSize18,
-        ),
+        style: TextStyle(fontSize: (isAdd ?? false) ? fontSize14 : fontSize18),
       ),
     );
   }

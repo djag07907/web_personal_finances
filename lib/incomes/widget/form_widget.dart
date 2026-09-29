@@ -40,8 +40,8 @@ class _FormWidgetState extends State<FormWidget> {
       _nameController.text = widget.incomeItem!.name;
       _commentController.text = widget.incomeItem!.comment;
       _amountController.text = widget.incomeItem!.amount.toString();
-      _dateToReceiveController.text =
-          widget.incomeItem!.dateToReceive.toString();
+      _dateToReceiveController.text = widget.incomeItem!.dateToReceive
+          .toString();
       selectedCurrency = widget.incomeItem!.currency;
       if (widget.isEdit && widget.incomeItem != null) {
         selectedFrequency = widget.incomeItem!.frequency;
@@ -58,21 +58,22 @@ class _FormWidgetState extends State<FormWidget> {
 
   @override
   Widget build(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final double maxHeight = MediaQuery.of(context).size.height * 0.8;
 
     return Container(
       width: 400,
       decoration: BoxDecoration(
-        color: white,
+        color: isDark ? DarkColors.surface : white,
+        borderRadius: BorderRadius.circular(12.0),
+        border: isDark ? Border.all(color: DarkColors.border, width: 1) : null,
       ),
       padding: const EdgeInsets.all(16.0),
       margin: EdgeInsets.all(16.0),
       child: Form(
         key: _formKey,
         child: Container(
-          constraints: BoxConstraints(
-            maxHeight: maxHeight,
-          ),
+          constraints: BoxConstraints(maxHeight: maxHeight),
           child: Scrollbar(
             thumbVisibility: true,
             controller: _scrollController,
@@ -99,11 +100,11 @@ class _FormWidgetState extends State<FormWidget> {
                         .toList(),
                     onChanged: (final String? selectedLabel) {
                       setState(() {
-                        selectedFrequency =
-                            CustomFrequencyOptions.values.firstWhere(
-                          (final CustomFrequencyOptions element) =>
-                              element.toTranslate(context) == selectedLabel,
-                        );
+                        selectedFrequency = CustomFrequencyOptions.values
+                            .firstWhere(
+                              (final CustomFrequencyOptions element) =>
+                                  element.toTranslate(context) == selectedLabel,
+                            );
                       });
                     },
                   ),
@@ -149,10 +150,7 @@ class _FormWidgetState extends State<FormWidget> {
                       return null;
                     },
                     selectedValue: selectedCurrency,
-                    items: <String>[
-                      'USD',
-                      'HNL',
-                    ],
+                    items: <String>['USD', 'HNL'],
                     onChanged: (final String? value) {
                       setState(() {
                         selectedCurrency = value;
@@ -184,29 +182,29 @@ class _FormWidgetState extends State<FormWidget> {
                     onTap: () async {
                       final CustomCalendarDialog calendar =
                           CustomCalendarDialog();
-                      final DateTime? selectedDate =
-                          await calendar.showDateDialog(
-                        context: context,
-                        dateController: _dateToReceiveController,
-                      );
+                      final DateTime? selectedDate = await calendar
+                          .showDateDialog(
+                            context: context,
+                            dateController: _dateToReceiveController,
+                          );
                       if (selectedDate != null) {
-                        final String formatted =
-                            DateFormat(dayMonthYearFormat).format(selectedDate);
+                        final String formatted = DateFormat(
+                          dayMonthYearFormat,
+                        ).format(selectedDate);
                         _dateToReceiveController.text = formatted;
                       }
                     },
                     validator: (final String? value) {
                       if (value == null || value.isEmpty) {
-                        return context
-                            .translate('please_enter_date_to_receive');
+                        return context.translate(
+                          'please_enter_date_to_receive',
+                        );
                       }
                       return null;
                     },
                     controller: _dateToReceiveController,
                   ),
-                  SizedBox(
-                    height: 20.0,
-                  ),
+                  SizedBox(height: 20.0),
                   Row(
                     spacing: 15.0,
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -231,16 +229,18 @@ class _FormWidgetState extends State<FormWidget> {
                               final IncomeItem newItem = IncomeItem(
                                 id: widget.isEdit
                                     ? widget.incomeItem!.id
-                                    : DateTime.now()
-                                        .millisecondsSinceEpoch
-                                        .toString(),
+                                    : DateTime.now().millisecondsSinceEpoch
+                                          .toString(),
                                 name: _nameController.text,
                                 comment: _commentController.text,
                                 currency: selectedCurrency!,
                                 createdDate: DateTime.now(),
-                                amount: double.tryParse(
-                                      _amountController.text
-                                          .replaceAll(',', ''),
+                                amount:
+                                    double.tryParse(
+                                      _amountController.text.replaceAll(
+                                        ',',
+                                        '',
+                                      ),
                                     ) ??
                                     0,
                                 frequency: selectedFrequency!,

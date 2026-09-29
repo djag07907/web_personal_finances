@@ -50,9 +50,7 @@ class _HomeBodyState extends State<HomeBody> {
               child: CustomCardBody(
                 isMain: true,
                 title: context.translate('home'),
-                body: _buildCharts(
-                  financialData,
-                ),
+                body: _buildCharts(financialData),
               ),
             ),
             Center(
@@ -65,6 +63,9 @@ class _HomeBodyState extends State<HomeBody> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? DarkColors.textPrimary
+                              : null,
                         ),
                       ),
                     ),
@@ -76,6 +77,8 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   Widget _buildHeader(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Align(
       alignment: Alignment.topRight,
       child: Container(
@@ -83,19 +86,28 @@ class _HomeBodyState extends State<HomeBody> {
         margin: EdgeInsets.only(top: 10.0),
         width: MediaQuery.of(context).size.width * 0.45,
         decoration: BoxDecoration(
-          color: LightColors.primary,
+          color: isDark ? DarkColors.primary : LightColors.primary,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(300.0),
             bottomLeft: Radius.circular(300.0),
           ),
+          boxShadow: isDark
+              ? <BoxShadow>[
+                  BoxShadow(
+                    color: DarkColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : null,
         ),
         child: Center(
           child: Text(
             welcomeMessage,
             style: Theme.of(context).textTheme.headlineMedium!.copyWith(
-                  fontSize: fontSize24,
-                  color: white,
-                ),
+              fontSize: fontSize24,
+              color: white,
+            ),
           ),
         ),
       ),
@@ -342,10 +354,7 @@ class _HomeBodyState extends State<HomeBody> {
                     titleText: context.translate('savings'),
                     subtitleText: 'HNL 5,000',
                   ),
-                  Flexible(
-                    fit: FlexFit.tight,
-                    child: SizedBox.shrink(),
-                  ),
+                  Flexible(fit: FlexFit.tight, child: SizedBox.shrink()),
                 ],
               ),
             ],
@@ -379,9 +388,7 @@ class _HomeBodyState extends State<HomeBody> {
     final String apiKey = dotenv.env['EXCHANGE_RATE_API_KEY'] ?? emptyString;
 
     final http.Response response = await http.get(
-      Uri.parse(
-        '$apiRoute$apiKey$latestUsdRoute',
-      ),
+      Uri.parse('$apiRoute$apiKey$latestUsdRoute'),
     );
 
     if (response.statusCode == 200) {

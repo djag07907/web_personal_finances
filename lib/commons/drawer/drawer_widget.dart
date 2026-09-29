@@ -15,17 +15,28 @@ class DrawerWidget extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
         width: 450,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: white,
+          color: isDark ? DarkColors.surface : white,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20.0),
             bottomLeft: Radius.circular(20.0),
           ),
+          border: isDark
+              ? Border(left: BorderSide(color: DarkColors.border, width: 1))
+              : null,
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              blurRadius: 20,
+              color: black.withValues(alpha: isDark ? 0.5 : 0.15),
+            ),
+          ],
         ),
         child: Column(
           children: <Widget>[
@@ -34,22 +45,23 @@ class DrawerWidget extends StatelessWidget {
               children: <Widget>[
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: LightColors.primary,
+                    color: isDark ? DarkColors.primary : LightColors.primary,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: Icon(
+                    Icons.close,
+                    color: isDark ? DarkColors.textSecondary : null,
+                  ),
                   onPressed: onClose,
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Expanded(
-              child: child,
-            ),
+            Expanded(child: child),
           ],
         ),
       ),
