@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -7,10 +8,11 @@ import 'package:web_personal_finances/commons/loader/loader.dart';
 import 'package:web_personal_finances/login/bloc/login_bloc.dart';
 import 'package:web_personal_finances/login/bloc/login_event.dart';
 import 'package:web_personal_finances/login/bloc/login_state.dart';
+import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/routes/landing_routes.dart';
-// import 'package:lottie/lottie.dart';
+import 'package:web_personal_finances/user/model/user_model.dart';
 
 class LoginBody extends StatefulWidget {
   const LoginBody({super.key});
@@ -39,6 +41,27 @@ class _LoginBodyState extends State<LoginBody> {
     super.dispose();
   }
 
+  Future<void> _checkUserOnboarded(final BuildContext context) async {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final UserRepository userRepository = context.read<UserRepository>();
+      final UserModel? userModel = await userRepository.getUser(
+        currentUser.uid,
+      );
+      if (context.mounted) {
+        if (userModel != null && userModel.isOnboarded) {
+          context.go(homeRoute);
+        } else {
+          context.go(onboardingRoute);
+        }
+      }
+    } else {
+      if (context.mounted) {
+        context.go(homeRoute);
+      }
+    }
+  }
+
   @override
   Widget build(final BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
@@ -60,7 +83,7 @@ class _LoginBodyState extends State<LoginBody> {
                 );
               }
               if (state is LoginSuccess) {
-                context.go(homeRoute);
+                _checkUserOnboarded(context);
               }
             },
             child: LayoutBuilder(

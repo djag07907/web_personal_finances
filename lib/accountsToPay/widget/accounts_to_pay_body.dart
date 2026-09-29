@@ -16,6 +16,7 @@ import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
 import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+import 'package:web_personal_finances/resources/constants.dart';
 
 part 'form_widget.dart';
 
@@ -97,9 +98,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                 ),
               ),
             ],
-            rowBuilder: (
-              final AccountToPayItem data,
-            ) {
+            rowBuilder: (final AccountToPayItem data) {
               return <Widget>[
                 Text(data.id),
                 Text(data.creditorName),
@@ -117,9 +116,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                 ),
               ];
             },
-            popupMenuBuilder: (
-              final AccountToPayItem item,
-            ) {
+            popupMenuBuilder: (final AccountToPayItem item) {
               return PrimaryPopupMenu<CustomOptions>(
                 popupItems: <PopupItem<CustomOptions>>[
                   PopupItem<CustomOptions>(
@@ -142,29 +139,24 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                     ),
                 ],
                 tooltip: context.translate('options'),
-                onSelect: (
-                  final CustomOptions option,
-                ) {
+                onSelect: (final CustomOptions option) {
                   Navigator.of(context).pop();
-                  Future<void>.delayed(
-                    const Duration(milliseconds: 150),
-                    () {
-                      switch (option) {
-                        case CustomOptions.edit:
-                          _editAccountToPay(item);
-                          break;
-                        case CustomOptions.delete:
-                          _removeAccountToPay(item);
-                          break;
-                        case CustomOptions.activate:
-                          _activateAccountToPay(item);
-                          break;
-                        case CustomOptions.deactivate:
-                          _deactivateAccountToPay(item);
-                          break;
-                      }
-                    },
-                  );
+                  Future<void>.delayed(const Duration(milliseconds: 150), () {
+                    switch (option) {
+                      case CustomOptions.edit:
+                        _editAccountToPay(item);
+                        break;
+                      case CustomOptions.delete:
+                        _removeAccountToPay(item);
+                        break;
+                      case CustomOptions.activate:
+                        _activateAccountToPay(item);
+                        break;
+                      case CustomOptions.deactivate:
+                        _deactivateAccountToPay(item);
+                        break;
+                    }
+                  });
                 },
               );
             },
@@ -188,9 +180,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                   _showDrawer = false;
                 });
               },
-              child: Container(
-                color: black.withValues(alpha: 0.5),
-              ),
+              child: Container(color: black.withValues(alpha: 0.5)),
             ),
           ),
         if (_showDrawer)

@@ -43,4 +43,5 @@ const String dayMonthYearFormat = 'dd/MM/yyyy';
 const String yearMonthDayFormat = 'yyyy-MM-dd';
 const String dollarValue = '1 USD =';
 const String hnlCurrency = 'HNL';
+const String usdCurrency = 'USD';
 const String welcomeMessage = 'Welcome to your personal finances, {username}';

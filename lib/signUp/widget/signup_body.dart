@@ -3,13 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/loader/loader.dart';
+import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
-// import 'package:lottie/lottie.dart'; // Commented for now
 import 'package:web_personal_finances/routes/landing_routes.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_bloc.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_event.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_state.dart';
-import 'package:web_personal_finances/resources/colors_constants.dart';
 
 class SignUpBody extends StatefulWidget {
   const SignUpBody({super.key});
@@ -18,7 +17,6 @@ class SignUpBody extends StatefulWidget {
 }
 
 class _SignUpBodyState extends State<SignUpBody> {
-  final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
@@ -32,15 +30,36 @@ class _SignUpBodyState extends State<SignUpBody> {
   void initState() {
     super.initState();
     _signupBloc = context.read<SignupBloc>();
+    _emailController.addListener(_updateState);
+    _passwordController.addListener(_updateState);
+    _confirmPasswordController.addListener(_updateState);
+  }
+
+  void _updateState() {
+    setState(() {});
   }
 
   @override
   void dispose() {
-    _fullNameController.dispose();
+    _emailController.removeListener(_updateState);
+    _passwordController.removeListener(_updateState);
+    _confirmPasswordController.removeListener(_updateState);
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  bool get _isFormValid {
+    final String email = _emailController.text.trim();
+    final String pass = _passwordController.text;
+    final String confirmPass = _confirmPasswordController.text;
+    return email.isNotEmpty &&
+        email.contains('@') &&
+        pass.isNotEmpty &&
+        pass.length >= 6 &&
+        confirmPass == pass &&
+        _acceptedTerms;
   }
 
   @override
@@ -64,7 +83,7 @@ class _SignUpBodyState extends State<SignUpBody> {
                 );
               }
               if (state is SignUpSuccess) {
-                context.go(homeRoute);
+                context.go(onboardingRoute);
               }
             },
             child: LayoutBuilder(
@@ -98,8 +117,6 @@ class _SignUpBodyState extends State<SignUpBody> {
                                       const SizedBox(height: 32),
                                       _buildHeader(context, isDark),
                                       const SizedBox(height: 32),
-                                      _buildFullNameField(context, isDark),
-                                      const SizedBox(height: 20),
                                       _buildEmailField(context, isDark),
                                       const SizedBox(height: 20),
                                       _buildPasswordField(context, isDark),
@@ -146,29 +163,11 @@ class _SignUpBodyState extends State<SignUpBody> {
   }
 
   void _onSignUpButtonPressed() {
-    if (!_acceptedTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          backgroundColor: redAlert,
-          content: Text('Please accept the Terms and Conditions'),
-        ),
-      );
-      return;
-    }
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          backgroundColor: redAlert,
-          content: Text('Passwords do not match'),
-        ),
-      );
-      return;
-    }
+    if (!_isFormValid) return;
 
     _signupBloc.add(
       SignUpSubmitted(
-        email: _emailController.text,
+        email: _emailController.text.trim(),
         password: _passwordController.text,
       ),
     );
@@ -226,55 +225,6 @@ class _SignUpBodyState extends State<SignUpBody> {
     );
   }
 
-  Widget _buildFullNameField(final BuildContext context, final bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          'Full Name',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: isDark ? Colors.grey[200] : LightColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _fullNameController,
-          style: TextStyle(color: isDark ? white : LightColors.textPrimary),
-          decoration: InputDecoration(
-            hintText: 'e.g. John Doe',
-            hintStyle: TextStyle(
-              color: isDark ? Colors.grey[500] : LightColors.textSecondary,
-            ),
-            filled: true,
-            fillColor: isDark ? DarkColors.surface : white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: isDark ? Color(0xFF2A3632) : Color(0xFFDEE3E1),
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: isDark ? Color(0xFF2A3632) : Color(0xFFDEE3E1),
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: LightColors.primary, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildEmailField(final BuildContext context, final bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,18 +252,25 @@ class _SignUpBodyState extends State<SignUpBody> {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: isDark ? Color(0xFF2A3632) : Color(0xFFDEE3E1),
+                color: isDark
+                    ? const Color(0xFF2A3632)
+                    : const Color(0xFFDEE3E1),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: isDark ? Color(0xFF2A3632) : Color(0xFFDEE3E1),
+                color: isDark
+                    ? const Color(0xFF2A3632)
+                    : const Color(0xFFDEE3E1),
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: LightColors.primary, width: 2),
+              borderSide: const BorderSide(
+                color: LightColors.primary,
+                width: 2,
+              ),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -343,7 +300,7 @@ class _SignUpBodyState extends State<SignUpBody> {
           obscureText: _obscurePassword,
           style: TextStyle(color: isDark ? white : LightColors.textPrimary),
           decoration: InputDecoration(
-            hintText: 'Min. 8 characters',
+            hintText: 'Min. 6 characters',
             hintStyle: TextStyle(
               color: isDark ? Colors.grey[500] : LightColors.textSecondary,
             ),
@@ -352,18 +309,25 @@ class _SignUpBodyState extends State<SignUpBody> {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: isDark ? Color(0xFF2A3632) : Color(0xFFDEE3E1),
+                color: isDark
+                    ? const Color(0xFF2A3632)
+                    : const Color(0xFFDEE3E1),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: isDark ? Color(0xFF2A3632) : Color(0xFFDEE3E1),
+                color: isDark
+                    ? const Color(0xFF2A3632)
+                    : const Color(0xFFDEE3E1),
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: LightColors.primary, width: 2),
+              borderSide: const BorderSide(
+                color: LightColors.primary,
+                width: 2,
+              ),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -417,18 +381,25 @@ class _SignUpBodyState extends State<SignUpBody> {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: isDark ? Color(0xFF2A3632) : Color(0xFFDEE3E1),
+                color: isDark
+                    ? const Color(0xFF2A3632)
+                    : const Color(0xFFDEE3E1),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: isDark ? Color(0xFF2A3632) : Color(0xFFDEE3E1),
+                color: isDark
+                    ? const Color(0xFF2A3632)
+                    : const Color(0xFFDEE3E1),
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: LightColors.primary, width: 2),
+              borderSide: const BorderSide(
+                color: LightColors.primary,
+                width: 2,
+              ),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -470,7 +441,7 @@ class _SignUpBodyState extends State<SignUpBody> {
             },
             activeColor: LightColors.primary,
             side: BorderSide(
-              color: isDark ? Color(0xFF2A3632) : Color(0xFFDEE3E1),
+              color: isDark ? const Color(0xFF2A3632) : const Color(0xFFDEE3E1),
             ),
           ),
         ),
@@ -486,10 +457,8 @@ class _SignUpBodyState extends State<SignUpBody> {
                 ),
               ),
               InkWell(
-                onTap: () {
-                  // TODO: Show terms
-                },
-                child: Text(
+                onTap: () {},
+                child: const Text(
                   'Terms of Service',
                   style: TextStyle(
                     fontSize: 14,
@@ -506,10 +475,8 @@ class _SignUpBodyState extends State<SignUpBody> {
                 ),
               ),
               InkWell(
-                onTap: () {
-                  // TODO: Show privacy policy
-                },
-                child: Text(
+                onTap: () {},
+                child: const Text(
                   'Privacy Policy',
                   style: TextStyle(
                     fontSize: 14,
@@ -526,14 +493,17 @@ class _SignUpBodyState extends State<SignUpBody> {
   }
 
   Widget _buildSignUpButton(final BuildContext context) {
+    final bool valid = _isFormValid;
     return ElevatedButton(
-      onPressed: _onSignUpButtonPressed,
+      onPressed: valid ? _onSignUpButtonPressed : null,
       style: ElevatedButton.styleFrom(
         backgroundColor: LightColors.primary,
+        disabledBackgroundColor: LightColors.primary.withValues(alpha: 0.3),
         foregroundColor: white,
+        disabledForegroundColor: white.withValues(alpha: 0.5),
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        elevation: 2,
+        elevation: valid ? 2 : 0,
         shadowColor: LightColors.primary.withValues(alpha: 0.3),
       ),
       child: Text(
@@ -564,11 +534,11 @@ class _SignUpBodyState extends State<SignUpBody> {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: Text(
-              'Log in',
+            child: const Text(
+              'Sign In',
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.bold,
                 color: LightColors.primary,
               ),
             ),
@@ -580,77 +550,43 @@ class _SignUpBodyState extends State<SignUpBody> {
 
   Widget _buildRightPanel(final bool isDark) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? <Color>[Color(0xFF151d1a), Color(0xFF1e2825)]
-              : <Color>[
-                  LightColors.primary.withValues(alpha: 0.05),
-                  LightColors.primary.withValues(alpha: 0.1),
-                ],
-        ),
-      ),
+      color: isDark ? DarkColors.surface : LightColors.surface,
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Icon(
-              Icons.account_balance_wallet_outlined,
-              size: 120,
-              color: LightColors.primary.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 48),
-            Text(
-              'Track. Save. Grow.',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: isDark ? white : LightColors.textPrimary,
+        child: Padding(
+          padding: const EdgeInsets.all(48.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(
+                Icons.account_balance_wallet_rounded,
+                size: 80,
+                color: LightColors.primary,
               ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 48),
-              child: Text(
-                'Join over 50,000 users who are taking control of their financial future with Pecunia.',
-                textAlign: TextAlign.center,
+              const SizedBox(height: 24),
+              Text(
+                'Take Control of Your Wealth',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? white : LightColors.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Monitor expenses, manage dual-currency accounts, and reach financial freedom.',
+                style: TextStyle(
+                  fontSize: 14,
                   color: isDark
                       ? DarkColors.textSecondary
                       : LightColors.textSecondary,
                 ),
+                textAlign: TextAlign.center,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
-    // Commented Lottie animation:
-    // return Container(
-    //   decoration: BoxDecoration(
-    //     gradient: LinearGradient(
-    //       begin: Alignment.topLeft,
-    //       end: Alignment.bottomRight,
-    //       colors: isDark
-    //           ? <Color>[
-    //               Color(0xFF151d1a),
-    //               Color(0xFF1e2825),
-    //             ]
-    //           : <Color>[
-    //               LightColors.primary.withValues(alpha: 0.05),
-    //               LightColors.primary.withValues(alpha: 0.1),
-    //             ],
-    //     ),
-    //   ),
-    //   child: Center(
-    //     child: Lottie.asset(
-    //       'assets/animations/finance_animation2.json',
-    //       fit: BoxFit.contain,
-    //     ),
-    //   ),
-    // );
   }
 }

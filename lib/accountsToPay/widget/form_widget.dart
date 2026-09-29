@@ -38,8 +38,8 @@ class _FormWidgetState extends State<FormWidget> {
       _nameController.text = widget.accountToPayItem!.creditorName;
       _commentController.text = widget.accountToPayItem!.description;
       _amountController.text = widget.accountToPayItem!.amount.toString();
-      _dateToReceiveController.text =
-          widget.accountToPayItem!.dueDate.toString();
+      _dateToReceiveController.text = widget.accountToPayItem!.dueDate
+          .toString();
       selectedCurrency = widget.accountToPayItem!.currency;
     }
   }
@@ -48,9 +48,7 @@ class _FormWidgetState extends State<FormWidget> {
   Widget build(final BuildContext context) {
     return Container(
       width: 400,
-      decoration: BoxDecoration(
-        color: white,
-      ),
+      decoration: BoxDecoration(color: white),
       padding: const EdgeInsets.all(16.0),
       margin: EdgeInsets.all(20.0),
       child: Form(
@@ -91,10 +89,7 @@ class _FormWidgetState extends State<FormWidget> {
                   return null;
                 },
                 selectedValue: selectedCurrency,
-                items: <String>[
-                  'USD',
-                  'HNL',
-                ],
+                items: <String>[usdCurrency, hnlCurrency],
                 onChanged: (final String? value) {
                   setState(() {
                     selectedCurrency = value;
@@ -104,12 +99,8 @@ class _FormWidgetState extends State<FormWidget> {
               CustomLabelInput(
                 label: context.translate('amount'),
                 hintText: context.translate('enter_amount'),
-                keyboardType: TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: <MoneyInputFormatter>[
-                  MoneyInputFormatter(),
-                ],
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: <MoneyInputFormatter>[MoneyInputFormatter()],
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
                     return context.translate('please_enter_amount');
@@ -121,9 +112,7 @@ class _FormWidgetState extends State<FormWidget> {
               CustomLabelInput(
                 label: context.translate('date_due'),
                 hintText: context.translate('enter_date_due'),
-                keyboardType: TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
                 isCalendar: true,
                 validator: (final String? value) {
                   if (value == null || value.isEmpty) {
@@ -133,9 +122,7 @@ class _FormWidgetState extends State<FormWidget> {
                 },
                 controller: _dateToReceiveController,
               ),
-              SizedBox(
-                height: 20.0,
-              ),
+              SizedBox(height: 20.0),
               Row(
                 spacing: 15.0,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -160,18 +147,19 @@ class _FormWidgetState extends State<FormWidget> {
                           final AccountToPayItem newItem = AccountToPayItem(
                             id: widget.isEdit
                                 ? widget.accountToPayItem!.id
-                                : DateTime.now()
-                                    .millisecondsSinceEpoch
-                                    .toString(),
+                                : DateTime.now().millisecondsSinceEpoch
+                                      .toString(),
                             creditorName: _nameController.text,
                             description: _commentController.text,
                             currency: selectedCurrency!,
-                            amount: double.tryParse(
+                            amount:
+                                double.tryParse(
                                   _amountController.text.replaceAll(',', ''),
                                 ) ??
                                 0,
-                            dueDate:
-                                DateTime.parse(_dateToReceiveController.text),
+                            dueDate: DateTime.parse(
+                              _dateToReceiveController.text,
+                            ),
                             isPaid: true,
                           );
 

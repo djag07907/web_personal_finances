@@ -116,7 +116,7 @@ class _FormWidgetState extends State<FormWidget> {
                   return null;
                 },
                 selectedValue: selectedCurrency,
-                items: <String>['USD', 'HNL'],
+                items: <String>[usdCurrency, hnlCurrency],
                 onChanged: (final String? value) {
                   setState(() {
                     selectedCurrency = value;

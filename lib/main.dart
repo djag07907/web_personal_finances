@@ -8,6 +8,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/firebase_options.dart';
 import 'package:web_personal_finances/repositories/firebase_auth_repository.dart';
+import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/resources/themes.dart';
 import 'package:web_personal_finances/routes/landing_routes.dart';
@@ -27,8 +28,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    return RepositoryProvider<AuthRepository>(
-      create: (final _) => AuthRepository(),
+    return MultiRepositoryProvider(
+      providers: <RepositoryProvider<dynamic>>[
+        RepositoryProvider<AuthRepository>(
+          create: (final _) => AuthRepository(),
+        ),
+        RepositoryProvider<UserRepository>(
+          create: (final _) => UserRepository(),
+        ),
+      ],
       child: MaterialApp.router(
         routerConfig: appRoutes,
         title: appName,

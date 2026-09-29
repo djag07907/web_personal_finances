@@ -3,6 +3,7 @@ import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
 import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
+import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/savings/model/saving_item.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
@@ -95,9 +96,7 @@ class _SavingsBodyState extends State<SavingsBody> {
                 ),
               ),
             ],
-            rowBuilder: (
-              final SavingItem data,
-            ) {
+            rowBuilder: (final SavingItem data) {
               return <Widget>[
                 Text(data.id),
                 Text(data.name),
@@ -105,14 +104,10 @@ class _SavingsBodyState extends State<SavingsBody> {
                 Text(data.currency),
                 Text(data.amount.toString()),
                 Text(data.goalAmount.toString()),
-                CustomChipStatus(
-                  isActive: data.isGoalReached,
-                ),
+                CustomChipStatus(isActive: data.isGoalReached),
               ];
             },
-            popupMenuBuilder: (
-              final SavingItem item,
-            ) {
+            popupMenuBuilder: (final SavingItem item) {
               return PrimaryPopupMenu<CustomOptions>(
                 popupItems: <PopupItem<CustomOptions>>[
                   PopupItem<CustomOptions>(
@@ -135,29 +130,24 @@ class _SavingsBodyState extends State<SavingsBody> {
                     ),
                 ],
                 tooltip: context.translate('options'),
-                onSelect: (
-                  final CustomOptions option,
-                ) {
+                onSelect: (final CustomOptions option) {
                   Navigator.of(context).pop();
-                  Future<void>.delayed(
-                    const Duration(milliseconds: 150),
-                    () {
-                      switch (option) {
-                        case CustomOptions.edit:
-                          _editSaving(item);
-                          break;
-                        case CustomOptions.delete:
-                          _removeSaving(item);
-                          break;
-                        case CustomOptions.activate:
-                          _activateSaving(item);
-                          break;
-                        case CustomOptions.deactivate:
-                          _deactivateSaving(item);
-                          break;
-                      }
-                    },
-                  );
+                  Future<void>.delayed(const Duration(milliseconds: 150), () {
+                    switch (option) {
+                      case CustomOptions.edit:
+                        _editSaving(item);
+                        break;
+                      case CustomOptions.delete:
+                        _removeSaving(item);
+                        break;
+                      case CustomOptions.activate:
+                        _activateSaving(item);
+                        break;
+                      case CustomOptions.deactivate:
+                        _deactivateSaving(item);
+                        break;
+                    }
+                  });
                 },
               );
             },
@@ -181,16 +171,15 @@ class _SavingsBodyState extends State<SavingsBody> {
                   _showDrawer = false;
                 });
               },
-              child: Container(
-                color: black.withValues(alpha: 0.5),
-              ),
+              child: Container(color: black.withValues(alpha: 0.5)),
             ),
           ),
         if (_showDrawer)
           Positioned.fill(
             child: DrawerWidget(
-              title:
-                  context.translate(_isEditing ? 'edit_saving' : 'add_saving'),
+              title: context.translate(
+                _isEditing ? 'edit_saving' : 'add_saving',
+              ),
               onClose: () {
                 setState(() {
                   _showDrawer = false;

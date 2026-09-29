@@ -8,6 +8,7 @@ import 'package:web_personal_finances/home/home_screen.dart';
 import 'package:web_personal_finances/incomes/incomes_screen.dart';
 import 'package:web_personal_finances/login/login_screen.dart';
 import 'package:web_personal_finances/menu/menu_screen.dart';
+import 'package:web_personal_finances/onboarding/onboarding_screen.dart';
 import 'package:web_personal_finances/profile/profile_screen.dart';
 import 'package:web_personal_finances/savings/savings_screen.dart';
 import 'package:web_personal_finances/signUp/signup_screen.dart';
@@ -31,6 +32,11 @@ final GoRouter appRoutes = GoRouter(
       path: signupRoute,
       pageBuilder: (final BuildContext context, final GoRouterState state) =>
           snappyTransitionPage(key: state.pageKey, child: const SignUpScreen()),
+    ),
+    GoRoute(
+      path: onboardingRoute,
+      pageBuilder: (final BuildContext context, final GoRouterState state) =>
+          snappyTransitionPage(key: state.pageKey, child: const OnboardingScreen()),
     ),
     ShellRoute(
       builder:

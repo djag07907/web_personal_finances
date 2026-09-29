@@ -16,6 +16,7 @@ import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart'
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+import 'package:web_personal_finances/resources/constants.dart';
 
 part 'form_widget.dart';
 
@@ -94,9 +95,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                 ),
               ),
             ],
-            rowBuilder: (
-              final ExpenseItem data,
-            ) {
+            rowBuilder: (final ExpenseItem data) {
               return <Widget>[
                 Text(data.id),
                 Text(data.name),
@@ -104,14 +103,10 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                 Text(data.currency),
                 Text(data.amount.toString()),
                 Text(data.dateDue.toString()),
-                CustomChipStatus(
-                  isActive: data.status,
-                ),
+                CustomChipStatus(isActive: data.status),
               ];
             },
-            popupMenuBuilder: (
-              final ExpenseItem item,
-            ) {
+            popupMenuBuilder: (final ExpenseItem item) {
               return PrimaryPopupMenu<CustomOptions>(
                 popupItems: <PopupItem<CustomOptions>>[
                   PopupItem<CustomOptions>(
@@ -134,33 +129,26 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                     ),
                 ],
                 tooltip: context.translate('options'),
-                onSelect: (
-                  final CustomOptions option,
-                ) {
+                onSelect: (final CustomOptions option) {
                   Navigator.of(context).pop();
-                  Future<void>.delayed(
-                    const Duration(milliseconds: 150),
-                    () {
-                      switch (option) {
-                        case CustomOptions.edit:
-                          _editExpense(
-                            item,
-                          );
-                          break;
-                        case CustomOptions.delete:
-                          _removeExpense(item);
-                          break;
+                  Future<void>.delayed(const Duration(milliseconds: 150), () {
+                    switch (option) {
+                      case CustomOptions.edit:
+                        _editExpense(item);
+                        break;
+                      case CustomOptions.delete:
+                        _removeExpense(item);
+                        break;
 
-                        case CustomOptions.activate:
-                          _activateExpense(item);
-                          break;
+                      case CustomOptions.activate:
+                        _activateExpense(item);
+                        break;
 
-                        case CustomOptions.deactivate:
-                          _deactivateExpense(item);
-                          break;
-                      }
-                    },
-                  );
+                      case CustomOptions.deactivate:
+                        _deactivateExpense(item);
+                        break;
+                    }
+                  });
                 },
               );
             },
@@ -184,16 +172,15 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                   _showDrawer = false;
                 });
               },
-              child: Container(
-                color: black.withValues(alpha: 0.5),
-              ),
+              child: Container(color: black.withValues(alpha: 0.5)),
             ),
           ),
         if (_showDrawer)
           Positioned.fill(
             child: DrawerWidget(
-              title: context
-                  .translate(_isEditing ? 'edit_expense' : 'add_expense'),
+              title: context.translate(
+                _isEditing ? 'edit_expense' : 'add_expense',
+              ),
               onClose: () {
                 setState(() {
                   _showDrawer = false;

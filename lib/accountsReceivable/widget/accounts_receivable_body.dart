@@ -16,6 +16,7 @@ import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
 import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+import 'package:web_personal_finances/resources/constants.dart';
 
 part 'form_widget.dart';
 
@@ -29,27 +30,27 @@ class AccountsReceivableBody extends StatefulWidget {
 class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
   final List<AccountReceivableItem> _accountsReceivableItems =
       <AccountReceivableItem>[
-    AccountReceivableItem(
-      id: '1',
-      debtorName: 'Juan Perez',
-      description: 'Money owed for services',
-      currency: 'USD',
-      amount: 3000,
-      dueDate: DateTime.parse('2023-10-01'),
-      receivedDate: DateTime.parse('2023-10-01'),
-      isReceived: true,
-    ),
-    AccountReceivableItem(
-      id: '2',
-      debtorName: 'Carlos Lopez',
-      description: 'Money owed for goods',
-      currency: 'HNL',
-      amount: 5000,
-      dueDate: DateTime.parse('2023-10-01'),
-      receivedDate: DateTime.parse('2023-10-01'),
-      isReceived: false,
-    ),
-  ];
+        AccountReceivableItem(
+          id: '1',
+          debtorName: 'Juan Perez',
+          description: 'Money owed for services',
+          currency: 'USD',
+          amount: 3000,
+          dueDate: DateTime.parse('2023-10-01'),
+          receivedDate: DateTime.parse('2023-10-01'),
+          isReceived: true,
+        ),
+        AccountReceivableItem(
+          id: '2',
+          debtorName: 'Carlos Lopez',
+          description: 'Money owed for goods',
+          currency: 'HNL',
+          amount: 5000,
+          dueDate: DateTime.parse('2023-10-01'),
+          receivedDate: DateTime.parse('2023-10-01'),
+          isReceived: false,
+        ),
+      ];
 
   int _currentPage = 0;
   static const int _itemsPerPage = 5;
@@ -98,9 +99,7 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
                 ),
               ),
             ],
-            rowBuilder: (
-              final AccountReceivableItem data,
-            ) {
+            rowBuilder: (final AccountReceivableItem data) {
               return <Widget>[
                 Text(data.id),
                 Text(data.debtorName),
@@ -118,9 +117,7 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
                 ),
               ];
             },
-            popupMenuBuilder: (
-              final AccountReceivableItem item,
-            ) {
+            popupMenuBuilder: (final AccountReceivableItem item) {
               return PrimaryPopupMenu<CustomOptions>(
                 popupItems: <PopupItem<CustomOptions>>[
                   PopupItem<CustomOptions>(
@@ -143,29 +140,24 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
                     ),
                 ],
                 tooltip: context.translate('options'),
-                onSelect: (
-                  final CustomOptions option,
-                ) {
+                onSelect: (final CustomOptions option) {
                   Navigator.of(context).pop();
-                  Future<void>.delayed(
-                    const Duration(milliseconds: 150),
-                    () {
-                      switch (option) {
-                        case CustomOptions.edit:
-                          _editAccountReceivable(item);
-                          break;
-                        case CustomOptions.delete:
-                          _removeAccountReceivable(item);
-                          break;
-                        case CustomOptions.activate:
-                          _activateAccountReceivable(item);
-                          break;
-                        case CustomOptions.deactivate:
-                          _deactivateAccountReceivable(item);
-                          break;
-                      }
-                    },
-                  );
+                  Future<void>.delayed(const Duration(milliseconds: 150), () {
+                    switch (option) {
+                      case CustomOptions.edit:
+                        _editAccountReceivable(item);
+                        break;
+                      case CustomOptions.delete:
+                        _removeAccountReceivable(item);
+                        break;
+                      case CustomOptions.activate:
+                        _activateAccountReceivable(item);
+                        break;
+                      case CustomOptions.deactivate:
+                        _deactivateAccountReceivable(item);
+                        break;
+                    }
+                  });
                 },
               );
             },
@@ -189,9 +181,7 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
                   _showDrawer = false;
                 });
               },
-              child: Container(
-                color: black.withValues(alpha: 0.5),
-              ),
+              child: Container(color: black.withValues(alpha: 0.5)),
             ),
           ),
         if (_showDrawer)
