@@ -1,8 +1,10 @@
 import 'dart:ui';
 
+const String appName = 'Pecunia';
 const String imagePath = 'images/';
 const String iconPath = 'icons/';
 const String animationPath = 'animations/';
+const String pecuniaLogoPath = 'assets/images/pecunia_icon.png';
 
 const int minDesktopWidth = 960;
 
@@ -10,10 +12,7 @@ const String emptyString = '';
 const int emptyInt = 0;
 const List<Object> emptyArray = <Object>[];
 
-const List<Locale> supportedLocales = <Locale>[
-  Locale('es'),
-  Locale('en'),
-];
+const List<Locale> supportedLocales = <Locale>[Locale('es'), Locale('en')];
 const String serviceMessage = 'message';
 const String esLanguage = 'es_ES';
 const String enLanguage = 'en_US';

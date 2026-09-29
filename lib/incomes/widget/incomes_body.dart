@@ -49,9 +49,7 @@ class _IncomesBodyState extends State<IncomesBody> {
     super.initState();
     _incomesBloc = context.read<IncomesBloc>();
     _initializeMockupData();
-    _incomesBloc.add(
-      IncomesFetched(),
-    );
+    _incomesBloc.add(IncomesFetched());
   }
 
   void _initializeMockupData() {
@@ -218,10 +216,7 @@ class _IncomesBodyState extends State<IncomesBody> {
   @override
   Widget build(final BuildContext context) {
     return BlocListener<IncomesBloc, BaseState>(
-      listener: (
-        final BuildContext context,
-        final BaseState state,
-      ) {
+      listener: (final BuildContext context, final BaseState state) {
         if (state is IncomesSuccess) {
           setState(() {
             _incomeItems = state.incomes;
@@ -269,9 +264,7 @@ class _IncomesBodyState extends State<IncomesBody> {
                       context.translate('date_to_receive'),
                       context.translate('status'),
                     ],
-                    rowBuilder: (
-                      final IncomeItem data,
-                    ) {
+                    rowBuilder: (final IncomeItem data) {
                       return <Widget>[
                         Text(data.name),
                         Text(data.frequency.toTranslate(context)),
@@ -279,14 +272,10 @@ class _IncomesBodyState extends State<IncomesBody> {
                         Text(data.currency),
                         Text(data.amount.toString()),
                         Text(data.dateToReceive.toString()),
-                        CustomChipStatus(
-                          isActive: data.status,
-                        ),
+                        CustomChipStatus(isActive: data.status),
                       ];
                     },
-                    popupMenuBuilder: (
-                      final IncomeItem item,
-                    ) {
+                    popupMenuBuilder: (final IncomeItem item) {
                       return PrimaryPopupMenu<CustomOptions>(
                         popupItems: <PopupItem<CustomOptions>>[
                           PopupItem<CustomOptions>(
@@ -299,21 +288,21 @@ class _IncomesBodyState extends State<IncomesBody> {
                           ),
                           if (!item.status)
                             PopupItem<CustomOptions>(
-                              title:
-                                  CustomOptions.activate.toTranslate(context),
+                              title: CustomOptions.activate.toTranslate(
+                                context,
+                              ),
                               value: CustomOptions.activate,
                             ),
                           if (item.status)
                             PopupItem<CustomOptions>(
-                              title:
-                                  CustomOptions.deactivate.toTranslate(context),
+                              title: CustomOptions.deactivate.toTranslate(
+                                context,
+                              ),
                               value: CustomOptions.deactivate,
                             ),
                         ],
                         tooltip: context.translate('options'),
-                        onSelect: (
-                          final CustomOptions option,
-                        ) {
+                        onSelect: (final CustomOptions option) {
                           Navigator.of(context).pop();
                           Future<void>.delayed(
                             const Duration(milliseconds: 150),
@@ -360,16 +349,15 @@ class _IncomesBodyState extends State<IncomesBody> {
                     _showDrawer = false;
                   });
                 },
-                child: Container(
-                  color: black.withValues(alpha: 0.5),
-                ),
+                child: Container(color: black.withValues(alpha: 0.5)),
               ),
             ),
           if (_showDrawer)
             Positioned.fill(
               child: DrawerWidget(
-                title: context
-                    .translate(_isEditing ? 'edit_income' : 'add_income'),
+                title: context.translate(
+                  _isEditing ? 'edit_income' : 'add_income',
+                ),
                 onClose: () {
                   setState(() {
                     _showDrawer = false;
@@ -398,16 +386,15 @@ class _IncomesBodyState extends State<IncomesBody> {
               ),
             ),
           BlocBuilder<IncomesBloc, BaseState>(
-            builder: (
-              final BuildContext context,
-              final BaseState state,
-            ) {
+            buildWhen: (final BaseState previous, final BaseState current) {
+              return (previous is IncomesInProgress) !=
+                  (current is IncomesInProgress);
+            },
+            builder: (final BuildContext context, final BaseState state) {
               if (state is IncomesInProgress && !_showDrawer) {
                 return Container(
                   color: black.withValues(alpha: 0.5),
-                  child: const Center(
-                    child: Loader(),
-                  ),
+                  child: const Center(child: Loader()),
                 );
               }
               return const SizedBox.shrink();
@@ -500,18 +487,21 @@ class _IncomesBodyState extends State<IncomesBody> {
     final bool isSmallScreen = screenWidth < 900;
 
     // Calculate totals
-    final double totalReceived =
-        _incomeItems.where((final IncomeItem item) => item.status).fold(
-              0.0,
-              (final double sum, final IncomeItem item) => sum + item.amount,
-            );
-    final double totalPending =
-        _incomeItems.where((final IncomeItem item) => !item.status).fold(
-              0.0,
-              (final double sum, final IncomeItem item) => sum + item.amount,
-            );
-    final int pendingCount =
-        _incomeItems.where((final IncomeItem item) => !item.status).length;
+    final double totalReceived = _incomeItems
+        .where((final IncomeItem item) => item.status)
+        .fold(
+          0.0,
+          (final double sum, final IncomeItem item) => sum + item.amount,
+        );
+    final double totalPending = _incomeItems
+        .where((final IncomeItem item) => !item.status)
+        .fold(
+          0.0,
+          (final double sum, final IncomeItem item) => sum + item.amount,
+        );
+    final int pendingCount = _incomeItems
+        .where((final IncomeItem item) => !item.status)
+        .length;
 
     if (isSmallScreen) {
       return Column(

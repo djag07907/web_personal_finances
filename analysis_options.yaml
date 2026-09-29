@@ -1,3 +1,5 @@
+include: package:flutter_lints/flutter.yaml
+
 analyzer:
   exclude: [test/**.mocks.dart, lib_old/**.dart, test_old/**.dart]
   language:

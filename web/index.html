@@ -2,29 +2,31 @@
 <html>
 
   <head>
-    <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
     <base href="$FLUTTER_BASE_HREF">
 
     <meta charset="UTF-8">
     <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-    <meta name="description" content="Personal Finance Management App">
+    <meta name="description" content="Pecunia - Smart Personal Finance Management. Track incomes, expenses, savings, and accounts with ease.">
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Pecunia - Personal Finances">
+    <meta property="og:description" content="Pecunia - Smart Personal Finance Management. Track incomes, expenses, savings, and accounts with ease.">
+    <meta property="og:image" content="favicon.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Pecunia - Personal Finances">
+    <meta name="twitter:description" content="Pecunia - Smart Personal Finance Management. Track incomes, expenses, savings, and accounts with ease.">
+    <meta name="twitter:image" content="favicon.png">
 
     <!-- iOS meta tags & icons -->
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="FinApp">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pecunia">
     <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
     <!-- Favicon -->
@@ -32,9 +34,155 @@
 
     <title>Pecunia - Personal Finances</title>
     <link rel="manifest" href="manifest.json">
+
+    <!-- Google Fonts preconnect for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #0B0F19;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+      }
+
+      /* Premium Loading Overlay */
+      #loading-indicator {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: radial-gradient(circle at center, #111827 0%, #080C14 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+        transition: opacity 0.4s ease-out;
+      }
+
+      .logo-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      /* Glowing Brand Name */
+      .brand-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #4caf90 0%, #2e7d61 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+        filter: drop-shadow(0 0 15px rgba(76, 175, 144, 0.3));
+        animation: pulseBrand 3s infinite ease-in-out;
+      }
+
+      .brand-subtitle {
+        font-size: 0.9rem;
+        font-weight: 400;
+        letter-spacing: 0.5em;
+        text-transform: uppercase;
+        color: #6B7280;
+        margin-top: -0.5rem;
+        margin-bottom: 2rem;
+      }
+
+      /* Animated Glowing Spinner */
+      .spinner-wrapper {
+        position: relative;
+        width: 70px;
+        height: 70px;
+      }
+
+      .spinner-outer {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border: 3px solid rgba(76, 175, 144, 0.1);
+        border-radius: 50%;
+        border-top-color: #4caf90;
+        border-right-color: #2e7d61;
+        animation: spin 1.4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+      }
+
+      .spinner-inner {
+        position: absolute;
+        width: 80%;
+        height: 80%;
+        top: 10%;
+        left: 10%;
+        border: 3px solid rgba(46, 125, 97, 0.05);
+        border-radius: 50%;
+        border-bottom-color: #2e7d61;
+        border-left-color: #4caf90;
+        animation: spin-reverse 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+      }
+
+      .spinner-glow {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        box-shadow: 0 0 25px rgba(76, 175, 144, 0.2);
+        animation: pulseGlow 2s infinite ease-in-out;
+      }
+
+      /* Custom animations */
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      @keyframes spin-reverse {
+        0% { transform: rotate(360deg); }
+        100% { transform: rotate(0deg); }
+      }
+
+      @keyframes pulseBrand {
+        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(76, 175, 144, 0.3)); }
+        50% { transform: scale(1.02); filter: drop-shadow(0 0 25px rgba(46, 125, 97, 0.5)); }
+      }
+
+      @keyframes pulseGlow {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 1; }
+      }
+    </style>
   </head>
 
   <body>
+    <!-- Premium Brand Loading Overlay -->
+    <div id="loading-indicator">
+      <div class="logo-container">
+        <h1 class="brand-title">Pecunia</h1>
+        <div class="brand-subtitle">Personal Finances</div>
+        <div class="spinner-wrapper">
+          <div class="spinner-glow"></div>
+          <div class="spinner-outer"></div>
+          <div class="spinner-inner"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Hide loading indicator when Flutter paints its first frame
+      window.addEventListener('flutter-first-frame', function() {
+        var el = document.getElementById('loading-indicator');
+        if (el) {
+          el.style.opacity = '0';
+          setTimeout(function() { el.remove(); }, 400);
+        }
+      });
+    </script>
+
     <script src="flutter_bootstrap.js" async></script>
   </body>
 

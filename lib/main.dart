@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       create: (final _) => AuthRepository(),
       child: MaterialApp.router(
         routerConfig: appRoutes,
-        title: 'Pecunia',
+        title: appName,
         theme: lightTheme,
         darkTheme: darkTheme,
         themeMode: ThemeMode.dark,

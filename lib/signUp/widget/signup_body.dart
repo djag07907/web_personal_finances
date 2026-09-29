@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:internationalization/internationalization.dart';
+import 'package:web_personal_finances/resources/constants.dart';
 // import 'package:lottie/lottie.dart'; // Commented for now
 import 'package:web_personal_finances/routes/landing_routes.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_bloc.dart';
@@ -48,8 +49,9 @@ class _SignUpBodyState extends State<SignUpBody> {
     return Stack(
       children: <Widget>[
         Scaffold(
-          backgroundColor:
-              isDark ? DarkColors.background : LightColors.background,
+          backgroundColor: isDark
+              ? DarkColors.background
+              : LightColors.background,
           body: BlocListener<SignupBloc, SignupState>(
             listener: (final BuildContext context, final SignupState state) {
               if (state is SignUpError) {
@@ -65,71 +67,77 @@ class _SignUpBodyState extends State<SignUpBody> {
               }
             },
             child: LayoutBuilder(
-              builder: (
-                final BuildContext context,
-                final BoxConstraints constraints,
-              ) {
-                return Row(
-                  children: <Widget>[
-                    Expanded(
-                      flex: 5,
-                      child: Container(
-                        color: isDark ? DarkColors.background : white,
-                        child: Center(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 48,
-                            ),
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 420),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: <Widget>[
-                                  _buildLogo(),
-                                  const SizedBox(height: 32),
-                                  _buildHeader(context, isDark),
-                                  const SizedBox(height: 32),
-                                  _buildFullNameField(context, isDark),
-                                  const SizedBox(height: 20),
-                                  _buildEmailField(context, isDark),
-                                  const SizedBox(height: 20),
-                                  _buildPasswordField(context, isDark),
-                                  const SizedBox(height: 20),
-                                  _buildConfirmPasswordField(context, isDark),
-                                  const SizedBox(height: 20),
-                                  _buildTermsCheckbox(context, isDark),
-                                  const SizedBox(height: 24),
-                                  _buildSignUpButton(context),
-                                  const SizedBox(height: 24),
-                                  _buildLoginLink(context, isDark),
-                                ],
+              builder:
+                  (
+                    final BuildContext context,
+                    final BoxConstraints constraints,
+                  ) {
+                    return Row(
+                      children: <Widget>[
+                        Expanded(
+                          flex: 5,
+                          child: Container(
+                            color: isDark ? DarkColors.background : white,
+                            child: Center(
+                              child: SingleChildScrollView(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 48,
+                                ),
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 420,
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: <Widget>[
+                                      _buildLogo(),
+                                      const SizedBox(height: 32),
+                                      _buildHeader(context, isDark),
+                                      const SizedBox(height: 32),
+                                      _buildFullNameField(context, isDark),
+                                      const SizedBox(height: 20),
+                                      _buildEmailField(context, isDark),
+                                      const SizedBox(height: 20),
+                                      _buildPasswordField(context, isDark),
+                                      const SizedBox(height: 20),
+                                      _buildConfirmPasswordField(
+                                        context,
+                                        isDark,
+                                      ),
+                                      const SizedBox(height: 20),
+                                      _buildTermsCheckbox(context, isDark),
+                                      const SizedBox(height: 24),
+                                      _buildSignUpButton(context),
+                                      const SizedBox(height: 24),
+                                      _buildLoginLink(context, isDark),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                    if (constraints.maxWidth > 800)
-                      Expanded(
-                        flex: 4,
-                        child: _buildRightPanel(isDark),
-                      ),
-                  ],
-                );
-              },
+                        if (constraints.maxWidth > 800)
+                          Expanded(flex: 4, child: _buildRightPanel(isDark)),
+                      ],
+                    );
+                  },
             ),
           ),
         ),
         BlocBuilder<SignupBloc, SignupState>(
+          buildWhen: (final SignupState previous, final SignupState current) {
+            return (previous is SignUpInProgress) !=
+                (current is SignUpInProgress);
+          },
           builder: (final BuildContext context, final SignupState state) {
             if (state is SignUpInProgress) {
               return Container(
                 color: black.withValues(alpha: 0.5),
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                child: const Center(child: CircularProgressIndicator()),
               );
             }
             return const SizedBox.shrink();
@@ -171,22 +179,18 @@ class _SignUpBodyState extends State<SignUpBody> {
   Widget _buildLogo() {
     return Row(
       children: <Widget>[
-        Container(
-          height: 40,
-          width: 40,
-          decoration: BoxDecoration(
-            color: LightColors.primary,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(
-            Icons.account_balance_wallet,
-            color: white,
-            size: 24,
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.asset(
+            pecuniaLogoPath,
+            height: 40,
+            width: 40,
+            fit: BoxFit.cover,
           ),
         ),
         const SizedBox(width: 8),
         const Text(
-          'FinApp',
+          appName,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -215,8 +219,9 @@ class _SignUpBodyState extends State<SignUpBody> {
           'Start managing your finances smartly today.',
           style: TextStyle(
             fontSize: 16,
-            color:
-                isDark ? DarkColors.textSecondary : LightColors.textSecondary,
+            color: isDark
+                ? DarkColors.textSecondary
+                : LightColors.textSecondary,
           ),
         ),
       ],
@@ -238,9 +243,7 @@ class _SignUpBodyState extends State<SignUpBody> {
         const SizedBox(height: 8),
         TextField(
           controller: _fullNameController,
-          style: TextStyle(
-            color: isDark ? white : LightColors.textPrimary,
-          ),
+          style: TextStyle(color: isDark ? white : LightColors.textPrimary),
           decoration: InputDecoration(
             hintText: 'e.g. John Doe',
             hintStyle: TextStyle(
@@ -262,10 +265,7 @@ class _SignUpBodyState extends State<SignUpBody> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: LightColors.primary,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: LightColors.primary, width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -293,9 +293,7 @@ class _SignUpBodyState extends State<SignUpBody> {
         TextField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
-          style: TextStyle(
-            color: isDark ? white : LightColors.textPrimary,
-          ),
+          style: TextStyle(color: isDark ? white : LightColors.textPrimary),
           decoration: InputDecoration(
             hintText: 'e.g. john@example.com',
             hintStyle: TextStyle(
@@ -317,10 +315,7 @@ class _SignUpBodyState extends State<SignUpBody> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: LightColors.primary,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: LightColors.primary, width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -348,9 +343,7 @@ class _SignUpBodyState extends State<SignUpBody> {
         TextField(
           controller: _passwordController,
           obscureText: _obscurePassword,
-          style: TextStyle(
-            color: isDark ? white : LightColors.textPrimary,
-          ),
+          style: TextStyle(color: isDark ? white : LightColors.textPrimary),
           decoration: InputDecoration(
             hintText: 'Min. 8 characters',
             hintStyle: TextStyle(
@@ -372,10 +365,7 @@ class _SignUpBodyState extends State<SignUpBody> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: LightColors.primary,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: LightColors.primary, width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -418,9 +408,7 @@ class _SignUpBodyState extends State<SignUpBody> {
         TextField(
           controller: _confirmPasswordController,
           obscureText: _obscureConfirmPassword,
-          style: TextStyle(
-            color: isDark ? white : LightColors.textPrimary,
-          ),
+          style: TextStyle(color: isDark ? white : LightColors.textPrimary),
           decoration: InputDecoration(
             hintText: 'Re-enter password',
             hintStyle: TextStyle(
@@ -442,10 +430,7 @@ class _SignUpBodyState extends State<SignUpBody> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: LightColors.primary,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: LightColors.primary, width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -549,18 +534,13 @@ class _SignUpBodyState extends State<SignUpBody> {
         backgroundColor: LightColors.primary,
         foregroundColor: white,
         padding: const EdgeInsets.symmetric(vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: 2,
         shadowColor: LightColors.primary.withValues(alpha: 0.3),
       ),
       child: Text(
         context.translate('sign_up'),
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -607,10 +587,7 @@ class _SignUpBodyState extends State<SignUpBody> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? <Color>[
-                  Color(0xFF151d1a),
-                  Color(0xFF1e2825),
-                ]
+              ? <Color>[Color(0xFF151d1a), Color(0xFF1e2825)]
               : <Color>[
                   LightColors.primary.withValues(alpha: 0.05),
                   LightColors.primary.withValues(alpha: 0.1),
@@ -639,7 +616,7 @@ class _SignUpBodyState extends State<SignUpBody> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 48),
               child: Text(
-                'Join over 50,000 users who are taking control of their financial future with FinApp.',
+                'Join over 50,000 users who are taking control of their financial future with Pecunia.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,

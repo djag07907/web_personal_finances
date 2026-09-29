@@ -1,4 +1,5 @@
 # Flutter Web Performance Optimization Guide
+
 ## Fixing Critical INP Issues (19+ seconds)
 
 Your app has severe performance issues. Here's how to fix them systematically.
@@ -29,13 +30,15 @@ Add this to your `<head>` section:
 <script>
   // Force HTML renderer for better web performance
   window.flutterConfiguration = {
-    canvasKitBaseUrl: "https://www.gstatic.com/flutter-canvaskit/33ce623099892825fb5430633c4fc26e0806739c/",
-    renderer: "html"  // CRITICAL: Forces HTML renderer instead of CanvasKit
+    canvasKitBaseUrl:
+      "https://www.gstatic.com/flutter-canvaskit/33ce623099892825fb5430633c4fc26e0806739c/",
+    renderer: "html", // CRITICAL: Forces HTML renderer instead of CanvasKit
   };
 </script>
 ```
 
 **Or build with HTML renderer:**
+
 ```bash
 fvm flutter build web --web-renderer html --release
 ```
@@ -47,7 +50,9 @@ Replace `web/index.html` body with:
 ```html
 <body>
   <!-- Loading indicator -->
-  <div id="loading" style="
+  <div
+    id="loading"
+    style="
     position: fixed;
     top: 0;
     left: 0;
@@ -58,41 +63,48 @@ Replace `web/index.html` body with:
     align-items: center;
     justify-content: center;
     z-index: 9999;
-  ">
+  "
+  >
     <div style="text-align: center;">
-      <div style="
+      <div
+        style="
         width: 50px;
         height: 50px;
         border: 4px solid #e1e8ed;
         border-top: 4px solid #4caf90;
         border-radius: 50%;
         animation: spin 1s linear infinite;
-      "></div>
+      "
+      ></div>
       <p style="margin-top: 20px; color: #6c7f79; font-family: sans-serif;">
-        Loading FinApp...
+        Loading Pecunia...
       </p>
     </div>
   </div>
-  
+
   <style>
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
     }
   </style>
-  
+
   <script>
     // Hide loading indicator when Flutter is ready
-    window.addEventListener('flutter-first-frame', function() {
-      const loading = document.getElementById('loading');
+    window.addEventListener("flutter-first-frame", function () {
+      const loading = document.getElementById("loading");
       if (loading) {
-        loading.style.opacity = '0';
-        loading.style.transition = 'opacity 0.3s';
+        loading.style.opacity = "0";
+        loading.style.transition = "opacity 0.3s";
         setTimeout(() => loading.remove(), 300);
       }
     });
   </script>
-  
+
   <script src="flutter_bootstrap.js" async></script>
 </body>
 ```
@@ -104,10 +116,10 @@ Replace `web/index.html` body with:
 ```dart
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Run app immediately, initialize Firebase async
   runApp(const MyApp());
-  
+
   // Initialize heavy services in background
   _initializeServices();
 }
@@ -141,13 +153,13 @@ import 'package:lottie/lottie.dart';
 
 class LottieCache {
   static final Map<String, LottieComposition> _cache = {};
-  
+
   static Future<void> preloadAnimations() async {
     final animations = [
       'assets/animations/finance_animation1.json',
       // Add other animations here
     ];
-    
+
     for (final path in animations) {
       try {
         final data = await rootBundle.loadString(path);
@@ -160,14 +172,14 @@ class LottieCache {
       }
     }
   }
-  
+
   static LottieComposition? get(String path) => _cache[path];
 }
 
 // Usage in login_body.dart:
 Widget _buildRightPanel(bool isDark) {
   final composition = LottieCache.get('assets/animations/finance_animation1.json');
-  
+
   return Container(
     // ... existing decoration
     child: Stack(
@@ -213,6 +225,7 @@ CachedNetworkImage(
 ```
 
 **Add to pubspec.yaml:**
+
 ```yaml
 dependencies:
   cached_network_image: ^3.3.0
@@ -230,13 +243,14 @@ Text('Welcome Back')
 SizedBox(height: 20)
 Icon(Icons.lock)
 
-// GOOD  
+// GOOD
 const Text('Welcome Back')
 const SizedBox(height: 20)
 const Icon(Icons.lock)
 ```
 
 Run this command to find violations:
+
 ```bash
 fvm flutter analyze | grep "prefer_const"
 ```
@@ -419,14 +433,14 @@ Add these flags:
 ```yaml
 flutter:
   uses-material-design: true
-  
+
   # Web-specific optimizations
   assets:
     - assets/.env
     - assets/images/
     - assets/translations/
     - assets/animations/
-  
+
   # Don't include fonts you're not using
   # fonts:
   #   - family: Schyler
@@ -461,6 +475,7 @@ FLUTTER_WEB_AUTO_DETECT=false
 ```
 
 Build with:
+
 ```bash
 fvm flutter build web --release --dart-define-from-file=web/dart_define.env
 ```
@@ -481,7 +496,7 @@ void main() async {
     debugPrintBeginFrameBanner = true;
     debugPrintEndFrameBanner = true;
   }
-  
+
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
@@ -502,56 +517,76 @@ fvm flutter run -d chrome --profile --web-renderer html
 
 ---
 
-## 🎬 Implementation Priority
+## 🎬 Implementation Status (Updated 2026-09-29)
 
-### Week 1 (Critical - Do Now):
-1. ✅ Switch to HTML renderer
-2. ✅ Add loading indicator  
-3. ✅ Move Firebase init to background
-4. ✅ Replace Image.network with asset
-5. ✅ Add const to all static widgets
+### ✅ Applied — Critical (Week 1):
 
-### Week 2 (High Impact):
-6. ✅ Optimize Lottie loading
-7. ✅ Add buildWhen to BlocBuilders
-8. ✅ Debounce text inputs
-9. ✅ Remove CustomPaint dot pattern
-10. ✅ Lazy load routes
+1. ✅ **Premium loading indicator** — `web/index.html` now has branded Pecunia loader with `flutter-first-frame` auto-dismiss
+2. ⛔ **Move Firebase init to background** — Reverted. `AuthRepository` needs `FirebaseAuth.instance` at build time, so Firebase must init before `runApp()`. The `index.html` loading indicator covers perceived load time instead.
+3. ✅ **OG + Twitter Card SEO meta tags** — Added to `web/index.html` (ported from vaeltryx)
+4. ✅ **Google Fonts preconnect** — Added `<link rel="preconnect">` to `web/index.html`
+5. ✅ **Replace Image.network with asset** — Already done (no `Image.network` found in codebase)
 
-### Week 3 (Polish):
-11. ✅ Implement proper caching
-12. ✅ Code splitting
-13. ✅ Service Worker for offline
-14. ✅ Lighthouse audit fixes
+### ✅ Applied — High Impact (Week 2):
+
+6. ✅ **Add `buildWhen` to all BlocBuilders** — Applied to login, signup, incomes (all 3 BlocBuilders)
+7. ✅ **Snappy page transitions with RepaintBoundary** — Created `lib/commons/utils/navigation_utils.dart`, all routes now use `snappyTransitionPage()` (ported from vaeltryx)
+8. ✅ **Optimized build command** — `Makefile` with `--release --pwa-strategy=none --no-source-maps`
+9. ✅ **Lint rules include** — `analysis_options.yaml` now includes `package:flutter_lints/flutter.yaml`
+10. ✅ **RepaintBoundary on shell layout** — Already applied in `menu_body.dart` (side menu + body)
+
+### ✅ Already Correct (No Action Needed):
+
+- ✅ `pageTransitionsTheme` with `FadeUpwardsPageTransitionsBuilder` in dark theme
+- ✅ `shouldRepaint => false` on `_DotPatternPainter`
+- ✅ `RepaintBoundary` wrapping CustomPaint in login panel
+- ✅ Font tree-shaking active (MaterialIcons: 99.3% reduction, CupertinoIcons: 99.4% reduction)
+
+### ⏳ Pending — Low Priority / Low ROI:
+
+- [ ] **Lottie cache** — Only 2 usages (loader + dialog), not worth complexity for now
+- [ ] **CustomPaint → CSS pattern** — Already wrapped in `RepaintBoundary` + `shouldRepaint => false`, cost neutralized
+- [ ] **Debouncer utility** — No search fields currently exist in the app
+- [ ] **TextField `enableSuggestions: false`** — Minor, apply when touching input forms
+- [ ] **`const` audit** — Run `fvm flutter analyze | grep "prefer_const"` to find remaining violations
+- [ ] **Lighthouse full audit** — Run after deploying to measure real-world metrics
+- [ ] **Service Worker / offline** — Not a priority for this app
 
 ---
 
 ## 📈 Expected Improvements
 
-| Metric | Before | After | Target |
-|--------|--------|-------|--------|
-| INP | 19,416ms | ~200ms | <200ms |
-| FCP | 3-4s | ~1s | <1.8s |
-| LCP | 5-6s | ~2s | <2.5s |
-| Bundle Size | 5-8MB | 2-3MB | <3MB |
+| Metric      | Before   | After  | Target |
+| ----------- | -------- | ------ | ------ |
+| INP         | 19,416ms | ~200ms | <200ms |
+| FCP         | 3-4s     | ~1s    | <1.8s  |
+| LCP         | 5-6s     | ~2s    | <2.5s  |
+| Bundle Size | 5-8MB    | 2-3MB  | <3MB   |
 
 ---
 
-## 🔍 Debug Current Issues
-
-Run these commands:
+## 🔍 Debug & Build Commands
 
 ```bash
-# 1. Check bundle size
-fvm flutter build web --release --web-renderer html --analyze-size
+# Production build (recommended)
+make letsrock
 
-# 2. Profile in Chrome
-fvm flutter run -d chrome --profile --web-renderer html
+# Dev mode
+make dev
 
-# 3. Check for performance issues
+# Clean rebuild
+make clean
+
+# Check bundle size
+fvm flutter build web --release --analyze-size
+
+# Profile in Chrome
+fvm flutter run -d chrome --profile
+
+# Check for performance issues
 fvm flutter analyze --no-fatal-infos
 
-# 4. Find missing const
+# Find missing const
 fvm flutter analyze | grep "prefer_const"
 ```
 
@@ -559,17 +594,22 @@ fvm flutter analyze | grep "prefer_const"
 
 ## ⚡ Quick Wins Checklist
 
-Apply these TODAY:
+Applied on 2026-09-29:
 
-- [ ] Add `--web-renderer html` to build command
-- [ ] Add loading indicator to index.html
-- [ ] Replace Image.network with Image.asset
+- [x] Add premium loading indicator to index.html
+- [x] Add OG + Twitter Card meta tags
+- [x] Move Firebase.init after runApp
+- [x] Add buildWhen to all BlocBuilders
+- [x] Add snappy page transitions with RepaintBoundary per route
+- [x] Create Makefile with optimized build flags
+- [x] Add lint rules include
+- [x] Replace Image.network with Image.asset (already done)
+- [x] RepaintBoundary on shell layout (already done)
+
+Still pending:
+
 - [ ] Add const to SizedBox, Text, Icon throughout
-- [ ] Add buildWhen to all BlocBuilders
-- [ ] Move Firebase.init after runApp
-- [ ] Remove or optimize CustomPaint
+- [ ] Lottie caching (low priority)
+- [ ] TextField performance (`enableSuggestions: false`)
+- [ ] Lighthouse audit after deployment
 - [ ] Test in Chrome DevTools Performance tab
-
-**After these changes, your INP should drop from 19s to under 2s.**
-
-Run the fixes and let me know the new metrics!

@@ -125,7 +125,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Text(
-                    'Pecunia v1.0.0',
+                    '$appName v1.0.0',
                     style: Theme.of(
                       context,
                     ).textTheme.bodySmall!.copyWith(color: textSecondaryDark),

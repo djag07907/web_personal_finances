@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:web_personal_finances/accountsReceivable/accounts_receivable_screen.dart';
 import 'package:web_personal_finances/accountsToPay/accounts_to_pay_screen.dart';
+import 'package:web_personal_finances/commons/utils/navigation_utils.dart';
 import 'package:web_personal_finances/expenses/expenses_screen.dart';
 import 'package:web_personal_finances/home/home_screen.dart';
 import 'package:web_personal_finances/incomes/incomes_screen.dart';
@@ -23,68 +24,86 @@ final GoRouter appRoutes = GoRouter(
     ),
     GoRoute(
       path: loginRoute,
-      builder: (final BuildContext context, final GoRouterState state) {
-        return const LoginScreen();
-      },
+      pageBuilder: (final BuildContext context, final GoRouterState state) =>
+          snappyTransitionPage(key: state.pageKey, child: const LoginScreen()),
     ),
     GoRoute(
       path: signupRoute,
-      builder: (final BuildContext context, final GoRouterState state) {
-        return const SignUpScreen();
-      },
+      pageBuilder: (final BuildContext context, final GoRouterState state) =>
+          snappyTransitionPage(key: state.pageKey, child: const SignUpScreen()),
     ),
     ShellRoute(
-      builder: (
-        final BuildContext context,
-        final GoRouterState state,
-        final Widget child,
-      ) {
-        return MenuScreen(
-          menuBody: child,
-        );
-      },
+      builder:
+          (
+            final BuildContext context,
+            final GoRouterState state,
+            final Widget child,
+          ) {
+            return MenuScreen(menuBody: child);
+          },
       routes: <RouteBase>[
         GoRoute(
           path: homeRoute,
-          builder: (final BuildContext context, final GoRouterState state) {
-            return const HomeScreen();
-          },
+          pageBuilder:
+              (final BuildContext context, final GoRouterState state) =>
+                  snappyTransitionPage(
+                    key: state.pageKey,
+                    child: const HomeScreen(),
+                  ),
         ),
         GoRoute(
           path: incomesRoute,
-          builder: (final BuildContext context, final GoRouterState state) {
-            return const IncomesScreen();
-          },
+          pageBuilder:
+              (final BuildContext context, final GoRouterState state) =>
+                  snappyTransitionPage(
+                    key: state.pageKey,
+                    child: const IncomesScreen(),
+                  ),
         ),
         GoRoute(
           path: expensesRoute,
-          builder: (final BuildContext context, final GoRouterState state) {
-            return const ExpensesScreen();
-          },
+          pageBuilder:
+              (final BuildContext context, final GoRouterState state) =>
+                  snappyTransitionPage(
+                    key: state.pageKey,
+                    child: const ExpensesScreen(),
+                  ),
         ),
         GoRoute(
           path: accountsToPayRoute,
-          builder: (final BuildContext context, final GoRouterState state) {
-            return const AccountsToPayScreen();
-          },
+          pageBuilder:
+              (final BuildContext context, final GoRouterState state) =>
+                  snappyTransitionPage(
+                    key: state.pageKey,
+                    child: const AccountsToPayScreen(),
+                  ),
         ),
         GoRoute(
           path: accountsReceivableRoute,
-          builder: (final BuildContext context, final GoRouterState state) {
-            return const AccountsReceivableScreen();
-          },
+          pageBuilder:
+              (final BuildContext context, final GoRouterState state) =>
+                  snappyTransitionPage(
+                    key: state.pageKey,
+                    child: const AccountsReceivableScreen(),
+                  ),
         ),
         GoRoute(
           path: savingsRoute,
-          builder: (final BuildContext context, final GoRouterState state) {
-            return const SavingsScreen();
-          },
+          pageBuilder:
+              (final BuildContext context, final GoRouterState state) =>
+                  snappyTransitionPage(
+                    key: state.pageKey,
+                    child: const SavingsScreen(),
+                  ),
         ),
         GoRoute(
           path: profileRoute,
-          builder: (final BuildContext context, final GoRouterState state) {
-            return const ProfileScreen();
-          },
+          pageBuilder:
+              (final BuildContext context, final GoRouterState state) =>
+                  snappyTransitionPage(
+                    key: state.pageKey,
+                    child: const ProfileScreen(),
+                  ),
         ),
       ],
     ),
