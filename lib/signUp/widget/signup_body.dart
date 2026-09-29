@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:internationalization/internationalization.dart';
+import 'package:web_personal_finances/commons/dialog/custom_status_dialog.dart';
+import 'package:web_personal_finances/commons/enum/status_dialog_types.dart';
 import 'package:web_personal_finances/commons/loader/loader.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
@@ -75,11 +77,12 @@ class _SignUpBodyState extends State<SignUpBody> {
           body: BlocListener<SignupBloc, SignupState>(
             listener: (final BuildContext context, final SignupState state) {
               if (state is SignUpError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    backgroundColor: redAlert,
-                    content: Text('Registration Failed: ${state.error}'),
-                  ),
+                CustomStatusDialog.show(
+                  context,
+                  type: StatusDialogType.error,
+                  title: 'Registration Failed',
+                  message: state.error,
+                  dismissLabel: 'Try Again',
                 );
               }
               if (state is SignUpSuccess) {

@@ -5,6 +5,8 @@ const String imagePath = 'images/';
 const String iconPath = 'icons/';
 const String animationPath = 'animations/';
 const String pecuniaLogoPath = 'assets/images/pecunia_icon.png';
+const String successAnimationPath = 'assets/animations/check_animation.json';
+const String alertAnimationPath = 'assets/animations/alert_animation.json';
 
 const int minDesktopWidth = 960;
 

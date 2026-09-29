@@ -16,7 +16,8 @@ class SignUpSuccess extends SignupState {}
 class SignUpError extends SignupState {
   final String error;
 
-  const SignUpError({
-    required this.error,
-  });
+  const SignUpError({required this.error});
+
+  @override
+  List<Object?> get props => <Object?>[error];
 }
