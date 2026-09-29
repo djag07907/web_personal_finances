@@ -392,10 +392,7 @@ class _IncomesBodyState extends State<IncomesBody> {
             },
             builder: (final BuildContext context, final BaseState state) {
               if (state is IncomesInProgress && !_showDrawer) {
-                return Container(
-                  color: black.withValues(alpha: 0.5),
-                  child: const Center(child: Loader()),
-                );
+                return const Loader();
               }
               return const SizedBox.shrink();
             },

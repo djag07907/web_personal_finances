@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web_personal_finances/commons/loader/loader.dart';
 import 'package:web_personal_finances/login/bloc/login_bloc.dart';
 import 'package:web_personal_finances/login/bloc/login_event.dart';
 import 'package:web_personal_finances/login/bloc/login_state.dart';
@@ -142,16 +143,7 @@ class _LoginBodyState extends State<LoginBody> {
           },
           builder: (final BuildContext context, final LoginState state) {
             if (state is LoginInProgress) {
-              return Container(
-                color: black.withValues(alpha: 0.5),
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      LightColors.primary,
-                    ),
-                  ),
-                ),
-              );
+              return const Loader();
             }
             return const SizedBox.shrink();
           },

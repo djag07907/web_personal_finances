@@ -9,6 +9,7 @@ import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_item.dart';
 import 'package:web_personal_finances/commons/items/bill_item.dart';
 import 'package:web_personal_finances/commons/items/transaction_item.dart';
+import 'package:web_personal_finances/commons/loader/loader.dart';
 import 'package:web_personal_finances/home/model/financial_data.dart';
 import 'package:web_personal_finances/home/widget/expense_income_bar.dart';
 import 'package:web_personal_finances/resources/api_constants.dart';
@@ -53,25 +54,23 @@ class _HomeBodyState extends State<HomeBody> {
                 body: _buildCharts(financialData),
               ),
             ),
-            Center(
-              child: isLoading
-                  ? CircularProgressIndicator()
-                  : Padding(
-                      padding: const EdgeInsets.only(bottom: 10.0),
-                      child: Text(
-                        '$dollarValue ${exchangeRate?.toStringAsFixed(2)} $hnlCurrency',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? DarkColors.textPrimary
-                              : null,
-                        ),
-                      ),
-                    ),
-            ),
+            if (!isLoading)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: Text(
+                  '$dollarValue ${exchangeRate?.toStringAsFixed(2)} $hnlCurrency',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? DarkColors.textPrimary
+                        : null,
+                  ),
+                ),
+              ),
           ],
         ),
+        if (isLoading) const Loader(),
       ],
     );
   }

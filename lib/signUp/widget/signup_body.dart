@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:internationalization/internationalization.dart';
+import 'package:web_personal_finances/commons/loader/loader.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 // import 'package:lottie/lottie.dart'; // Commented for now
 import 'package:web_personal_finances/routes/landing_routes.dart';
@@ -135,10 +136,7 @@ class _SignUpBodyState extends State<SignUpBody> {
           },
           builder: (final BuildContext context, final SignupState state) {
             if (state is SignUpInProgress) {
-              return Container(
-                color: black.withValues(alpha: 0.5),
-                child: const Center(child: CircularProgressIndicator()),
-              );
+              return const Loader();
             }
             return const SizedBox.shrink();
           },
