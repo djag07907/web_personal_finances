@@ -67,4 +67,57 @@ class DrawerWidget extends StatelessWidget {
       ),
     );
   }
+
+  static Future<T?> show<T>({
+    required final BuildContext context,
+    required final String title,
+    required final Widget Function(BuildContext dialogContext) builder,
+  }) {
+    return showGeneralDialog<T>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: title,
+      barrierColor: black.withValues(alpha: 0.5),
+      transitionDuration: const Duration(milliseconds: 250),
+      pageBuilder:
+          (
+            final BuildContext dialogContext,
+            final Animation<double> animation,
+            final Animation<double> secondaryAnimation,
+          ) {
+            return Material(
+              color: transparent,
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: DrawerWidget(
+                  title: title,
+                  onClose: () => Navigator.of(dialogContext).pop(),
+                  child: builder(dialogContext),
+                ),
+              ),
+            );
+          },
+      transitionBuilder:
+          (
+            final BuildContext context,
+            final Animation<double> animation,
+            final Animation<double> secondaryAnimation,
+            final Widget child,
+          ) {
+            return SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(1.0, 0.0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: child,
+            );
+          },
+    );
+  }
 }

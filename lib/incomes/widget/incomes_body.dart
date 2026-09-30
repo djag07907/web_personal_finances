@@ -45,7 +45,6 @@ class _IncomesBodyState extends State<IncomesBody> {
   List<IncomeItem> _incomeItems = <IncomeItem>[];
   int _currentPage = 0;
   static const int _itemsPerPage = 10;
-  bool _showDrawer = false;
   IncomeItem? _editingItem;
   bool _isEditing = false;
 
@@ -211,57 +210,13 @@ class _IncomesBodyState extends State<IncomesBody> {
               ],
             ),
           ),
-          if (_showDrawer)
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _showDrawer = false;
-                  });
-                },
-                child: Container(color: black.withValues(alpha: 0.5)),
-              ),
-            ),
-          if (_showDrawer)
-            Positioned.fill(
-              child: DrawerWidget(
-                title: context.translate(
-                  _isEditing ? 'edit_income' : 'add_income',
-                ),
-                onClose: () {
-                  setState(() {
-                    _showDrawer = false;
-                  });
-                },
-                child: FormWidget(
-                  incomeItem: _editingItem,
-                  isEdit: _isEditing,
-                  onSave: (final IncomeItem item) {
-                    if (_isEditing) {
-                      _incomesBloc.add(IncomesUpdated(incomeItem: item));
-                    } else {
-                      _incomesBloc.add(IncomesAdded(incomeItem: item));
-                    }
-                    showSnackbar(
-                      context,
-                      context.translate('income_saved_successfully'),
-                    );
-                  },
-                  onClose: () {
-                    setState(() {
-                      _showDrawer = false;
-                    });
-                  },
-                ),
-              ),
-            ),
           BlocBuilder<IncomesBloc, BaseState>(
             buildWhen: (final BaseState previous, final BaseState current) {
               return (previous is IncomesInProgress) !=
                   (current is IncomesInProgress);
             },
             builder: (final BuildContext context, final BaseState state) {
-              if (state is IncomesInProgress && !_showDrawer) {
+              if (state is IncomesInProgress) {
                 return const Loader();
               }
               return const SizedBox.shrink();
@@ -291,20 +246,44 @@ class _IncomesBodyState extends State<IncomesBody> {
     return Future<bool>.value(confirmed);
   }
 
+  void _openDrawer() {
+    DrawerWidget.show(
+      context: context,
+      title: context.translate(_isEditing ? 'edit_income' : 'add_income'),
+      builder: (final BuildContext dialogContext) {
+        return FormWidget(
+          incomeItem: _editingItem,
+          isEdit: _isEditing,
+          onSave: (final IncomeItem item) {
+            if (_isEditing) {
+              _incomesBloc.add(IncomesUpdated(incomeItem: item));
+            } else {
+              _incomesBloc.add(IncomesAdded(incomeItem: item));
+            }
+            Navigator.of(dialogContext).pop();
+            showSnackbar(
+              context,
+              context.translate('income_saved_successfully'),
+            );
+          },
+          onClose: () {
+            Navigator.of(dialogContext).pop();
+          },
+        );
+      },
+    );
+  }
+
   void _addIncome() {
-    setState(() {
-      _showDrawer = true;
-      _editingItem = null;
-      _isEditing = false;
-    });
+    _editingItem = null;
+    _isEditing = false;
+    _openDrawer();
   }
 
   void _editIncome(final IncomeItem item) {
-    setState(() {
-      _showDrawer = true;
-      _editingItem = item;
-      _isEditing = true;
-    });
+    _editingItem = item;
+    _isEditing = true;
+    _openDrawer();
   }
 
   void _removeIncome(final IncomeItem item) async {

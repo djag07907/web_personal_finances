@@ -54,7 +54,6 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
   int _currentPage = 0;
   static const int _itemsPerPage = 5;
 
-  bool _showDrawer = false;
   AccountToPayItem? _editingItem;
   bool _isEditing = false;
 
@@ -172,59 +171,6 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
             ),
           ),
         ),
-        if (_showDrawer)
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _showDrawer = false;
-                });
-              },
-              child: Container(color: black.withValues(alpha: 0.5)),
-            ),
-          ),
-        if (_showDrawer)
-          Positioned.fill(
-            child: DrawerWidget(
-              title: context.translate(
-                _isEditing ? 'edit_account_to_pay' : 'add_account_to_pay',
-              ),
-              onClose: () {
-                setState(() {
-                  _showDrawer = false;
-                });
-              },
-              child: FormWidget(
-                accountToPayItem: _editingItem,
-                isEdit: _isEditing,
-                onSave: (final AccountToPayItem item) {
-                  setState(() {
-                    if (_isEditing) {
-                      final int index = _accountsToPayItems.indexWhere(
-                        (final AccountToPayItem accountToPayItem) =>
-                            accountToPayItem.id == item.id,
-                      );
-                      if (index != -1) {
-                        _accountsToPayItems[index] = item;
-                      }
-                    } else {
-                      _accountsToPayItems.add(item);
-                    }
-                    _showDrawer = false;
-                  });
-                  showSnackbar(
-                    context,
-                    context.translate('account_to_pay_saved_successfully'),
-                  );
-                },
-                onClose: () {
-                  setState(() {
-                    _showDrawer = false;
-                  });
-                },
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -240,7 +186,6 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
       confirmationText: content,
       onPrimaryButtonTap: () {
         confirmed = true;
-        // Navigator.of(context).pop();
       },
       onSecondaryButtonTap: () {
         confirmed = false;
@@ -249,20 +194,54 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
     return Future<bool>.value(confirmed);
   }
 
+  void _openDrawer() {
+    DrawerWidget.show(
+      context: context,
+      title: context.translate(
+        _isEditing ? 'edit_account_to_pay' : 'add_account_to_pay',
+      ),
+      builder: (final BuildContext dialogContext) {
+        return FormWidget(
+          accountToPayItem: _editingItem,
+          isEdit: _isEditing,
+          onSave: (final AccountToPayItem item) {
+            setState(() {
+              if (_isEditing) {
+                final int index = _accountsToPayItems.indexWhere(
+                  (final AccountToPayItem accountToPayItem) =>
+                      accountToPayItem.id == item.id,
+                );
+                if (index != -1) {
+                  _accountsToPayItems[index] = item;
+                }
+              } else {
+                _accountsToPayItems.add(item);
+              }
+            });
+            Navigator.of(dialogContext).pop();
+            showSnackbar(
+              context,
+              context.translate('account_to_pay_saved_successfully'),
+            );
+          },
+          onClose: () {
+            Navigator.of(dialogContext).pop();
+          },
+        );
+      },
+    );
+  }
+
   void _addAccountToPay() {
-    setState(() {
-      _showDrawer = true;
-      _editingItem = null;
-      _isEditing = false;
-    });
+    _editingItem = null;
+    _isEditing = false;
+    _openDrawer();
   }
 
   void _editAccountToPay(final AccountToPayItem item) {
-    setState(() {
-      _showDrawer = true;
-      _editingItem = item;
-      _isEditing = true;
-    });
+    _editingItem = item;
+    _isEditing = true;
+    _openDrawer();
   }
 
   void _removeAccountToPay(final AccountToPayItem item) async {

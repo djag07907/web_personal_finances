@@ -52,7 +52,6 @@ class _SavingsBodyState extends State<SavingsBody> {
   int _currentPage = 0;
   static const int _itemsPerPage = 5;
 
-  bool _showDrawer = false;
   SavingItem? _editingItem;
   bool _isEditing = false;
 
@@ -163,59 +162,6 @@ class _SavingsBodyState extends State<SavingsBody> {
             ),
           ),
         ),
-        if (_showDrawer)
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _showDrawer = false;
-                });
-              },
-              child: Container(color: black.withValues(alpha: 0.5)),
-            ),
-          ),
-        if (_showDrawer)
-          Positioned.fill(
-            child: DrawerWidget(
-              title: context.translate(
-                _isEditing ? 'edit_saving' : 'add_saving',
-              ),
-              onClose: () {
-                setState(() {
-                  _showDrawer = false;
-                });
-              },
-              child: FormWidget(
-                savingItem: _editingItem,
-                isEdit: _isEditing,
-                onSave: (final SavingItem item) {
-                  setState(() {
-                    if (_isEditing) {
-                      final int index = _savingsItems.indexWhere(
-                        (final SavingItem savingItem) =>
-                            savingItem.id == item.id,
-                      );
-                      if (index != -1) {
-                        _savingsItems[index] = item;
-                      }
-                    } else {
-                      _savingsItems.add(item);
-                    }
-                    _showDrawer = false;
-                  });
-                  showSnackbar(
-                    context,
-                    context.translate('saving_saved_successfully'),
-                  );
-                },
-                onClose: () {
-                  setState(() {
-                    _showDrawer = false;
-                  });
-                },
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -231,7 +177,6 @@ class _SavingsBodyState extends State<SavingsBody> {
       confirmationText: content,
       onPrimaryButtonTap: () {
         confirmed = true;
-        // Navigator.of(context).pop();
       },
       onSecondaryButtonTap: () {
         confirmed = false;
@@ -240,20 +185,51 @@ class _SavingsBodyState extends State<SavingsBody> {
     return Future<bool>.value(confirmed);
   }
 
+  void _openDrawer() {
+    DrawerWidget.show(
+      context: context,
+      title: context.translate(_isEditing ? 'edit_saving' : 'add_saving'),
+      builder: (final BuildContext dialogContext) {
+        return FormWidget(
+          savingItem: _editingItem,
+          isEdit: _isEditing,
+          onSave: (final SavingItem item) {
+            setState(() {
+              if (_isEditing) {
+                final int index = _savingsItems.indexWhere(
+                  (final SavingItem savingItem) => savingItem.id == item.id,
+                );
+                if (index != -1) {
+                  _savingsItems[index] = item;
+                }
+              } else {
+                _savingsItems.add(item);
+              }
+            });
+            Navigator.of(dialogContext).pop();
+            showSnackbar(
+              context,
+              context.translate('saving_saved_successfully'),
+            );
+          },
+          onClose: () {
+            Navigator.of(dialogContext).pop();
+          },
+        );
+      },
+    );
+  }
+
   void _addSaving() {
-    setState(() {
-      _showDrawer = true;
-      _editingItem = null;
-      _isEditing = false;
-    });
+    _editingItem = null;
+    _isEditing = false;
+    _openDrawer();
   }
 
   void _editSaving(final SavingItem item) {
-    setState(() {
-      _showDrawer = true;
-      _editingItem = item;
-      _isEditing = true;
-    });
+    _editingItem = item;
+    _isEditing = true;
+    _openDrawer();
   }
 
   void _removeSaving(final SavingItem item) async {

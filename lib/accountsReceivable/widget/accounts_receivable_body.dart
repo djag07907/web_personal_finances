@@ -55,7 +55,6 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
   int _currentPage = 0;
   static const int _itemsPerPage = 5;
 
-  bool _showDrawer = false;
   AccountReceivableItem? _editingItem;
   bool _isEditing = false;
 
@@ -173,61 +172,6 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
             ),
           ),
         ),
-        if (_showDrawer)
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _showDrawer = false;
-                });
-              },
-              child: Container(color: black.withValues(alpha: 0.5)),
-            ),
-          ),
-        if (_showDrawer)
-          Positioned.fill(
-            child: DrawerWidget(
-              title: context.translate(
-                _isEditing
-                    ? 'edit_account_receivable'
-                    : 'add_account_receivable',
-              ),
-              onClose: () {
-                setState(() {
-                  _showDrawer = false;
-                });
-              },
-              child: FormWidget(
-                accountReceivableItem: _editingItem,
-                isEdit: _isEditing,
-                onSave: (final AccountReceivableItem item) {
-                  setState(() {
-                    if (_isEditing) {
-                      final int index = _accountsReceivableItems.indexWhere(
-                        (final AccountReceivableItem accountReceivableItem) =>
-                            accountReceivableItem.id == item.id,
-                      );
-                      if (index != -1) {
-                        _accountsReceivableItems[index] = item;
-                      }
-                    } else {
-                      _accountsReceivableItems.add(item);
-                    }
-                    _showDrawer = false;
-                  });
-                  showSnackbar(
-                    context,
-                    context.translate('account_receivable_saved_successfully'),
-                  );
-                },
-                onClose: () {
-                  setState(() {
-                    _showDrawer = false;
-                  });
-                },
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -243,7 +187,6 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
       confirmationText: content,
       onPrimaryButtonTap: () {
         confirmed = true;
-        // Navigator.of(context).pop();
       },
       onSecondaryButtonTap: () {
         confirmed = false;
@@ -252,20 +195,54 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
     return Future<bool>.value(confirmed);
   }
 
+  void _openDrawer() {
+    DrawerWidget.show(
+      context: context,
+      title: context.translate(
+        _isEditing ? 'edit_account_receivable' : 'add_account_receivable',
+      ),
+      builder: (final BuildContext dialogContext) {
+        return FormWidget(
+          accountReceivableItem: _editingItem,
+          isEdit: _isEditing,
+          onSave: (final AccountReceivableItem item) {
+            setState(() {
+              if (_isEditing) {
+                final int index = _accountsReceivableItems.indexWhere(
+                  (final AccountReceivableItem accountReceivableItem) =>
+                      accountReceivableItem.id == item.id,
+                );
+                if (index != -1) {
+                  _accountsReceivableItems[index] = item;
+                }
+              } else {
+                _accountsReceivableItems.add(item);
+              }
+            });
+            Navigator.of(dialogContext).pop();
+            showSnackbar(
+              context,
+              context.translate('account_receivable_saved_successfully'),
+            );
+          },
+          onClose: () {
+            Navigator.of(dialogContext).pop();
+          },
+        );
+      },
+    );
+  }
+
   void _addAccountReceivable() {
-    setState(() {
-      _showDrawer = true;
-      _editingItem = null;
-      _isEditing = false;
-    });
+    _editingItem = null;
+    _isEditing = false;
+    _openDrawer();
   }
 
   void _editAccountReceivable(final AccountReceivableItem item) {
-    setState(() {
-      _showDrawer = true;
-      _editingItem = item;
-      _isEditing = true;
-    });
+    _editingItem = item;
+    _isEditing = true;
+    _openDrawer();
   }
 
   void _removeAccountReceivable(final AccountReceivableItem item) async {

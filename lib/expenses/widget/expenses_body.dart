@@ -51,7 +51,6 @@ class _ExpensesBodyState extends State<ExpensesBody> {
 
   int _currentPage = 0;
   static const int _itemsPerPage = 5;
-  bool _showDrawer = false;
   ExpenseItem? _editingItem;
   bool _isEditing = false;
 
@@ -164,59 +163,6 @@ class _ExpensesBodyState extends State<ExpensesBody> {
             ),
           ),
         ),
-        if (_showDrawer)
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _showDrawer = false;
-                });
-              },
-              child: Container(color: black.withValues(alpha: 0.5)),
-            ),
-          ),
-        if (_showDrawer)
-          Positioned.fill(
-            child: DrawerWidget(
-              title: context.translate(
-                _isEditing ? 'edit_expense' : 'add_expense',
-              ),
-              onClose: () {
-                setState(() {
-                  _showDrawer = false;
-                });
-              },
-              child: FormWidget(
-                expenseItem: _editingItem,
-                isEdit: _isEditing,
-                onSave: (final ExpenseItem item) {
-                  setState(() {
-                    if (_isEditing) {
-                      final int index = _expenseItems.indexWhere(
-                        (final ExpenseItem expenseItem) =>
-                            expenseItem.id == item.id,
-                      );
-                      if (index != -1) {
-                        _expenseItems[index] = item;
-                      }
-                    } else {
-                      _expenseItems.add(item);
-                    }
-                    _showDrawer = false;
-                  });
-                  showSnackbar(
-                    context,
-                    context.translate('expense_saved_successfully'),
-                  );
-                },
-                onClose: () {
-                  setState(() {
-                    _showDrawer = false;
-                  });
-                },
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -232,7 +178,6 @@ class _ExpensesBodyState extends State<ExpensesBody> {
       confirmationText: content,
       onPrimaryButtonTap: () {
         confirmed = true;
-        // Navigator.of(context).pop();
       },
       onSecondaryButtonTap: () {
         confirmed = false;
@@ -241,20 +186,51 @@ class _ExpensesBodyState extends State<ExpensesBody> {
     return Future<bool>.value(confirmed);
   }
 
+  void _openDrawer() {
+    DrawerWidget.show(
+      context: context,
+      title: context.translate(_isEditing ? 'edit_expense' : 'add_expense'),
+      builder: (final BuildContext dialogContext) {
+        return FormWidget(
+          expenseItem: _editingItem,
+          isEdit: _isEditing,
+          onSave: (final ExpenseItem item) {
+            setState(() {
+              if (_isEditing) {
+                final int index = _expenseItems.indexWhere(
+                  (final ExpenseItem expenseItem) => expenseItem.id == item.id,
+                );
+                if (index != -1) {
+                  _expenseItems[index] = item;
+                }
+              } else {
+                _expenseItems.add(item);
+              }
+            });
+            Navigator.of(dialogContext).pop();
+            showSnackbar(
+              context,
+              context.translate('expense_saved_successfully'),
+            );
+          },
+          onClose: () {
+            Navigator.of(dialogContext).pop();
+          },
+        );
+      },
+    );
+  }
+
   void _addExpense() {
-    setState(() {
-      _showDrawer = true;
-      _editingItem = null;
-      _isEditing = false;
-    });
+    _editingItem = null;
+    _isEditing = false;
+    _openDrawer();
   }
 
   void _editExpense(final ExpenseItem item) {
-    setState(() {
-      _showDrawer = true;
-      _editingItem = item;
-      _isEditing = true;
-    });
+    _editingItem = item;
+    _isEditing = true;
+    _openDrawer();
   }
 
   void _removeExpense(final ExpenseItem item) async {
