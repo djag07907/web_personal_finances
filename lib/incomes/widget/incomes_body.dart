@@ -24,6 +24,7 @@ import 'package:web_personal_finances/commons/table/custom_data_table.dart';
 import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
 import 'package:web_personal_finances/incomes/bloc/incomes_bloc.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
+import 'package:web_personal_finances/commons/utils/currency_kpi_utils.dart';
 import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
@@ -48,6 +49,8 @@ class _IncomesBodyState extends State<IncomesBody> {
   IncomeItem? _editingItem;
   bool _isEditing = false;
 
+  UserModel? _currentUser;
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +58,19 @@ class _IncomesBodyState extends State<IncomesBody> {
     final String currentUid =
         FirebaseAuth.instance.currentUser?.uid ?? emptyString;
     _incomesBloc.add(IncomesFetched(userId: currentUid));
+    _loadCurrentUser();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    final User? authUser = FirebaseAuth.instance.currentUser;
+    if (authUser == null) return;
+    final UserRepository userRepository = context.read<UserRepository>();
+    final UserModel? user = await userRepository.getUser(authUser.uid);
+    if (mounted && user != null) {
+      setState(() {
+        _currentUser = user;
+      });
+    }
   }
 
   @override
@@ -354,73 +370,44 @@ class _IncomesBodyState extends State<IncomesBody> {
   }
 
   Widget _buildStatCards(final BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final bool isSmallScreen = screenWidth < 800;
+    final List<KpiCardSpec> specs = CurrencyKpiUtils.generateIncomeKpiCards(
+      incomeItems: _incomeItems,
+      user: _currentUser,
+    );
 
-    final double totalReceived = _incomeItems
-        .where((final IncomeItem item) => item.status)
-        .fold(
-          0.0,
-          (final double sum, final IncomeItem item) => sum + item.amount,
+    return LayoutBuilder(
+      builder: (final BuildContext context, final BoxConstraints constraints) {
+        final double availableWidth = constraints.maxWidth;
+        int crossAxisCount = 1;
+        if (availableWidth > 1100) {
+          crossAxisCount = specs.length > 3 ? 4 : specs.length;
+        } else if (availableWidth > 700) {
+          crossAxisCount = specs.length > 2 ? 2 : specs.length;
+        }
+
+        const double spacing = 16.0;
+        final double cardWidth =
+            (availableWidth - (spacing * (crossAxisCount - 1))) /
+            crossAxisCount;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: 12.0,
+          children: specs.map((final KpiCardSpec spec) {
+            return SizedBox(
+              width: cardWidth,
+              child: IncomeStatCard(
+                title: spec.title,
+                amount: spec.amount,
+                subtitle: spec.subtitle,
+                changePercent: spec.changePercent,
+                isPositive: spec.isPositive,
+                icon: spec.icon,
+              ),
+            );
+          }).toList(),
         );
-    final double totalPending = _incomeItems
-        .where((final IncomeItem item) => !item.status)
-        .fold(
-          0.0,
-          (final double sum, final IncomeItem item) => sum + item.amount,
-        );
-    // final int pendingCount = _incomeItems
-    //     .where((final IncomeItem item) => !item.status)
-    //     .length;
-
-    if (isSmallScreen) {
-      return Column(
-        children: <Widget>[
-          IncomeStatCard(
-            title: 'Total Received',
-            amount: '\u0024${totalReceived.toStringAsFixed(2)}',
-            // changePercent: '5.2',
-            isPositive: true,
-            icon: Icons.payments,
-          ),
-          const SizedBox(height: 12),
-          IncomeStatCard(
-            title: 'Pending',
-            amount: '\u0024${totalPending.toStringAsFixed(2)}',
-            // subtitle: pendingCount > 0 ? '$pendingCount pending' : null,
-            // changePercent: '1.2',
-            isPositive: true,
-            icon: Icons.pending_actions,
-          ),
-          const SizedBox(height: 12),
-        ],
-      );
-    }
-
-    return Row(
-      children: <Widget>[
-        Expanded(
-          child: IncomeStatCard(
-            title: 'Total Received',
-            amount: '\u0024${totalReceived.toStringAsFixed(2)}',
-            // changePercent: '5.2',
-            isPositive: true,
-            icon: Icons.payments,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: IncomeStatCard(
-            title: 'Pending',
-            amount: '\u0024${totalPending.toStringAsFixed(2)}',
-            // subtitle: pendingCount > 0 ? '$pendingCount pending' : null,
-            // changePercent: '1.2',
-            isPositive: true,
-            icon: Icons.pending_actions,
-          ),
-        ),
-        const SizedBox(width: 16),
-      ],
+      },
     );
   }
 }
