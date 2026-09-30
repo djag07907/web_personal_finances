@@ -1,42 +1,40 @@
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:web_personal_finances/commons/bloc/base_state.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/incomes/repository/incomes_repository.dart';
+import 'package:web_personal_finances/resources/constants.dart';
 
 part 'incomes_event.dart';
 part 'incomes_state.dart';
 
 class IncomesBloc extends Bloc<IncomesEvent, BaseState> {
   final IncomeRepository incomeRepository;
+
   IncomesBloc({required this.incomeRepository}) : super(IncomesInitial()) {
     on<IncomesAdded>(_onIncomeAdded);
     on<IncomesUpdated>(_onIncomeUpdated);
     on<IncomesDeleted>(_onIncomeDeleted);
     on<IncomesFetched>(_onIncomeFetched);
   }
+
   Future<void> _onIncomeAdded(
     final IncomesAdded event,
     final Emitter<BaseState> emit,
   ) async {
-    emit(
-      IncomesInProgress(),
-    );
+    emit(IncomesInProgress());
     try {
       await incomeRepository.addIncome(event.incomeItem);
-      final List<IncomeItem> incomes =
-          await incomeRepository.getIncomes().first;
-      emit(
-        IncomesSuccess(
-          incomes: incomes,
-        ),
-      );
+      final String userId = event.incomeItem.userId.isNotEmpty
+          ? event.incomeItem.userId
+          : FirebaseAuth.instance.currentUser?.uid ?? emptyString;
+      final List<IncomeItem> incomes = await incomeRepository
+          .getIncomes(userId)
+          .first;
+      emit(IncomesSuccess(incomes: incomes));
     } catch (error) {
-      emit(
-        IncomesError(
-          error: error.toString(),
-        ),
-      );
+      emit(IncomesError(error: error.toString()));
     }
   }
 
@@ -44,24 +42,18 @@ class IncomesBloc extends Bloc<IncomesEvent, BaseState> {
     final IncomesUpdated event,
     final Emitter<BaseState> emit,
   ) async {
-    emit(
-      IncomesInProgress(),
-    );
+    emit(IncomesInProgress());
     try {
       await incomeRepository.updateIncome(event.incomeItem);
-      final List<IncomeItem> incomes =
-          await incomeRepository.getIncomes().first;
-      emit(
-        IncomesSuccess(
-          incomes: incomes,
-        ),
-      );
+      final String userId = event.incomeItem.userId.isNotEmpty
+          ? event.incomeItem.userId
+          : FirebaseAuth.instance.currentUser?.uid ?? emptyString;
+      final List<IncomeItem> incomes = await incomeRepository
+          .getIncomes(userId)
+          .first;
+      emit(IncomesSuccess(incomes: incomes));
     } catch (error) {
-      emit(
-        IncomesError(
-          error: error.toString(),
-        ),
-      );
+      emit(IncomesError(error: error.toString()));
     }
   }
 
@@ -69,24 +61,18 @@ class IncomesBloc extends Bloc<IncomesEvent, BaseState> {
     final IncomesDeleted event,
     final Emitter<BaseState> emit,
   ) async {
-    emit(
-      IncomesInProgress(),
-    );
+    emit(IncomesInProgress());
     try {
       await incomeRepository.deleteIncome(event.id);
-      final List<IncomeItem> incomes =
-          await incomeRepository.getIncomes().first;
-      emit(
-        IncomesSuccess(
-          incomes: incomes,
-        ),
-      );
+      final String userId = event.userId.isNotEmpty
+          ? event.userId
+          : FirebaseAuth.instance.currentUser?.uid ?? emptyString;
+      final List<IncomeItem> incomes = await incomeRepository
+          .getIncomes(userId)
+          .first;
+      emit(IncomesSuccess(incomes: incomes));
     } catch (error) {
-      emit(
-        IncomesError(
-          error: error.toString(),
-        ),
-      );
+      emit(IncomesError(error: error.toString()));
     }
   }
 
@@ -94,23 +80,17 @@ class IncomesBloc extends Bloc<IncomesEvent, BaseState> {
     final IncomesFetched event,
     final Emitter<BaseState> emit,
   ) async {
-    emit(
-      IncomesInProgress(),
-    );
+    emit(IncomesInProgress());
     try {
-      final List<IncomeItem> incomes =
-          await incomeRepository.getIncomes().first;
-      emit(
-        IncomesSuccess(
-          incomes: incomes,
-        ),
-      );
+      final String userId = event.userId.isNotEmpty
+          ? event.userId
+          : FirebaseAuth.instance.currentUser?.uid ?? emptyString;
+      final List<IncomeItem> incomes = await incomeRepository
+          .getIncomes(userId)
+          .first;
+      emit(IncomesSuccess(incomes: incomes));
     } catch (error) {
-      emit(
-        IncomesError(
-          error: error.toString(),
-        ),
-      );
+      emit(IncomesError(error: error.toString()));
     }
   }
 }

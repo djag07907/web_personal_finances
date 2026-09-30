@@ -10,25 +10,36 @@ sealed class IncomesEvent extends Equatable {
 final class IncomesAdded extends IncomesEvent {
   final IncomeItem incomeItem;
 
-  IncomesAdded({
-    required this.incomeItem,
-  });
+  const IncomesAdded({required this.incomeItem});
+
+  @override
+  List<Object> get props => <Object>[incomeItem];
 }
 
 final class IncomesUpdated extends IncomesEvent {
   final IncomeItem incomeItem;
 
-  IncomesUpdated({
-    required this.incomeItem,
-  });
+  const IncomesUpdated({required this.incomeItem});
+
+  @override
+  List<Object> get props => <Object>[incomeItem];
 }
 
 final class IncomesDeleted extends IncomesEvent {
   final String id;
+  final String userId;
 
-  IncomesDeleted({
-    required this.id,
-  });
+  const IncomesDeleted({required this.id, required this.userId});
+
+  @override
+  List<Object> get props => <Object>[id, userId];
 }
 
-final class IncomesFetched extends IncomesEvent {}
+final class IncomesFetched extends IncomesEvent {
+  final String userId;
+
+  const IncomesFetched({required this.userId});
+
+  @override
+  List<Object> get props => <Object>[userId];
+}

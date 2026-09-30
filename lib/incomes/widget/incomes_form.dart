@@ -32,10 +32,12 @@ class _FormWidgetState extends State<FormWidget> {
   String? selectedCurrency;
   CustomFrequencyOptions? selectedFrequency;
   List<String> tags = <String>[];
+  List<String> _availableCurrencies = <String>[hnlCurrency, usdCurrency];
 
   @override
   void initState() {
     super.initState();
+    _loadUserCurrencies();
     if (widget.isEdit && widget.incomeItem != null) {
       _nameController.text = widget.incomeItem!.name;
       _commentController.text = widget.incomeItem!.comment;
@@ -47,6 +49,41 @@ class _FormWidgetState extends State<FormWidget> {
         selectedFrequency = widget.incomeItem!.frequency;
       }
       tags = widget.incomeItem?.tags ?? <String>[];
+    }
+  }
+
+  Future<void> _loadUserCurrencies() async {
+    final User? authUser = FirebaseAuth.instance.currentUser;
+    if (authUser == null) return;
+
+    final UserRepository userRepository = context.read<UserRepository>();
+    final UserModel? user = await userRepository.getUser(authUser.uid);
+
+    if (user != null) {
+      final List<String> allowed = <String>[];
+      final String primary = user.primaryCurrency.isNotEmpty
+          ? user.primaryCurrency
+          : hnlCurrency;
+      allowed.add(primary);
+
+      if (user.enableDualCurrency) {
+        final String secondary = primary == hnlCurrency
+            ? usdCurrency
+            : hnlCurrency;
+        if (!allowed.contains(secondary)) {
+          allowed.add(secondary);
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _availableCurrencies = allowed;
+          if (selectedCurrency == null ||
+              !_availableCurrencies.contains(selectedCurrency)) {
+            selectedCurrency = primary;
+          }
+        });
+      }
     }
   }
 
@@ -150,7 +187,7 @@ class _FormWidgetState extends State<FormWidget> {
                       return null;
                     },
                     selectedValue: selectedCurrency,
-                    items: <String>[usdCurrency, hnlCurrency],
+                    items: _availableCurrencies,
                     onChanged: (final String? value) {
                       setState(() {
                         selectedCurrency = value;
@@ -226,15 +263,23 @@ class _FormWidgetState extends State<FormWidget> {
                           isPrimary: true,
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
+                              final String currentUid =
+                                  FirebaseAuth.instance.currentUser?.uid ??
+                                  emptyString;
                               final IncomeItem newItem = IncomeItem(
                                 id: widget.isEdit
                                     ? widget.incomeItem!.id
                                     : DateTime.now().millisecondsSinceEpoch
                                           .toString(),
+                                userId: widget.isEdit
+                                    ? widget.incomeItem!.userId
+                                    : currentUid,
                                 name: _nameController.text,
                                 comment: _commentController.text,
                                 currency: selectedCurrency!,
-                                createdDate: DateTime.now(),
+                                createdDate: widget.isEdit
+                                    ? widget.incomeItem!.createdDate
+                                    : DateTime.now(),
                                 amount:
                                     double.tryParse(
                                       _amountController.text.replaceAll(
@@ -245,7 +290,9 @@ class _FormWidgetState extends State<FormWidget> {
                                     0,
                                 frequency: selectedFrequency!,
                                 dateToReceive: _dateToReceiveController.text,
-                                status: true,
+                                status: widget.isEdit
+                                    ? widget.incomeItem!.status
+                                    : true,
                                 tags: tags,
                               );
 

@@ -3,6 +3,7 @@ import 'package:web_personal_finances/incomes/model/income_item.dart';
 
 class IncomeRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   Future<void> addIncome(final IncomeItem incomeItem) async {
     await _firestore
         .collection('incomes')
@@ -21,17 +22,21 @@ class IncomeRepository {
     await _firestore.collection('incomes').doc(id).delete();
   }
 
-  Stream<List<IncomeItem>> getIncomes() {
+  Stream<List<IncomeItem>> getIncomes(final String userId) {
+    if (userId.isEmpty) {
+      return Stream<List<IncomeItem>>.value(<IncomeItem>[]);
+    }
     return _firestore
         .collection('incomes')
+        .where('userId', isEqualTo: userId)
         .snapshots()
         .map((final QuerySnapshot<Map<String, dynamic>> snapshot) {
-      return snapshot.docs
-          .map(
-            (final QueryDocumentSnapshot<Map<String, dynamic>> doc) =>
-                IncomeItem.fromMap(doc.data()),
-          )
-          .toList();
-    });
+          return snapshot.docs
+              .map(
+                (final QueryDocumentSnapshot<Map<String, dynamic>> doc) =>
+                    IncomeItem.fromMap(doc.data()),
+              )
+              .toList();
+        });
   }
 }

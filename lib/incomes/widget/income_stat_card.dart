@@ -3,8 +3,8 @@ part of 'incomes_body.dart';
 class IncomeStatCard extends StatelessWidget {
   final String title;
   final String amount;
-  final String subtitle;
-  final String changePercent;
+  final String? subtitle;
+  final String? changePercent;
   final bool isPositive;
   final IconData icon;
 
@@ -12,8 +12,8 @@ class IncomeStatCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.amount,
-    required this.subtitle,
-    required this.changePercent,
+    this.subtitle,
+    this.changePercent,
     this.isPositive = true,
     required this.icon,
   });
@@ -23,22 +23,19 @@ class IncomeStatCard extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isSmallScreen = screenWidth < 600;
+    final bool hasSubtitle = subtitle != null && subtitle!.trim().isNotEmpty;
 
     return Container(
-      height: 100,
-      margin: EdgeInsets.all(8.0),
+      margin: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
         color: isDark ? DarkColors.surface : white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: LightColors.primary,
-          width: 1.0,
-        ),
+        border: Border.all(color: LightColors.primary, width: 1.0),
         boxShadow: <BoxShadow>[
           BoxShadow(
             color: black.withValues(alpha: 0.05),
             blurRadius: 4,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -50,22 +47,19 @@ class IncomeStatCard extends StatelessWidget {
         child: Row(
           children: <Widget>[
             Container(
-              padding: EdgeInsets.all(10.0),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.all(10.0),
+              decoration: const BoxDecoration(
                 color: LightColors.primary,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                color: white,
-                size: 20,
-              ),
+              child: Icon(icon, color: white, size: 20),
             ),
             SizedBox(width: isSmallScreen ? 12 : 16),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -80,37 +74,41 @@ class IncomeStatCard extends StatelessWidget {
                               : LightColors.textSecondary,
                         ),
                       ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isPositive
-                              ? (isDark
-                                  ? LightColors.primary.withValues(alpha: 0.2)
-                                  : Color(0xFFE6FBF4))
-                              : (isDark
-                                  ? Colors.red.withValues(alpha: 0.2)
-                                  : Colors.red[50]),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '${isPositive ? "+" : ""}$changePercent%',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                      if (changePercent != null) ...<Widget>[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
                             color: isPositive
                                 ? (isDark
-                                    ? LightColors.primary
-                                    : Color(0xFF07882E))
-                                : Colors.red[700],
+                                      ? LightColors.primary.withValues(
+                                          alpha: 0.2,
+                                        )
+                                      : const Color(0xFFE6FBF4))
+                                : (isDark
+                                      ? Colors.red.withValues(alpha: 0.2)
+                                      : Colors.red[50]),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${isPositive ? "+" : ""}$changePercent%',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: isPositive
+                                  ? (isDark
+                                        ? LightColors.primary
+                                        : const Color(0xFF07882E))
+                                  : Colors.red[700],
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     amount,
                     style: TextStyle(
@@ -120,16 +118,18 @@ class IncomeStatCard extends StatelessWidget {
                       letterSpacing: -0.5,
                     ),
                   ),
-                  SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                  if (hasSubtitle) ...<Widget>[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  ],
                 ],
               ),
             ),

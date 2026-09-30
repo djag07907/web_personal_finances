@@ -1,7 +1,9 @@
 import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
+import 'package:web_personal_finances/resources/constants.dart';
 
 class IncomeItem {
   final String id;
+  final String userId;
   final String name;
   final String comment;
   final String currency;
@@ -11,10 +13,10 @@ class IncomeItem {
   final DateTime? createdDate;
   final CustomFrequencyOptions frequency;
   final List<String> tags;
-  // final String? paymentMethod;
 
   IncomeItem({
     required this.id,
+    this.userId = emptyString,
     required this.name,
     required this.comment,
     required this.currency,
@@ -24,17 +26,17 @@ class IncomeItem {
     this.createdDate,
     required this.frequency,
     this.tags = const <String>[],
-    // this.paymentMethod,
   });
 
   factory IncomeItem.fromMap(final Map<String, dynamic> map) {
     return IncomeItem(
-      id: map['id'],
-      name: map['name'],
-      comment: map['comment'],
-      currency: map['currency'],
-      amount: map['amount'].toDouble(),
-      dateToReceive: map['dateToReceive'],
+      id: map['id'] ?? emptyString,
+      userId: map['userId'] ?? emptyString,
+      name: map['name'] ?? emptyString,
+      comment: map['comment'] ?? emptyString,
+      currency: map['currency'] ?? usdCurrency,
+      amount: (map['amount'] ?? 0).toDouble(),
+      dateToReceive: map['dateToReceive'] ?? emptyString,
       status: map['status'] ?? false,
       frequency: CustomFrequencyOptions.values.firstWhere(
         (final CustomFrequencyOptions element) =>
@@ -47,13 +49,13 @@ class IncomeItem {
       tags: map['tags'] != null
           ? List<String>.from(map['tags'])
           : const <String>[],
-      // paymentMethod: map['paymentMethod'],
     );
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
+      'userId': userId,
       'name': name,
       'comment': comment,
       'currency': currency,
@@ -63,7 +65,6 @@ class IncomeItem {
       'createdDate': createdDate?.toIso8601String(),
       'frequency': frequency.name,
       'tags': tags,
-      // 'paymentMethod': paymentMethod,
     };
   }
 }
