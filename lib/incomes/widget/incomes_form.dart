@@ -116,6 +116,11 @@ class _FormWidgetState extends State<FormWidget> {
             controller: _scrollController,
             child: SingleChildScrollView(
               controller: _scrollController,
+              padding: const EdgeInsets.only(
+                right: 14.0,
+                top: 4.0,
+                bottom: 4.0,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -231,14 +236,7 @@ class _FormWidgetState extends State<FormWidget> {
                         _dateToReceiveController.text = formatted;
                       }
                     },
-                    validator: (final String? value) {
-                      if (value == null || value.isEmpty) {
-                        return context.translate(
-                          'please_enter_date_to_receive',
-                        );
-                      }
-                      return null;
-                    },
+                    validator: (final String? value) => null,
                     controller: _dateToReceiveController,
                   ),
                   SizedBox(height: 20.0),
@@ -284,7 +282,7 @@ class _FormWidgetState extends State<FormWidget> {
                                     double.tryParse(
                                       _amountController.text.replaceAll(
                                         ',',
-                                        '',
+                                        emptyString,
                                       ),
                                     ) ??
                                     0,

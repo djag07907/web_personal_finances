@@ -223,7 +223,7 @@ class CurrencyKpiUtils {
         KpiCardSpec(
           title: 'Total Received',
           amount: formatAmount(received, primary),
-          changePercent: '5.2',
+          // changePercent: '5.2',
           isPositive: true,
           icon: Icons.payments,
           currency: primary,
@@ -235,7 +235,7 @@ class CurrencyKpiUtils {
           title: 'Pending',
           amount: formatAmount(pending, primary),
           subtitle: pendingCount > 0 ? '$pendingCount pending' : null,
-          changePercent: '1.2',
+          // changePercent: '1.2',
           isPositive: true,
           icon: Icons.pending_actions,
           currency: primary,
