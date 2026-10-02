@@ -95,7 +95,7 @@ class CurrencyKpiUtils {
     final List<KpiCardSpec> cards = <KpiCardSpec>[];
 
     if (isDual) {
-      // Primary Currency Received & Pending
+      // Primary Currency Received
       final double receivedPrimary = calculateTotal<IncomeItem>(
         items: incomeItems,
         currency: primary,
@@ -104,48 +104,18 @@ class CurrencyKpiUtils {
         getStatus: (final IncomeItem item) => item.status,
         requiredStatus: true,
       );
-      final double pendingPrimary = calculateTotal<IncomeItem>(
-        items: incomeItems,
-        currency: primary,
-        getCurrency: (final IncomeItem item) => item.currency,
-        getAmount: (final IncomeItem item) => item.amount,
-        getStatus: (final IncomeItem item) => item.status,
-        requiredStatus: false,
-      );
-      final int pendingCountPrimary = countItems<IncomeItem>(
-        items: incomeItems,
-        currency: primary,
-        getCurrency: (final IncomeItem item) => item.currency,
-        getStatus: (final IncomeItem item) => item.status,
-        requiredStatus: false,
-      );
 
       cards.add(
         KpiCardSpec(
           title: 'Total Received ($primary)',
           amount: formatAmount(receivedPrimary, primary),
-          // changePercent: '5.2',
           isPositive: true,
           icon: Icons.payments,
           currency: primary,
         ),
       );
 
-      cards.add(
-        KpiCardSpec(
-          title: 'Pending ($primary)',
-          amount: formatAmount(pendingPrimary, primary),
-          subtitle: pendingCountPrimary > 0
-              ? '$pendingCountPrimary pending'
-              : null,
-          // changePercent: '1.2',
-          isPositive: true,
-          icon: Icons.pending_actions,
-          currency: primary,
-        ),
-      );
-
-      // Secondary Currency Received & Pending
+      // Secondary Currency Received
       final double receivedSecondary = calculateTotal<IncomeItem>(
         items: incomeItems,
         currency: secondary,
@@ -154,43 +124,13 @@ class CurrencyKpiUtils {
         getStatus: (final IncomeItem item) => item.status,
         requiredStatus: true,
       );
-      final double pendingSecondary = calculateTotal<IncomeItem>(
-        items: incomeItems,
-        currency: secondary,
-        getCurrency: (final IncomeItem item) => item.currency,
-        getAmount: (final IncomeItem item) => item.amount,
-        getStatus: (final IncomeItem item) => item.status,
-        requiredStatus: false,
-      );
-      final int pendingCountSecondary = countItems<IncomeItem>(
-        items: incomeItems,
-        currency: secondary,
-        getCurrency: (final IncomeItem item) => item.currency,
-        getStatus: (final IncomeItem item) => item.status,
-        requiredStatus: false,
-      );
 
       cards.add(
         KpiCardSpec(
           title: 'Total Received ($secondary)',
           amount: formatAmount(receivedSecondary, secondary),
-          // changePercent: '3.8',
           isPositive: true,
           icon: Icons.account_balance_wallet,
-          currency: secondary,
-        ),
-      );
-
-      cards.add(
-        KpiCardSpec(
-          title: 'Pending ($secondary)',
-          amount: formatAmount(pendingSecondary, secondary),
-          subtitle: pendingCountSecondary > 0
-              ? '$pendingCountSecondary pending'
-              : null,
-          // changePercent: '0.8',
-          isPositive: true,
-          icon: Icons.schedule,
           currency: secondary,
         ),
       );
@@ -203,41 +143,13 @@ class CurrencyKpiUtils {
         getStatus: (final IncomeItem item) => item.status,
         requiredStatus: true,
       );
-      final double pending = calculateTotal<IncomeItem>(
-        items: incomeItems,
-        currency: primary,
-        getCurrency: (final IncomeItem item) => item.currency,
-        getAmount: (final IncomeItem item) => item.amount,
-        getStatus: (final IncomeItem item) => item.status,
-        requiredStatus: false,
-      );
-      final int pendingCount = countItems<IncomeItem>(
-        items: incomeItems,
-        currency: primary,
-        getCurrency: (final IncomeItem item) => item.currency,
-        getStatus: (final IncomeItem item) => item.status,
-        requiredStatus: false,
-      );
 
       cards.add(
         KpiCardSpec(
           title: 'Total Received',
           amount: formatAmount(received, primary),
-          // changePercent: '5.2',
           isPositive: true,
           icon: Icons.payments,
-          currency: primary,
-        ),
-      );
-
-      cards.add(
-        KpiCardSpec(
-          title: 'Pending',
-          amount: formatAmount(pending, primary),
-          subtitle: pendingCount > 0 ? '$pendingCount pending' : null,
-          // changePercent: '1.2',
-          isPositive: true,
-          icon: Icons.pending_actions,
           currency: primary,
         ),
       );

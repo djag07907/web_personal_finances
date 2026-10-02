@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_side_menu/flutter_side_menu.dart';
+// ignore: implementation_imports
+import 'package:flutter_side_menu/src/data/side_menu_builder_data.dart';
 import 'package:go_router/go_router.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/image/circle_image_border.dart';
-import 'package:flutter_side_menu/src/data/side_menu_builder_data.dart';
 import 'package:web_personal_finances/menu/model/menu_model.dart';
 import 'package:web_personal_finances/repositories/firebase_auth_repository.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';

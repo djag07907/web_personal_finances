@@ -857,17 +857,22 @@ class _IncomesBodyState extends State<IncomesBody> {
     return LayoutBuilder(
       builder: (final BuildContext context, final BoxConstraints constraints) {
         final double availableWidth = constraints.maxWidth;
+        const double maxCardWidth = 320.0;
         int crossAxisCount = 1;
         if (availableWidth > 1100) {
-          crossAxisCount = specs.length > 3 ? 4 : specs.length;
+          crossAxisCount = 4;
         } else if (availableWidth > 700) {
-          crossAxisCount = specs.length > 2 ? 2 : specs.length;
+          crossAxisCount = 2;
         }
 
         const double spacing = 16.0;
-        final double cardWidth =
+        double cardWidth =
             (availableWidth - (spacing * (crossAxisCount - 1))) /
             crossAxisCount;
+
+        if (cardWidth > maxCardWidth && availableWidth > 360) {
+          cardWidth = maxCardWidth;
+        }
 
         return Wrap(
           spacing: spacing,
