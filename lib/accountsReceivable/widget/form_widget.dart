@@ -168,7 +168,6 @@ class _FormWidgetState extends State<FormWidget> {
                               );
 
                           widget.onSave(newItem);
-                          widget.onClose();
                         }
                       },
                     ),

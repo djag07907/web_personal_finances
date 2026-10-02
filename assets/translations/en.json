@@ -124,5 +124,6 @@
   "please_select_frequency": "Please select frequency",
   "expenses_low": "Your expenses are {percentage}% of your income. Well done!",
   "expenses_moderate": "Your expenses are {percentage}% of your income. Keep an eye on your spending!",
-  "expenses_high": "Your expenses are {percentage}% of your income. Consider reducing your expenses!"
+  "expenses_high": "Your expenses are {percentage}% of your income. Consider reducing your expenses!",
+  "optional": "optional"
 }

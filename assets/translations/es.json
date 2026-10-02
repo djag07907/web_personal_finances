@@ -124,5 +124,6 @@
   "please_select_frequency": "Por favor elija una frecuencia",
   "expenses_low": "Tus gastos equivalen al {percentage}% de tus ingresos. ¡Bien hecho!",
   "expenses_moderate": "Tus gastos equivalen al {percentage}% de tus ingresos. ¡Ten cuidado con tus gastos!",
-  "expenses_high": "Tus gastos equivalen al {percentage}% de tus ingresos. Considera reducir tus gastos."
+  "expenses_high": "Tus gastos equivalen al {percentage}% de tus ingresos. Considera reducir tus gastos.",
+  "optional": "opcional"
 }

@@ -28,6 +28,7 @@ import 'package:web_personal_finances/commons/utils/currency_kpi_utils.dart';
 import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
+import 'package:web_personal_finances/commons/bloc/app_auth_notifier.dart';
 import 'package:web_personal_finances/user/model/user_model.dart';
 
 part 'incomes_form.dart';

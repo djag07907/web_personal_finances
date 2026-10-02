@@ -37,7 +37,6 @@ class _FormWidgetState extends State<FormWidget> {
   @override
   void initState() {
     super.initState();
-    _loadUserCurrencies();
     if (widget.isEdit && widget.incomeItem != null) {
       _nameController.text = widget.incomeItem!.name;
       _commentController.text = widget.incomeItem!.comment;
@@ -45,28 +44,42 @@ class _FormWidgetState extends State<FormWidget> {
       _dateToReceiveController.text = widget.incomeItem!.dateToReceive
           .toString();
       selectedCurrency = widget.incomeItem!.currency;
-      if (widget.isEdit && widget.incomeItem != null) {
-        selectedFrequency = widget.incomeItem!.frequency;
-      }
+      selectedFrequency = widget.incomeItem!.frequency;
       tags = widget.incomeItem?.tags ?? <String>[];
     }
+    _loadUserCurrencies();
   }
 
   Future<void> _loadUserCurrencies() async {
     final User? authUser = FirebaseAuth.instance.currentUser;
-    if (authUser == null) return;
 
-    final UserRepository userRepository = context.read<UserRepository>();
-    final UserModel? user = await userRepository.getUser(authUser.uid);
+    UserModel? user;
+    try {
+      user = context.read<AppAuthNotifier>().userProfile;
+    } catch (_) {}
+
+    if (user == null && authUser != null) {
+      try {
+        final UserRepository userRepository = context.read<UserRepository>();
+        user = await userRepository.getUser(authUser.uid);
+      } catch (_) {}
+    }
 
     if (user != null) {
       final List<String> allowed = <String>[];
       final String primary = user.primaryCurrency.isNotEmpty
           ? user.primaryCurrency
-          : hnlCurrency;
+          : usdCurrency;
       allowed.add(primary);
 
       if (user.enableDualCurrency) {
+        final String secondary = primary == hnlCurrency
+            ? usdCurrency
+            : hnlCurrency;
+        if (!allowed.contains(secondary)) {
+          allowed.add(secondary);
+        }
+      } else {
         final String secondary = primary == hnlCurrency
             ? usdCurrency
             : hnlCurrency;
@@ -78,7 +91,8 @@ class _FormWidgetState extends State<FormWidget> {
       if (mounted) {
         setState(() {
           _availableCurrencies = allowed;
-          if (selectedCurrency == null ||
+          if (!widget.isEdit ||
+              selectedCurrency == null ||
               !_availableCurrencies.contains(selectedCurrency)) {
             selectedCurrency = primary;
           }
@@ -151,7 +165,8 @@ class _FormWidgetState extends State<FormWidget> {
                     },
                   ),
                   CustomChipTag(
-                    label: context.translate('tags'),
+                    label:
+                        '${context.translate('tags')} (${context.translate('optional')})',
                     hintText: context.translate('enter_tags'),
                     initialTags: tags,
                     onChanged: (final List<String> updatedTags) {
@@ -217,7 +232,8 @@ class _FormWidgetState extends State<FormWidget> {
                     controller: _amountController,
                   ),
                   CustomLabelInput(
-                    label: context.translate('date_to_receive'),
+                    label:
+                        '${context.translate('date_to_receive')} (${context.translate('optional')})',
                     hintText: context.translate('enter_date_to_receive'),
                     isReadOnly: true,
                     isCalendar: true,
@@ -295,7 +311,6 @@ class _FormWidgetState extends State<FormWidget> {
                               );
 
                               widget.onSave(newItem);
-                              widget.onClose();
                             }
                           },
                         ),

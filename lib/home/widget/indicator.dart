@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:web_personal_finances/resources/fonts_constants.dart';
 
 class Indicator extends StatelessWidget {
   const Indicator({
@@ -6,7 +7,7 @@ class Indicator extends StatelessWidget {
     required this.color,
     required this.text,
     required this.isSquare,
-    this.size = 16,
+    this.size = fontSize16,
     this.textColor,
   });
   final Color color;
@@ -27,13 +28,11 @@ class Indicator extends StatelessWidget {
             color: color,
           ),
         ),
-        const SizedBox(
-          width: 4,
-        ),
+        const SizedBox(width: 4),
         Text(
           text,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: fontSize16,
             fontWeight: FontWeight.bold,
             color: textColor,
           ),
