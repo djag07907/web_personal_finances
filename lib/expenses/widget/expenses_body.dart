@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/bloc/app_auth_notifier.dart';
+import 'package:web_personal_finances/commons/bloc/base_state.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/calendar/calendar_widget.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
@@ -19,6 +20,7 @@ import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
 import 'package:web_personal_finances/commons/layout/empty_content_widget.dart';
+import 'package:web_personal_finances/commons/loader/loader.dart';
 import 'package:web_personal_finances/commons/pagination/pagination_widget.dart';
 import 'package:web_personal_finances/commons/popupMenu/popup_item.dart';
 import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart';
@@ -26,6 +28,7 @@ import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
 import 'package:web_personal_finances/commons/utils/currency_kpi_utils.dart';
 import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
+import 'package:web_personal_finances/expenses/bloc/expenses_bloc.dart';
 import 'package:web_personal_finances/expenses/model/expense_item.dart';
 import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
@@ -43,7 +46,8 @@ class ExpensesBody extends StatefulWidget {
 }
 
 class _ExpensesBodyState extends State<ExpensesBody> {
-  final List<ExpenseItem> _expenseItems = <ExpenseItem>[];
+  late ExpensesBloc _expensesBloc;
+  List<ExpenseItem> _expenseItems = <ExpenseItem>[];
 
   int _currentPage = 0;
   static const int _itemsPerPage = 10;
@@ -152,7 +156,17 @@ class _ExpensesBodyState extends State<ExpensesBody> {
   @override
   void initState() {
     super.initState();
+    _expensesBloc = context.read<ExpensesBloc>();
+    final String currentUid =
+        FirebaseAuth.instance.currentUser?.uid ?? emptyString;
+    _expensesBloc.add(ExpensesFetched(userId: currentUid));
     _loadCurrentUser();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _expensesBloc = context.read<ExpensesBloc>();
   }
 
   Future<void> _loadCurrentUser() async {
@@ -731,287 +745,316 @@ class _ExpensesBodyState extends State<ExpensesBody> {
 
   @override
   Widget build(final BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        CustomCardBody(
-          isMain: false,
-          isMenu: true,
-          title: context.translate('expenses'),
-          description: 'Track and analyze fixed and variable outgoing expenses',
-          buttonText: context.translate('add_expense'),
-          buttonIsPrimary: true,
-          buttonIsAdd: true,
-          onButtonPressed: _addExpense,
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              _buildStatCards(context),
-              Expanded(
-                child: _expenseItems.isEmpty
-                    ? EmptyContentWidget(
-                        icon: Icons.account_balance_wallet_outlined,
-                        title: 'No expenses registered yet',
-                        subtitle:
-                            'Start tracking your budget by adding your first expense entry.',
-                        actionLabel: context.translate('add_expense'),
-                        onAction: _addExpense,
-                      )
-                    : Builder(
-                        builder: (final BuildContext context) {
-                          final List<ExpenseItem> filtered = _filteredExpenses;
-                          final List<ExpenseItem> paginatedExpenses = filtered
-                              .skip(_currentPage * _itemsPerPage)
-                              .take(_itemsPerPage)
-                              .toList();
+    return BlocListener<ExpensesBloc, BaseState>(
+      listener: (final BuildContext context, final BaseState state) {
+        if (state is ExpensesSuccess) {
+          setState(() {
+            _expenseItems = state.expenses;
+          });
+        }
+      },
+      child: Stack(
+        children: <Widget>[
+          CustomCardBody(
+            isMain: false,
+            isMenu: true,
+            title: context.translate('expenses'),
+            description:
+                'Track and analyze fixed and variable outgoing expenses',
+            buttonText: context.translate('add_expense'),
+            buttonIsPrimary: true,
+            buttonIsAdd: true,
+            onButtonPressed: _addExpense,
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                _buildStatCards(context),
+                Expanded(
+                  child: _expenseItems.isEmpty
+                      ? EmptyContentWidget(
+                          icon: Icons.account_balance_wallet_outlined,
+                          title: 'No expenses registered yet',
+                          subtitle:
+                              'Start tracking your budget by adding your first expense entry.',
+                          actionLabel: context.translate('add_expense'),
+                          onAction: _addExpense,
+                        )
+                      : Builder(
+                          builder: (final BuildContext context) {
+                            final List<ExpenseItem> filtered =
+                                _filteredExpenses;
+                            final List<ExpenseItem> paginatedExpenses = filtered
+                                .skip(_currentPage * _itemsPerPage)
+                                .take(_itemsPerPage)
+                                .toList();
 
-                          return CustomDataTable<ExpenseItem>(
-                            data: paginatedExpenses,
-                            showToolbar: true,
-                            isFiltered: _isFilterActive || _showFilterPanel,
-                            filterPanel: _showFilterPanel
-                                ? _buildInlineFilterPanel(context)
-                                : null,
-                            activeFilterChips:
-                                (_isFilterActive || _searchQuery.isNotEmpty)
-                                ? _buildActiveFilterChips(context)
-                                : null,
-                            searchHint:
-                                'Search by name, category, or amount...',
-                            onSearch: (final String query) {
-                              setState(() {
-                                _searchQuery = query;
-                                _currentPage = 0;
-                              });
-                            },
-                            onFilter: () {
-                              setState(() {
-                                _showFilterPanel = !_showFilterPanel;
-                              });
-                            },
-                            dataColumns: <String>[
-                              context.translate('name'),
-                              context.translate('expense_type'),
-                              context.translate('category'),
-                              context.translate('frequency'),
-                              context.translate('comment'),
-                              context.translate('currency'),
-                              context.translate('amount'),
-                              context.translate('date_due'),
-                              context.translate('payment_status'),
-                              context.translate('status'),
-                            ],
-                            rowBuilder: (final ExpenseItem data) {
-                              final bool isDark =
-                                  Theme.of(context).brightness ==
-                                  Brightness.dark;
-                              final CustomExpenseTypeOptions typeOpt =
-                                  data.isFixed
-                                  ? CustomExpenseTypeOptions.fixed
-                                  : CustomExpenseTypeOptions.variable;
+                            return CustomDataTable<ExpenseItem>(
+                              data: paginatedExpenses,
+                              showToolbar: true,
+                              isFiltered: _isFilterActive || _showFilterPanel,
+                              filterPanel: _showFilterPanel
+                                  ? _buildInlineFilterPanel(context)
+                                  : null,
+                              activeFilterChips:
+                                  (_isFilterActive || _searchQuery.isNotEmpty)
+                                  ? _buildActiveFilterChips(context)
+                                  : null,
+                              searchHint:
+                                  'Search by name, category, or amount...',
+                              onSearch: (final String query) {
+                                setState(() {
+                                  _searchQuery = query;
+                                  _currentPage = 0;
+                                });
+                              },
+                              onFilter: () {
+                                setState(() {
+                                  _showFilterPanel = !_showFilterPanel;
+                                });
+                              },
+                              dataColumns: <String>[
+                                context.translate('name'),
+                                context.translate('expense_type'),
+                                context.translate('category'),
+                                context.translate('frequency'),
+                                context.translate('comment'),
+                                context.translate('currency'),
+                                context.translate('amount'),
+                                context.translate('date_due'),
+                                context.translate('payment_status'),
+                                context.translate('status'),
+                              ],
+                              rowBuilder: (final ExpenseItem data) {
+                                final bool isDark =
+                                    Theme.of(context).brightness ==
+                                    Brightness.dark;
+                                final CustomExpenseTypeOptions typeOpt =
+                                    data.isFixed
+                                    ? CustomExpenseTypeOptions.fixed
+                                    : CustomExpenseTypeOptions.variable;
 
-                              return <Widget>[
-                                Text(
-                                  data.name,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
+                                return <Widget>[
+                                  Text(
+                                    data.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: data.isFixed
-                                        ? Colors.blue.withValues(alpha: 0.12)
-                                        : Colors.orange.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
                                       color: data.isFixed
-                                          ? Colors.blue.withValues(alpha: 0.4)
+                                          ? Colors.blue.withValues(alpha: 0.12)
                                           : Colors.orange.withValues(
-                                              alpha: 0.4,
+                                              alpha: 0.12,
                                             ),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    typeOpt.toTranslate(context),
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: data.isFixed
-                                          ? Colors.blue.shade700
-                                          : Colors.orange.shade800,
-                                    ),
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    Icon(
-                                      data.category.icon,
-                                      size: 16,
-                                      color: isDark
-                                          ? DarkColors.primary
-                                          : LightColors.primary,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Flexible(
-                                      child: Text(
-                                        data.category.toTranslate(context),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: data.isFixed
+                                            ? Colors.blue.withValues(alpha: 0.4)
+                                            : Colors.orange.withValues(
+                                                alpha: 0.4,
+                                              ),
                                       ),
                                     ),
-                                  ],
-                                ),
-                                Text(data.frequency.toTranslate(context)),
-                                Text(
-                                  data.comment,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                                Text(data.currency),
-                                Text(data.amount.toStringAsFixed(2)),
-                                Text(data.dateDue),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: data.isPaid
-                                        ? Colors.green.withValues(alpha: 0.12)
-                                        : Colors.amber.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: data.isPaid
-                                          ? Colors.green.withValues(alpha: 0.5)
-                                          : Colors.amber.withValues(alpha: 0.5),
-                                      width: 1,
+                                    child: Text(
+                                      typeOpt.toTranslate(context),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: data.isFixed
+                                            ? Colors.blue.shade700
+                                            : Colors.orange.shade800,
+                                      ),
                                     ),
                                   ),
-                                  child: Row(
+                                  Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: <Widget>[
                                       Icon(
-                                        data.isPaid
-                                            ? Icons.check_circle_outline
-                                            : Icons.schedule,
-                                        size: 13,
-                                        color: data.isPaid
-                                            ? Colors.green
-                                            : Colors.amber.shade800,
+                                        data.category.icon,
+                                        size: 16,
+                                        color: isDark
+                                            ? DarkColors.primary
+                                            : LightColors.primary,
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        data.isPaid
-                                            ? context.translate('paid')
-                                            : context.translate('pending'),
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: data.isPaid
-                                              ? Colors.green
-                                              : Colors.amber.shade800,
+                                      const SizedBox(width: 6),
+                                      Flexible(
+                                        child: Text(
+                                          data.category.toTranslate(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                                CustomChipStatus(isActive: data.status),
-                              ];
-                            },
-                            popupMenuBuilder: (final ExpenseItem item) {
-                              return PrimaryPopupMenu<CustomOptions>(
-                                popupItems: <PopupItem<CustomOptions>>[
-                                  PopupItem<CustomOptions>(
-                                    title: CustomOptions.edit.toTranslate(
-                                      context,
-                                    ),
-                                    value: CustomOptions.edit,
+                                  Text(data.frequency.toTranslate(context)),
+                                  Text(
+                                    data.comment,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
-                                  PopupItem<CustomOptions>(
-                                    title: item.isPaid
-                                        ? CustomOptions.markAsPending
-                                              .toTranslate(context)
-                                        : CustomOptions.markAsPaid.toTranslate(
-                                            context,
+                                  Text(data.currency),
+                                  Text(data.amount.toStringAsFixed(2)),
+                                  Text(data.dateDue),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: data.isPaid
+                                          ? Colors.green.withValues(alpha: 0.12)
+                                          : Colors.amber.withValues(
+                                              alpha: 0.12,
+                                            ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: data.isPaid
+                                            ? Colors.green.withValues(
+                                                alpha: 0.5,
+                                              )
+                                            : Colors.amber.withValues(
+                                                alpha: 0.5,
+                                              ),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Icon(
+                                          data.isPaid
+                                              ? Icons.check_circle_outline
+                                              : Icons.schedule,
+                                          size: 13,
+                                          color: data.isPaid
+                                              ? Colors.green
+                                              : Colors.amber.shade800,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          data.isPaid
+                                              ? context.translate('paid')
+                                              : context.translate('pending'),
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: data.isPaid
+                                                ? Colors.green
+                                                : Colors.amber.shade800,
                                           ),
-                                    value: item.isPaid
-                                        ? CustomOptions.markAsPending
-                                        : CustomOptions.markAsPaid,
-                                  ),
-                                  PopupItem<CustomOptions>(
-                                    title: CustomOptions.delete.toTranslate(
-                                      context,
+                                        ),
+                                      ],
                                     ),
-                                    value: CustomOptions.delete,
                                   ),
-                                  if (!item.status)
+                                  CustomChipStatus(isActive: data.status),
+                                ];
+                              },
+                              popupMenuBuilder: (final ExpenseItem item) {
+                                return PrimaryPopupMenu<CustomOptions>(
+                                  popupItems: <PopupItem<CustomOptions>>[
                                     PopupItem<CustomOptions>(
-                                      title: CustomOptions.activate.toTranslate(
+                                      title: CustomOptions.edit.toTranslate(
                                         context,
                                       ),
-                                      value: CustomOptions.activate,
+                                      value: CustomOptions.edit,
                                     ),
-                                  if (item.status)
                                     PopupItem<CustomOptions>(
-                                      title: CustomOptions.deactivate
-                                          .toTranslate(context),
-                                      value: CustomOptions.deactivate,
+                                      title: item.isPaid
+                                          ? CustomOptions.markAsPending
+                                                .toTranslate(context)
+                                          : CustomOptions.markAsPaid
+                                                .toTranslate(context),
+                                      value: item.isPaid
+                                          ? CustomOptions.markAsPending
+                                          : CustomOptions.markAsPaid,
                                     ),
-                                ],
-                                tooltip: context.translate('options'),
-                                onSelect: (final CustomOptions option) {
-                                  Navigator.of(context).pop();
-                                  Future<void>.delayed(
-                                    const Duration(milliseconds: 150),
-                                    () {
-                                      switch (option) {
-                                        case CustomOptions.edit:
-                                          _editExpense(item);
-                                          break;
-                                        case CustomOptions.markAsPaid:
-                                          _togglePaidStatus(item, true);
-                                          break;
-                                        case CustomOptions.markAsPending:
-                                          _togglePaidStatus(item, false);
-                                          break;
-                                        case CustomOptions.delete:
-                                          _removeExpense(item);
-                                          break;
-                                        case CustomOptions.activate:
-                                          _activateExpense(item);
-                                          break;
-                                        case CustomOptions.deactivate:
-                                          _deactivateExpense(item);
-                                          break;
-                                        default:
-                                          break;
-                                      }
-                                    },
-                                  );
-                                },
-                              );
-                            },
-                            paginator: PaginationWidget(
-                              currentPage: _currentPage,
-                              totalItems: filtered.length,
-                              itemsPerPage: _itemsPerPage,
-                              onPageChanged: (final int newPage) {
-                                setState(() {
-                                  _currentPage = newPage;
-                                });
+                                    PopupItem<CustomOptions>(
+                                      title: CustomOptions.delete.toTranslate(
+                                        context,
+                                      ),
+                                      value: CustomOptions.delete,
+                                    ),
+                                    if (!item.status)
+                                      PopupItem<CustomOptions>(
+                                        title: CustomOptions.activate
+                                            .toTranslate(context),
+                                        value: CustomOptions.activate,
+                                      ),
+                                    if (item.status)
+                                      PopupItem<CustomOptions>(
+                                        title: CustomOptions.deactivate
+                                            .toTranslate(context),
+                                        value: CustomOptions.deactivate,
+                                      ),
+                                  ],
+                                  tooltip: context.translate('options'),
+                                  onSelect: (final CustomOptions option) {
+                                    Navigator.of(context).pop();
+                                    Future<void>.delayed(
+                                      const Duration(milliseconds: 150),
+                                      () {
+                                        switch (option) {
+                                          case CustomOptions.edit:
+                                            _editExpense(item);
+                                            break;
+                                          case CustomOptions.markAsPaid:
+                                            _togglePaidStatus(item, true);
+                                            break;
+                                          case CustomOptions.markAsPending:
+                                            _togglePaidStatus(item, false);
+                                            break;
+                                          case CustomOptions.delete:
+                                            _removeExpense(item);
+                                            break;
+                                          case CustomOptions.activate:
+                                            _activateExpense(item);
+                                            break;
+                                          case CustomOptions.deactivate:
+                                            _deactivateExpense(item);
+                                            break;
+                                          default:
+                                            break;
+                                        }
+                                      },
+                                    );
+                                  },
+                                );
                               },
-                            ),
-                          );
-                        },
-                      ),
-              ),
-            ],
+                              paginator: PaginationWidget(
+                                currentPage: _currentPage,
+                                totalItems: filtered.length,
+                                itemsPerPage: _itemsPerPage,
+                                onPageChanged: (final int newPage) {
+                                  setState(() {
+                                    _currentPage = newPage;
+                                  });
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+          BlocBuilder<ExpensesBloc, BaseState>(
+            buildWhen: (final BaseState previous, final BaseState current) {
+              return (previous is ExpensesInProgress) !=
+                  (current is ExpensesInProgress);
+            },
+            builder: (final BuildContext context, final BaseState state) {
+              if (state is ExpensesInProgress) {
+                return const Loader();
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -1051,18 +1094,11 @@ class _ExpensesBodyState extends State<ExpensesBody> {
           expenseItem: _editingItem,
           isEdit: _isEditing,
           onSave: (final ExpenseItem item) {
-            setState(() {
-              if (_isEditing) {
-                final int index = _expenseItems.indexWhere(
-                  (final ExpenseItem expenseItem) => expenseItem.id == item.id,
-                );
-                if (index != -1) {
-                  _expenseItems[index] = item;
-                }
-              } else {
-                _expenseItems.add(item);
-              }
-            });
+            if (_isEditing) {
+              _expensesBloc.add(ExpensesUpdated(expenseItem: item));
+            } else {
+              _expensesBloc.add(ExpensesAdded(expenseItem: item));
+            }
             Navigator.of(dialogContext).pop();
             showSnackbar(
               context,
@@ -1107,14 +1143,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
       tags: item.tags,
       paymentMethod: item.paymentMethod,
     );
-    setState(() {
-      final int index = _expenseItems.indexWhere(
-        (final ExpenseItem e) => e.id == item.id,
-      );
-      if (index != -1) {
-        _expenseItems[index] = updated;
-      }
-    });
+    _expensesBloc.add(ExpensesUpdated(expenseItem: updated));
     showSnackbar(
       context,
       isPaid
@@ -1130,9 +1159,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
       context.translate('confirm_expense_delete'),
     );
     if (confirmed == true) {
-      setState(() {
-        _expenseItems.removeWhere((final ExpenseItem e) => e.id == item.id);
-      });
+      _expensesBloc.add(ExpensesDeleted(id: item.id, userId: item.userId));
       showSnackbar(context, context.translate('expense_deleted'));
     }
   }
@@ -1144,31 +1171,24 @@ class _ExpensesBodyState extends State<ExpensesBody> {
       context.translate('confirm_expense_activation'),
     );
     if (confirmed == true) {
-      setState(() {
-        final int index = _expenseItems.indexWhere(
-          (final ExpenseItem e) => e.id == item.id,
-        );
-        if (index != -1) {
-          final ExpenseItem old = _expenseItems[index];
-          _expenseItems[index] = ExpenseItem(
-            id: old.id,
-            userId: old.userId,
-            name: old.name,
-            comment: old.comment,
-            currency: old.currency,
-            amount: old.amount,
-            dateDue: old.dateDue,
-            status: true,
-            isPaid: old.isPaid,
-            isFixed: old.isFixed,
-            category: old.category,
-            frequency: old.frequency,
-            createdDate: old.createdDate,
-            tags: old.tags,
-            paymentMethod: old.paymentMethod,
-          );
-        }
-      });
+      final ExpenseItem updated = ExpenseItem(
+        id: item.id,
+        userId: item.userId,
+        name: item.name,
+        comment: item.comment,
+        currency: item.currency,
+        amount: item.amount,
+        dateDue: item.dateDue,
+        status: true,
+        isPaid: item.isPaid,
+        isFixed: item.isFixed,
+        category: item.category,
+        frequency: item.frequency,
+        createdDate: item.createdDate,
+        tags: item.tags,
+        paymentMethod: item.paymentMethod,
+      );
+      _expensesBloc.add(ExpensesUpdated(expenseItem: updated));
       showSnackbar(context, context.translate('expense_activated'));
     }
   }
@@ -1180,31 +1200,24 @@ class _ExpensesBodyState extends State<ExpensesBody> {
       context.translate('confirm_expense_deactivation'),
     );
     if (confirmed == true) {
-      setState(() {
-        final int index = _expenseItems.indexWhere(
-          (final ExpenseItem e) => e.id == item.id,
-        );
-        if (index != -1) {
-          final ExpenseItem old = _expenseItems[index];
-          _expenseItems[index] = ExpenseItem(
-            id: old.id,
-            userId: old.userId,
-            name: old.name,
-            comment: old.comment,
-            currency: old.currency,
-            amount: old.amount,
-            dateDue: old.dateDue,
-            status: false,
-            isPaid: old.isPaid,
-            isFixed: old.isFixed,
-            category: old.category,
-            frequency: old.frequency,
-            createdDate: old.createdDate,
-            tags: old.tags,
-            paymentMethod: old.paymentMethod,
-          );
-        }
-      });
+      final ExpenseItem updated = ExpenseItem(
+        id: item.id,
+        userId: item.userId,
+        name: item.name,
+        comment: item.comment,
+        currency: item.currency,
+        amount: item.amount,
+        dateDue: item.dateDue,
+        status: false,
+        isPaid: item.isPaid,
+        isFixed: item.isFixed,
+        category: item.category,
+        frequency: item.frequency,
+        createdDate: item.createdDate,
+        tags: item.tags,
+        paymentMethod: item.paymentMethod,
+      );
+      _expensesBloc.add(ExpensesUpdated(expenseItem: updated));
       showSnackbar(context, context.translate('expense_deactivated'));
     }
   }
