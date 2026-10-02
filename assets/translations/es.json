@@ -146,5 +146,21 @@
   "mark_as_received": "Marcar como Recibido",
   "mark_as_pending": "Marcar como Pendiente",
   "income_marked_received": "Ingreso marcado como recibido",
-  "income_marked_pending": "Ingreso marcado como pendiente"
+  "income_marked_pending": "Ingreso marcado como pendiente",
+  "expense_type": "Tipo de Gasto",
+  "fixed": "Fijo",
+  "variable": "Variable",
+  "housing": "Vivienda y Servicios",
+  "food": "Alimentación",
+  "transportation": "Transporte",
+  "subscriptions": "Suscripciones",
+  "entertainment": "Entretenimiento",
+  "health": "Salud y Bienestar",
+  "mark_as_paid": "Marcar como Pagado",
+  "expense_marked_paid": "Gasto marcado como pagado",
+  "expense_marked_pending": "Gasto marcado como pendiente",
+  "select_expense_type": "Seleccionar tipo de gasto",
+  "please_select_expense_type": "Por favor seleccione tipo de gasto",
+  "monthly_burn_rate": "Tasa de Gasto Mensual",
+  "total_paid": "Total Pagado"
 }

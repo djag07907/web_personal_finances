@@ -146,5 +146,21 @@
   "mark_as_received": "Mark as Received",
   "mark_as_pending": "Mark as Pending",
   "income_marked_received": "Income marked as received",
-  "income_marked_pending": "Income marked as pending"
+  "income_marked_pending": "Income marked as pending",
+  "expense_type": "Expense Type",
+  "fixed": "Fixed",
+  "variable": "Variable",
+  "housing": "Housing & Utilities",
+  "food": "Food & Dining",
+  "transportation": "Transportation",
+  "subscriptions": "Subscriptions",
+  "entertainment": "Entertainment",
+  "health": "Health & Wellness",
+  "mark_as_paid": "Mark as Paid",
+  "expense_marked_paid": "Expense marked as paid",
+  "expense_marked_pending": "Expense marked as pending",
+  "select_expense_type": "Select expense type",
+  "please_select_expense_type": "Please select expense type",
+  "monthly_burn_rate": "Monthly Burn Rate",
+  "total_paid": "Total Paid"
 }

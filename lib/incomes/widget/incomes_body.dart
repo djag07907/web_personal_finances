@@ -889,6 +889,8 @@ class _IncomesBodyState extends State<IncomesBody> {
                                           case CustomOptions.deactivate:
                                             _deactivateIncome(item);
                                             break;
+                                          default:
+                                            break;
                                         }
                                       },
                                     );

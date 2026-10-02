@@ -7,7 +7,8 @@ enum CustomOptions {
   activate,
   deactivate,
   markAsReceived,
-  markAsPending;
+  markAsPending,
+  markAsPaid;
 
   String toTranslate(final BuildContext context) {
     final String Function(
@@ -31,6 +32,8 @@ enum CustomOptions {
         return translate('mark_as_received');
       case CustomOptions.markAsPending:
         return translate('mark_as_pending');
+      case CustomOptions.markAsPaid:
+        return translate('mark_as_paid');
     }
   }
 }

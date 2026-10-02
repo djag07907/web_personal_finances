@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
+import 'package:web_personal_finances/expenses/model/expense_item.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/user/model/user_model.dart';
@@ -197,6 +198,128 @@ class CurrencyKpiUtils {
           // subtitle: 'Normalized monthly income',
           isPositive: true,
           icon: Icons.auto_graph,
+          currency: secondary,
+        ),
+      );
+    }
+
+    return cards;
+  }
+
+  /// Calculates normalized monthly expense burn rate for active expenses of a given currency.
+  static double calculateMonthlyBurnRate({
+    required final List<ExpenseItem> items,
+    required final String currency,
+  }) {
+    double total = 0.0;
+    for (final ExpenseItem item in items) {
+      if (item.currency == currency && item.status) {
+        switch (item.frequency) {
+          case CustomFrequencyOptions.weekly:
+            total += item.amount * 4.33;
+            break;
+          case CustomFrequencyOptions.biweekly:
+            total += item.amount * 2.166;
+            break;
+          case CustomFrequencyOptions.monthly:
+            total += item.amount;
+            break;
+          case CustomFrequencyOptions.yearly:
+            total += item.amount / 12.0;
+            break;
+          case CustomFrequencyOptions.daily:
+            total += item.amount * 30.0;
+            break;
+          case CustomFrequencyOptions.once:
+            total += item.amount;
+            break;
+        }
+      }
+    }
+    return total;
+  }
+
+  /// Generates scalable KPI card specs for Expense items based on user dual-currency preference.
+  static List<KpiCardSpec> generateExpenseKpiCards({
+    required final List<ExpenseItem> expenseItems,
+    required final UserModel? user,
+  }) {
+    final bool isDual = user?.enableDualCurrency ?? false;
+    final String primary =
+        (user?.primaryCurrency != null && user!.primaryCurrency.isNotEmpty)
+        ? user.primaryCurrency
+        : hnlCurrency;
+    final String secondary = primary == hnlCurrency ? usdCurrency : hnlCurrency;
+
+    final List<KpiCardSpec> cards = <KpiCardSpec>[];
+
+    // Primary Currency Paid & Monthly Burn Rate
+    final double paidPrimary = calculateTotal<ExpenseItem>(
+      items: expenseItems,
+      currency: primary,
+      getCurrency: (final ExpenseItem item) => item.currency,
+      getAmount: (final ExpenseItem item) => item.amount,
+      getStatus: (final ExpenseItem item) => item.status && item.isPaid,
+      requiredStatus: true,
+    );
+
+    final double burnRatePrimary = calculateMonthlyBurnRate(
+      items: expenseItems,
+      currency: primary,
+    );
+
+    cards.add(
+      KpiCardSpec(
+        title: isDual ? 'Total Paid ($primary)' : 'Total Paid',
+        amount: formatAmount(paidPrimary, primary),
+        isPositive: false,
+        icon: Icons.shopping_bag_outlined,
+        currency: primary,
+      ),
+    );
+
+    cards.add(
+      KpiCardSpec(
+        title: isDual ? 'Monthly Burn Rate ($primary)' : 'Monthly Burn Rate',
+        amount: formatAmount(burnRatePrimary, primary),
+        isPositive: false,
+        icon: Icons.trending_down,
+        currency: primary,
+      ),
+    );
+
+    if (isDual) {
+      // Secondary Currency Paid & Monthly Burn Rate
+      final double paidSecondary = calculateTotal<ExpenseItem>(
+        items: expenseItems,
+        currency: secondary,
+        getCurrency: (final ExpenseItem item) => item.currency,
+        getAmount: (final ExpenseItem item) => item.amount,
+        getStatus: (final ExpenseItem item) => item.status && item.isPaid,
+        requiredStatus: true,
+      );
+
+      final double burnRateSecondary = calculateMonthlyBurnRate(
+        items: expenseItems,
+        currency: secondary,
+      );
+
+      cards.add(
+        KpiCardSpec(
+          title: 'Total Paid ($secondary)',
+          amount: formatAmount(paidSecondary, secondary),
+          isPositive: false,
+          icon: Icons.receipt_long_outlined,
+          currency: secondary,
+        ),
+      );
+
+      cards.add(
+        KpiCardSpec(
+          title: 'Monthly Burn Rate ($secondary)',
+          amount: formatAmount(burnRateSecondary, secondary),
+          isPositive: false,
+          icon: Icons.analytics_outlined,
           currency: secondary,
         ),
       );
