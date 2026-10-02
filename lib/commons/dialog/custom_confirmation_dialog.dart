@@ -5,7 +5,7 @@ import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 
 class CustomConfirmationDialog {
-  static void showCustomConfirmationDialog(
+  static Future<void> showCustomConfirmationDialog(
     final BuildContext context, {
     required final String confirmationText,
     required final void Function()? onPrimaryButtonTap,
@@ -13,7 +13,7 @@ class CustomConfirmationDialog {
   }) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    showDialog(
+    return showDialog<void>(
       context: context,
       builder: (final BuildContext context) {
         return Dialog(

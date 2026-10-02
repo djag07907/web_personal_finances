@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -731,19 +733,27 @@ class _IncomesBodyState extends State<IncomesBody> {
     final BuildContext context,
     final String title,
     final String content,
-  ) {
-    bool? confirmed;
+  ) async {
+    final Completer<bool?> completer = Completer<bool?>();
     CustomConfirmationDialog.showCustomConfirmationDialog(
       context,
       confirmationText: content,
       onPrimaryButtonTap: () {
-        confirmed = true;
+        if (!completer.isCompleted) {
+          completer.complete(true);
+        }
       },
       onSecondaryButtonTap: () {
-        confirmed = false;
+        if (!completer.isCompleted) {
+          completer.complete(false);
+        }
       },
-    );
-    return Future<bool>.value(confirmed);
+    ).then((_) {
+      if (!completer.isCompleted) {
+        completer.complete(false);
+      }
+    });
+    return completer.future;
   }
 
   void _openDrawer() {

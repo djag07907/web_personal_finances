@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
@@ -171,19 +173,27 @@ class _ExpensesBodyState extends State<ExpensesBody> {
     final BuildContext context,
     final String title,
     final String content,
-  ) {
-    bool? confirmed;
+  ) async {
+    final Completer<bool?> completer = Completer<bool?>();
     CustomConfirmationDialog.showCustomConfirmationDialog(
       context,
       confirmationText: content,
       onPrimaryButtonTap: () {
-        confirmed = true;
+        if (!completer.isCompleted) {
+          completer.complete(true);
+        }
       },
       onSecondaryButtonTap: () {
-        confirmed = false;
+        if (!completer.isCompleted) {
+          completer.complete(false);
+        }
       },
-    );
-    return Future<bool>.value(confirmed);
+    ).then((_) {
+      if (!completer.isCompleted) {
+        completer.complete(false);
+      }
+    });
+    return completer.future;
   }
 
   void _openDrawer() {
