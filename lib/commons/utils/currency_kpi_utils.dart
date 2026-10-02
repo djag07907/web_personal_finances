@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/user/model/user_model.dart';
@@ -80,6 +81,39 @@ class CurrencyKpiUtils {
     return count;
   }
 
+  /// Calculates normalized monthly income equivalent for active streams of a given currency.
+  static double calculateMonthlyProjectedIncome({
+    required final List<IncomeItem> items,
+    required final String currency,
+  }) {
+    double total = 0.0;
+    for (final IncomeItem item in items) {
+      if (item.currency == currency && item.status) {
+        switch (item.frequency) {
+          case CustomFrequencyOptions.weekly:
+            total += item.amount * 4.33;
+            break;
+          case CustomFrequencyOptions.biweekly:
+            total += item.amount * 2.166;
+            break;
+          case CustomFrequencyOptions.monthly:
+            total += item.amount;
+            break;
+          case CustomFrequencyOptions.yearly:
+            total += item.amount / 12.0;
+            break;
+          case CustomFrequencyOptions.daily:
+            total += item.amount * 30.0;
+            break;
+          case CustomFrequencyOptions.once:
+            total += item.amount;
+            break;
+        }
+      }
+    }
+    return total;
+  }
+
   /// Generates scalable KPI card specs for Income items based on user dual-currency preference.
   static List<KpiCardSpec> generateIncomeKpiCards({
     required final List<IncomeItem> incomeItems,
@@ -94,35 +128,56 @@ class CurrencyKpiUtils {
 
     final List<KpiCardSpec> cards = <KpiCardSpec>[];
 
-    if (isDual) {
-      // Primary Currency Received
-      final double receivedPrimary = calculateTotal<IncomeItem>(
-        items: incomeItems,
+    // Primary Currency Received & Monthly Projected
+    final double receivedPrimary = calculateTotal<IncomeItem>(
+      items: incomeItems,
+      currency: primary,
+      getCurrency: (final IncomeItem item) => item.currency,
+      getAmount: (final IncomeItem item) => item.amount,
+      getStatus: (final IncomeItem item) => item.status && item.isReceived,
+      requiredStatus: true,
+    );
+
+    final double projectedPrimary = calculateMonthlyProjectedIncome(
+      items: incomeItems,
+      currency: primary,
+    );
+
+    cards.add(
+      KpiCardSpec(
+        title: isDual ? 'Total Received ($primary)' : 'Total Received',
+        amount: formatAmount(receivedPrimary, primary),
+        isPositive: true,
+        icon: Icons.payments_outlined,
         currency: primary,
-        getCurrency: (final IncomeItem item) => item.currency,
-        getAmount: (final IncomeItem item) => item.amount,
-        getStatus: (final IncomeItem item) => item.status,
-        requiredStatus: true,
-      );
+      ),
+    );
 
-      cards.add(
-        KpiCardSpec(
-          title: 'Total Received ($primary)',
-          amount: formatAmount(receivedPrimary, primary),
-          isPositive: true,
-          icon: Icons.payments,
-          currency: primary,
-        ),
-      );
+    cards.add(
+      KpiCardSpec(
+        title: isDual ? 'Monthly Rate ($primary)' : 'Monthly Projected Rate',
+        amount: formatAmount(projectedPrimary, primary),
+        // subtitle: 'Normalized monthly income',
+        isPositive: true,
+        icon: Icons.trending_up,
+        currency: primary,
+      ),
+    );
 
-      // Secondary Currency Received
+    if (isDual) {
+      // Secondary Currency Received & Monthly Projected
       final double receivedSecondary = calculateTotal<IncomeItem>(
         items: incomeItems,
         currency: secondary,
         getCurrency: (final IncomeItem item) => item.currency,
         getAmount: (final IncomeItem item) => item.amount,
-        getStatus: (final IncomeItem item) => item.status,
+        getStatus: (final IncomeItem item) => item.status && item.isReceived,
         requiredStatus: true,
+      );
+
+      final double projectedSecondary = calculateMonthlyProjectedIncome(
+        items: incomeItems,
+        currency: secondary,
       );
 
       cards.add(
@@ -130,27 +185,19 @@ class CurrencyKpiUtils {
           title: 'Total Received ($secondary)',
           amount: formatAmount(receivedSecondary, secondary),
           isPositive: true,
-          icon: Icons.account_balance_wallet,
+          icon: Icons.account_balance_wallet_outlined,
           currency: secondary,
         ),
-      );
-    } else {
-      final double received = calculateTotal<IncomeItem>(
-        items: incomeItems,
-        currency: primary,
-        getCurrency: (final IncomeItem item) => item.currency,
-        getAmount: (final IncomeItem item) => item.amount,
-        getStatus: (final IncomeItem item) => item.status,
-        requiredStatus: true,
       );
 
       cards.add(
         KpiCardSpec(
-          title: 'Total Received',
-          amount: formatAmount(received, primary),
+          title: 'Monthly Rate ($secondary)',
+          amount: formatAmount(projectedSecondary, secondary),
+          // subtitle: 'Normalized monthly income',
           isPositive: true,
-          icon: Icons.payments,
-          currency: primary,
+          icon: Icons.auto_graph,
+          currency: secondary,
         ),
       );
     }

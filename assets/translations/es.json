@@ -130,5 +130,17 @@
   "filter_incomes": "Filtrar Ingresos",
   "all": "Todos",
   "clear_filters": "Limpiar Filtros",
-  "apply": "Aplicar"
+  "apply": "Aplicar",
+  "category": "Categoría",
+  "salary": "Salario",
+  "freelance": "Freelance",
+  "investments": "Inversiones",
+  "rental": "Alquiler",
+  "other": "Otro",
+  "select_category": "Seleccionar categoría",
+  "please_select_category": "Por favor seleccione categoría",
+  "received": "Recibido",
+  "pending": "Pendiente",
+  "payment_status": "Estado de Pago",
+  "monthly_projected": "Proyección Mensual"
 }

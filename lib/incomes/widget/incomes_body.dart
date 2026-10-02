@@ -14,6 +14,7 @@ import 'package:web_personal_finances/commons/dialog/custom_confirmation_dialog.
 import 'package:web_personal_finances/commons/drawer/drawer_widget.dart';
 import 'package:web_personal_finances/commons/enum/custom_action_options.dart';
 import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
+import 'package:web_personal_finances/commons/enum/custom_income_category_options.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
 import 'package:web_personal_finances/commons/layout/empty_content_widget.dart';
@@ -624,21 +625,106 @@ class _IncomesBodyState extends State<IncomesBody> {
                               // onExport: () {},
                               dataColumns: <String>[
                                 context.translate('name'),
+                                context.translate('category'),
                                 context.translate('frequency'),
                                 context.translate('comment'),
                                 context.translate('currency'),
                                 context.translate('amount'),
                                 context.translate('date_to_receive'),
+                                context.translate('payment_status'),
                                 context.translate('status'),
                               ],
                               rowBuilder: (final IncomeItem data) {
+                                final bool isDark =
+                                    Theme.of(context).brightness ==
+                                    Brightness.dark;
+
                                 return <Widget>[
-                                  Text(data.name),
+                                  Text(
+                                    data.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Icon(
+                                        data.category.icon,
+                                        size: 16,
+                                        color: isDark
+                                            ? DarkColors.primary
+                                            : LightColors.primary,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Flexible(
+                                        child: Text(
+                                          data.category.toTranslate(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                   Text(data.frequency.toTranslate(context)),
-                                  Text(data.comment),
+                                  Text(
+                                    data.comment,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
                                   Text(data.currency),
                                   Text(data.amount.toStringAsFixed(2)),
                                   Text(data.dateToReceive),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: data.isReceived
+                                          ? Colors.green.withValues(alpha: 0.12)
+                                          : Colors.amber.withValues(
+                                              alpha: 0.12,
+                                            ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: data.isReceived
+                                            ? Colors.green.withValues(
+                                                alpha: 0.5,
+                                              )
+                                            : Colors.amber.withValues(
+                                                alpha: 0.5,
+                                              ),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Icon(
+                                          data.isReceived
+                                              ? Icons.check_circle_outline
+                                              : Icons.schedule,
+                                          size: 13,
+                                          color: data.isReceived
+                                              ? Colors.green
+                                              : Colors.amber.shade800,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          data.isReceived
+                                              ? context.translate('received')
+                                              : context.translate('pending'),
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: data.isReceived
+                                                ? Colors.green
+                                                : Colors.amber.shade800,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   CustomChipStatus(isActive: data.status),
                                 ];
                               },
@@ -824,6 +910,8 @@ class _IncomesBodyState extends State<IncomesBody> {
         amount: item.amount,
         dateToReceive: item.dateToReceive,
         status: true,
+        isReceived: item.isReceived,
+        category: item.category,
         createdDate: item.createdDate,
         frequency: item.frequency,
         tags: item.tags,
@@ -849,6 +937,8 @@ class _IncomesBodyState extends State<IncomesBody> {
         amount: item.amount,
         dateToReceive: item.dateToReceive,
         status: false,
+        isReceived: item.isReceived,
+        category: item.category,
         createdDate: item.createdDate,
         frequency: item.frequency,
         tags: item.tags,

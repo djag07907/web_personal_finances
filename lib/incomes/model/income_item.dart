@@ -1,4 +1,5 @@
 import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
+import 'package:web_personal_finances/commons/enum/custom_income_category_options.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 
 class IncomeItem {
@@ -10,8 +11,10 @@ class IncomeItem {
   final double amount;
   final String dateToReceive;
   final bool status;
+  final bool isReceived;
   final DateTime? createdDate;
   final CustomFrequencyOptions frequency;
+  final CustomIncomeCategoryOptions category;
   final List<String> tags;
 
   IncomeItem({
@@ -23,8 +26,10 @@ class IncomeItem {
     required this.amount,
     required this.dateToReceive,
     required this.status,
+    this.isReceived = true,
     this.createdDate,
     required this.frequency,
+    this.category = CustomIncomeCategoryOptions.salary,
     this.tags = const <String>[],
   });
 
@@ -38,10 +43,16 @@ class IncomeItem {
       amount: (map['amount'] ?? 0).toDouble(),
       dateToReceive: map['dateToReceive'] ?? emptyString,
       status: map['status'] ?? false,
+      isReceived: map['isReceived'] ?? true,
       frequency: CustomFrequencyOptions.values.firstWhere(
         (final CustomFrequencyOptions element) =>
             element.name == map['frequency'],
         orElse: () => CustomFrequencyOptions.once,
+      ),
+      category: CustomIncomeCategoryOptions.values.firstWhere(
+        (final CustomIncomeCategoryOptions element) =>
+            element.name == map['category'],
+        orElse: () => CustomIncomeCategoryOptions.salary,
       ),
       createdDate: map['createdDate'] != null
           ? DateTime.parse(map['createdDate'])
@@ -62,8 +73,10 @@ class IncomeItem {
       'amount': amount,
       'dateToReceive': dateToReceive,
       'status': status,
+      'isReceived': isReceived,
       'createdDate': createdDate?.toIso8601String(),
       'frequency': frequency.name,
+      'category': category.name,
       'tags': tags,
     };
   }

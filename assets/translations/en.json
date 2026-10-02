@@ -130,5 +130,17 @@
   "filter_incomes": "Filter Incomes",
   "all": "All",
   "clear_filters": "Clear Filters",
-  "apply": "Apply"
+  "apply": "Apply",
+  "category": "Category",
+  "salary": "Salary",
+  "freelance": "Freelance",
+  "investments": "Investments",
+  "rental": "Rental",
+  "other": "Other",
+  "select_category": "Select category",
+  "please_select_category": "Please select category",
+  "received": "Received",
+  "pending": "Pending",
+  "payment_status": "Payment Status",
+  "monthly_projected": "Monthly Projected"
 }

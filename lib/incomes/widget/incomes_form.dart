@@ -31,6 +31,8 @@ class _FormWidgetState extends State<FormWidget> {
   late double incomeAmount;
   String? selectedCurrency;
   CustomFrequencyOptions? selectedFrequency;
+  CustomIncomeCategoryOptions? selectedCategory;
+  bool isReceived = true;
   List<String> tags = <String>[];
   List<String> _availableCurrencies = <String>[hnlCurrency, usdCurrency];
 
@@ -45,7 +47,12 @@ class _FormWidgetState extends State<FormWidget> {
           .toString();
       selectedCurrency = widget.incomeItem!.currency;
       selectedFrequency = widget.incomeItem!.frequency;
+      selectedCategory = widget.incomeItem!.category;
+      isReceived = widget.incomeItem!.isReceived;
       tags = widget.incomeItem?.tags ?? <String>[];
+    } else {
+      selectedCategory = CustomIncomeCategoryOptions.salary;
+      isReceived = true;
     }
     _loadUserCurrencies();
   }
@@ -138,6 +145,32 @@ class _FormWidgetState extends State<FormWidget> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
+                  CustomLabelSelector(
+                    label: context.translate('category'),
+                    hintText: context.translate('select_category'),
+                    validator: (final String? value) {
+                      if (value == null) {
+                        return context.translate('please_select_category');
+                      }
+                      return null;
+                    },
+                    selectedValue: selectedCategory?.toTranslate(context),
+                    items: CustomIncomeCategoryOptions.values
+                        .map(
+                          (final CustomIncomeCategoryOptions element) =>
+                              element.toTranslate(context),
+                        )
+                        .toList(),
+                    onChanged: (final String? selectedLabel) {
+                      setState(() {
+                        selectedCategory = CustomIncomeCategoryOptions.values
+                            .firstWhere(
+                              (final CustomIncomeCategoryOptions element) =>
+                                  element.toTranslate(context) == selectedLabel,
+                            );
+                      });
+                    },
+                  ),
                   CustomLabelSelector(
                     label: context.translate('frequency'),
                     hintText: context.translate('select_frequency'),
@@ -255,6 +288,35 @@ class _FormWidgetState extends State<FormWidget> {
                     validator: (final String? value) => null,
                     controller: _dateToReceiveController,
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          context.translate('is_received'),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: isDark
+                                    ? DarkColors.textSecondary
+                                    : LightColors.textSecondary,
+                              ),
+                        ),
+                        Switch(
+                          value: isReceived,
+                          activeThumbColor: isDark
+                              ? DarkColors.primary
+                              : LightColors.primary,
+                          onChanged: (final bool value) {
+                            setState(() {
+                              isReceived = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                   SizedBox(height: 20.0),
                   Row(
                     spacing: 15.0,
@@ -303,6 +365,10 @@ class _FormWidgetState extends State<FormWidget> {
                                     ) ??
                                     0,
                                 frequency: selectedFrequency!,
+                                category:
+                                    selectedCategory ??
+                                    CustomIncomeCategoryOptions.salary,
+                                isReceived: isReceived,
                                 dateToReceive: _dateToReceiveController.text,
                                 status: widget.isEdit
                                     ? widget.incomeItem!.status
