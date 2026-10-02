@@ -101,7 +101,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                         child: CircularImageBorder(
                           minHeight: 85.0,
                           minWidth: 85.0,
-                          imagePath: '${imagePath}logo.jpg',
+                          imagePath: pecuniaLogoPath,
                         ),
                       ),
                     ),

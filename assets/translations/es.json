@@ -125,5 +125,10 @@
   "expenses_low": "Tus gastos equivalen al {percentage}% de tus ingresos. ¡Bien hecho!",
   "expenses_moderate": "Tus gastos equivalen al {percentage}% de tus ingresos. ¡Ten cuidado con tus gastos!",
   "expenses_high": "Tus gastos equivalen al {percentage}% de tus ingresos. Considera reducir tus gastos.",
-  "optional": "opcional"
+  "optional": "opcional",
+  "filter": "Filtrar",
+  "filter_incomes": "Filtrar Ingresos",
+  "all": "Todos",
+  "clear_filters": "Limpiar Filtros",
+  "apply": "Aplicar"
 }

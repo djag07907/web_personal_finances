@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+import 'package:web_personal_finances/resources/constants.dart';
 
 class CustomDataTable<T> extends StatefulWidget {
   final List<Widget>? headers;
@@ -8,11 +9,14 @@ class CustomDataTable<T> extends StatefulWidget {
   final List<Widget> Function(T) rowBuilder;
   final Widget paginator;
   final Widget Function(T item)? popupMenuBuilder;
-  final VoidCallback? onSearch;
+  final ValueChanged<String>? onSearch;
   final VoidCallback? onFilter;
   final VoidCallback? onExport;
   final bool showToolbar;
   final String? searchHint;
+  final bool isFiltered;
+  final Widget? filterPanel;
+  final Widget? activeFilterChips;
 
   const CustomDataTable({
     super.key,
@@ -27,6 +31,9 @@ class CustomDataTable<T> extends StatefulWidget {
     this.onExport,
     this.showToolbar = true,
     this.searchHint,
+    this.isFiltered = false,
+    this.filterPanel,
+    this.activeFilterChips,
   });
 
   @override
@@ -145,6 +152,8 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
   }
 
   Widget _buildToolbar(final BuildContext context, final bool isDark) {
+    final bool hasFilterPanel = widget.filterPanel != null;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       decoration: BoxDecoration(
@@ -161,68 +170,106 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
           topRight: Radius.circular(12),
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Expanded(
-            flex: 3,
-            child: Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: isDark ? DarkColors.background : white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isDark ? DarkColors.border : Color(0xFFE5E7EB),
+          Row(
+            children: <Widget>[
+              Expanded(
+                flex: hasFilterPanel ? 1 : 3,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: isDark ? DarkColors.background : white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isDark ? DarkColors.border : Color(0xFFE5E7EB),
+                    ),
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? white : LightColors.textPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: widget.searchHint ?? 'Search...',
+                      hintStyle: TextStyle(
+                        fontSize: 14,
+                        color: isDark
+                            ? DarkColors.textSecondary
+                            : Colors.grey[400],
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        size: 20,
+                        color: isDark
+                            ? DarkColors.textSecondary
+                            : Colors.grey[400],
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(
+                                Icons.clear,
+                                size: 18,
+                                color: isDark
+                                    ? DarkColors.textSecondary
+                                    : Colors.grey[400],
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                                if (widget.onSearch != null) {
+                                  widget.onSearch!(emptyString);
+                                }
+                                setState(() {});
+                              },
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                    ),
+                    onChanged: (final String value) {
+                      setState(() {});
+                      if (widget.onSearch != null) {
+                        widget.onSearch!(value);
+                      }
+                    },
+                  ),
                 ),
               ),
-              child: TextField(
-                controller: _searchController,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? white : LightColors.textPrimary,
+              if (hasFilterPanel) ...<Widget>[
+                SizedBox(width: 8),
+                widget.filterPanel!,
+              ],
+              SizedBox(width: 8),
+              if (widget.onFilter != null)
+                _buildToolbarButton(
+                  context,
+                  isDark,
+                  icon: Icons.filter_list,
+                  label: 'Filter',
+                  isHighlighted: widget.isFiltered,
+                  onPressed: widget.onFilter,
                 ),
-                decoration: InputDecoration(
-                  hintText: widget.searchHint ?? 'Search...',
-                  hintStyle: TextStyle(
-                    fontSize: 14,
-                    color: isDark ? DarkColors.textSecondary : Colors.grey[400],
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    size: 20,
-                    color: isDark ? DarkColors.textSecondary : Colors.grey[400],
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
+              SizedBox(width: 8),
+              if (widget.onExport != null)
+                _buildToolbarButton(
+                  context,
+                  isDark,
+                  icon: Icons.ios_share,
+                  label: 'Export',
+                  onPressed: widget.onExport,
                 ),
-                onChanged: (final String value) {
-                  if (widget.onSearch != null) {
-                    widget.onSearch!();
-                  }
-                },
-              ),
-            ),
+            ],
           ),
-          SizedBox(width: 8),
-          if (widget.onFilter != null)
-            _buildToolbarButton(
-              context,
-              isDark,
-              icon: Icons.filter_list,
-              label: 'Filter',
-              onPressed: widget.onFilter,
-            ),
-          SizedBox(width: 8),
-          if (widget.onExport != null)
-            _buildToolbarButton(
-              context,
-              isDark,
-              icon: Icons.ios_share,
-              label: 'Export',
-              onPressed: widget.onExport,
-            ),
+          if (widget.activeFilterChips != null) ...<Widget>[
+            SizedBox(height: 10),
+            widget.activeFilterChips!,
+          ],
         ],
       ),
     );
@@ -233,8 +280,10 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
     final bool isDark, {
     required final IconData icon,
     required final String label,
+    final bool isHighlighted = false,
     final VoidCallback? onPressed,
   }) {
+    final Color activeColor = isDark ? DarkColors.primary : LightColors.primary;
     return Material(
       color: transparent,
       child: InkWell(
@@ -244,10 +293,15 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
           height: 40,
           padding: EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: isDark ? DarkColors.background : white,
+            color: isHighlighted
+                ? activeColor.withValues(alpha: 0.15)
+                : (isDark ? DarkColors.background : white),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isDark ? DarkColors.border : Color(0xFFE5E7EB),
+              color: isHighlighted
+                  ? activeColor
+                  : (isDark ? DarkColors.border : Color(0xFFE5E7EB)),
+              width: isHighlighted ? 1.5 : 1.0,
             ),
           ),
           child: Row(
@@ -256,15 +310,19 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
               Icon(
                 icon,
                 size: 18,
-                color: isDark ? DarkColors.textSecondary : Colors.grey[600],
+                color: isHighlighted
+                    ? activeColor
+                    : (isDark ? DarkColors.textSecondary : Colors.grey[600]),
               ),
               SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: isDark ? DarkColors.textPrimary : Colors.grey[700],
+                  fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w500,
+                  color: isHighlighted
+                      ? activeColor
+                      : (isDark ? DarkColors.textPrimary : Colors.grey[700]),
                 ),
               ),
             ],

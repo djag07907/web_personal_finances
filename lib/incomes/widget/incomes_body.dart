@@ -50,6 +50,479 @@ class _IncomesBodyState extends State<IncomesBody> {
   bool _isEditing = false;
 
   UserModel? _currentUser;
+  bool _showFilterPanel = false;
+  String _searchQuery = emptyString;
+  CustomFrequencyOptions? _selectedFrequencyFilter;
+  bool? _selectedStatusFilter;
+  String? _selectedDateFilter;
+
+  List<IncomeItem> get _filteredIncomes {
+    return _incomeItems.where((final IncomeItem item) {
+      if (_searchQuery.isNotEmpty) {
+        final String query = _searchQuery.toLowerCase().trim();
+        final bool matchesName = item.name.toLowerCase().contains(query);
+        final bool matchesComment = item.comment.toLowerCase().contains(query);
+        final bool matchesCurrency = item.currency.toLowerCase().contains(
+          query,
+        );
+        final bool matchesAmount = item.amount.toString().contains(query);
+        final bool matchesFrequency = item.frequency
+            .toTranslate(context)
+            .toLowerCase()
+            .contains(query);
+        final bool matchesDate = item.dateToReceive.toLowerCase().contains(
+          query,
+        );
+        final bool matchesTags = item.tags.any(
+          (final String tag) => tag.toLowerCase().contains(query),
+        );
+
+        final String activeText = context.translate('active').toLowerCase();
+        final String inactiveText = context.translate('inactive').toLowerCase();
+        final bool matchesStatus =
+            (item.status && activeText.contains(query)) ||
+            (!item.status && inactiveText.contains(query));
+
+        if (!matchesName &&
+            !matchesComment &&
+            !matchesCurrency &&
+            !matchesAmount &&
+            !matchesFrequency &&
+            !matchesDate &&
+            !matchesTags &&
+            !matchesStatus) {
+          return false;
+        }
+      }
+
+      if (_selectedFrequencyFilter != null &&
+          item.frequency != _selectedFrequencyFilter) {
+        return false;
+      }
+
+      if (_selectedStatusFilter != null &&
+          item.status != _selectedStatusFilter) {
+        return false;
+      }
+
+      if (_selectedDateFilter != null &&
+          _selectedDateFilter!.isNotEmpty &&
+          item.dateToReceive != _selectedDateFilter) {
+        return false;
+      }
+
+      return true;
+    }).toList();
+  }
+
+  bool get _isFilterActive =>
+      _selectedFrequencyFilter != null ||
+      _selectedStatusFilter != null ||
+      (_selectedDateFilter != null && _selectedDateFilter!.isNotEmpty);
+
+  Widget _buildInlineFilterPanel(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          _buildStatusSegmentedControl(context, isDark),
+          const SizedBox(width: 8.0),
+          _buildFrequencyDropdown(context, isDark),
+          const SizedBox(width: 8.0),
+          _buildDatePickerButton(context, isDark),
+          if (_isFilterActive) ...<Widget>[
+            const SizedBox(width: 4.0),
+            IconButton(
+              tooltip: context.translate('clear_filters'),
+              icon: Icon(
+                Icons.clear_all,
+                size: 20,
+                color: isDark ? DarkColors.primary : LightColors.primary,
+              ),
+              onPressed: () {
+                setState(() {
+                  _selectedFrequencyFilter = null;
+                  _selectedStatusFilter = null;
+                  _selectedDateFilter = null;
+                  _currentPage = 0;
+                });
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveFilterChips(final BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final String activeLabel = context.translate('active');
+    final String inactiveLabel = context.translate('inactive');
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Wrap(
+        alignment: WrapAlignment.end,
+        spacing: 8.0,
+        runSpacing: 8.0,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: <Widget>[
+          Text(
+            'Active filters:',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: isDark ? DarkColors.textSecondary : Colors.grey[600],
+            ),
+          ),
+          if (_searchQuery.isNotEmpty)
+            _buildFilterChip(
+              context,
+              isDark,
+              label: 'Search: "$_searchQuery"',
+              onDeleted: () {
+                setState(() {
+                  _searchQuery = emptyString;
+                  _currentPage = 0;
+                });
+              },
+            ),
+          if (_selectedStatusFilter != null)
+            _buildFilterChip(
+              context,
+              isDark,
+              label:
+                  'Status: ${_selectedStatusFilter! ? activeLabel : inactiveLabel}',
+              onDeleted: () {
+                setState(() {
+                  _selectedStatusFilter = null;
+                  _currentPage = 0;
+                });
+              },
+            ),
+          if (_selectedFrequencyFilter != null)
+            _buildFilterChip(
+              context,
+              isDark,
+              label:
+                  'Frequency: ${_selectedFrequencyFilter!.toTranslate(context)}',
+              onDeleted: () {
+                setState(() {
+                  _selectedFrequencyFilter = null;
+                  _currentPage = 0;
+                });
+              },
+            ),
+          if (_selectedDateFilter != null && _selectedDateFilter!.isNotEmpty)
+            _buildFilterChip(
+              context,
+              isDark,
+              label: 'Date: $_selectedDateFilter',
+              onDeleted: () {
+                setState(() {
+                  _selectedDateFilter = null;
+                  _currentPage = 0;
+                });
+              },
+            ),
+          InkWell(
+            onTap: () {
+              setState(() {
+                _searchQuery = emptyString;
+                _selectedFrequencyFilter = null;
+                _selectedStatusFilter = null;
+                _selectedDateFilter = null;
+                _currentPage = 0;
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 4.0,
+                vertical: 2.0,
+              ),
+              child: Text(
+                'Reset all',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? DarkColors.primary : LightColors.primary,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusSegmentedControl(
+    final BuildContext context,
+    final bool isDark,
+  ) {
+    final String allLabel = context.translate('all');
+    final String activeLabel = context.translate('active');
+    final String inactiveLabel = context.translate('inactive');
+
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: isDark ? DarkColors.surface : Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          _buildSegmentItem(
+            label: allLabel,
+            isSelected: _selectedStatusFilter == null,
+            isDark: isDark,
+            onTap: () {
+              setState(() {
+                _selectedStatusFilter = null;
+                _currentPage = 0;
+              });
+            },
+          ),
+          _buildSegmentItem(
+            label: activeLabel,
+            isSelected: _selectedStatusFilter == true,
+            isDark: isDark,
+            onTap: () {
+              setState(() {
+                _selectedStatusFilter = true;
+                _currentPage = 0;
+              });
+            },
+          ),
+          _buildSegmentItem(
+            label: inactiveLabel,
+            isSelected: _selectedStatusFilter == false,
+            isDark: isDark,
+            onTap: () {
+              setState(() {
+                _selectedStatusFilter = false;
+                _currentPage = 0;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSegmentItem({
+    required final String label,
+    required final bool isSelected,
+    required final bool isDark,
+    required final VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isDark ? DarkColors.primary : LightColors.primary)
+              : transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected
+                ? white
+                : (isDark ? DarkColors.textSecondary : Colors.grey[700]),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFrequencyDropdown(
+    final BuildContext context,
+    final bool isDark,
+  ) {
+    final String allLabel = context.translate('all');
+    final String currentVal = _selectedFrequencyFilter == null
+        ? allLabel
+        : _selectedFrequencyFilter!.toTranslate(context);
+
+    final List<String> options = <String>[
+      allLabel,
+      ...CustomFrequencyOptions.values.map(
+        (final CustomFrequencyOptions opt) => opt.toTranslate(context),
+      ),
+    ];
+
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: isDark ? DarkColors.surface : white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? DarkColors.border : Color(0xFFE5E7EB),
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: currentVal,
+          isDense: true,
+          icon: const Icon(Icons.keyboard_arrow_down, size: 18),
+          style: TextStyle(
+            fontSize: 13,
+            color: isDark ? DarkColors.textPrimary : LightColors.textPrimary,
+          ),
+          dropdownColor: isDark ? DarkColors.surface : white,
+          items: options.map((final String value) {
+            return DropdownMenuItem<String>(value: value, child: Text(value));
+          }).toList(),
+          onChanged: (final String? newValue) {
+            setState(() {
+              if (newValue == null || newValue == allLabel) {
+                _selectedFrequencyFilter = null;
+              } else {
+                _selectedFrequencyFilter = CustomFrequencyOptions.values
+                    .firstWhere(
+                      (final CustomFrequencyOptions opt) =>
+                          opt.toTranslate(context) == newValue,
+                    );
+              }
+              _currentPage = 0;
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDatePickerButton(final BuildContext context, final bool isDark) {
+    final bool hasDate =
+        _selectedDateFilter != null && _selectedDateFilter!.isNotEmpty;
+
+    return InkWell(
+      onTap: () async {
+        final TextEditingController controller = TextEditingController(
+          text: _selectedDateFilter ?? emptyString,
+        );
+        final CustomCalendarDialog calendar = CustomCalendarDialog();
+        final DateTime? selectedDate = await calendar.showDateDialog(
+          context: context,
+          dateController: controller,
+        );
+        if (selectedDate != null) {
+          final String formatted = DateFormat(
+            dayMonthYearFormat,
+          ).format(selectedDate);
+          setState(() {
+            _selectedDateFilter = formatted;
+            _currentPage = 0;
+          });
+        }
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: hasDate
+              ? (isDark
+                    ? DarkColors.primary.withValues(alpha: 0.2)
+                    : LightColors.primary.withValues(alpha: 0.1))
+              : (isDark ? DarkColors.surface : white),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: hasDate
+                ? (isDark ? DarkColors.primary : LightColors.primary)
+                : (isDark ? DarkColors.border : Color(0xFFE5E7EB)),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              Icons.calendar_today,
+              size: 14,
+              color: hasDate
+                  ? (isDark ? DarkColors.primary : LightColors.primary)
+                  : (isDark ? DarkColors.textSecondary : Colors.grey[600]),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              hasDate
+                  ? _selectedDateFilter!
+                  : context.translate('date_to_receive'),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: hasDate ? FontWeight.bold : FontWeight.normal,
+                color: hasDate
+                    ? (isDark ? DarkColors.primary : LightColors.primary)
+                    : (isDark ? DarkColors.textPrimary : Colors.grey[700]),
+              ),
+            ),
+            if (hasDate) ...<Widget>[
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedDateFilter = null;
+                    _currentPage = 0;
+                  });
+                },
+                child: const Icon(Icons.close, size: 14),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(
+    final BuildContext context,
+    final bool isDark, {
+    required final String label,
+    required final VoidCallback onDeleted,
+  }) {
+    final Color primaryColor = isDark
+        ? DarkColors.primary
+        : LightColors.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: primaryColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: primaryColor,
+            ),
+          ),
+          const SizedBox(width: 6),
+          InkWell(
+            onTap: onDeleted,
+            borderRadius: BorderRadius.circular(10),
+            child: Icon(Icons.cancel, size: 14, color: primaryColor),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -114,98 +587,124 @@ class _IncomesBodyState extends State<IncomesBody> {
                           actionLabel: context.translate('add_income'),
                           onAction: _addIncome,
                         )
-                      : CustomDataTable<IncomeItem>(
-                          data: _incomeItems,
-                          showToolbar: true,
-                          searchHint: 'Search by name, category, or amount...',
-                          onSearch: () {},
-                          onFilter: () {},
-                          onExport: () {},
-                          dataColumns: <String>[
-                            context.translate('name'),
-                            context.translate('frequency'),
-                            context.translate('comment'),
-                            context.translate('currency'),
-                            context.translate('amount'),
-                            context.translate('date_to_receive'),
-                            context.translate('status'),
-                          ],
-                          rowBuilder: (final IncomeItem data) {
-                            return <Widget>[
-                              Text(data.name),
-                              Text(data.frequency.toTranslate(context)),
-                              Text(data.comment),
-                              Text(data.currency),
-                              Text(data.amount.toStringAsFixed(2)),
-                              Text(data.dateToReceive),
-                              CustomChipStatus(isActive: data.status),
-                            ];
-                          },
-                          popupMenuBuilder: (final IncomeItem item) {
-                            return PrimaryPopupMenu<CustomOptions>(
-                              popupItems: <PopupItem<CustomOptions>>[
-                                PopupItem<CustomOptions>(
-                                  title: CustomOptions.edit.toTranslate(
-                                    context,
-                                  ),
-                                  value: CustomOptions.edit,
-                                ),
-                                PopupItem<CustomOptions>(
-                                  title: CustomOptions.delete.toTranslate(
-                                    context,
-                                  ),
-                                  value: CustomOptions.delete,
-                                ),
-                                if (!item.status)
-                                  PopupItem<CustomOptions>(
-                                    title: CustomOptions.activate.toTranslate(
-                                      context,
-                                    ),
-                                    value: CustomOptions.activate,
-                                  ),
-                                if (item.status)
-                                  PopupItem<CustomOptions>(
-                                    title: CustomOptions.deactivate.toTranslate(
-                                      context,
-                                    ),
-                                    value: CustomOptions.deactivate,
-                                  ),
+                      : Builder(
+                          builder: (final BuildContext context) {
+                            final List<IncomeItem> filtered = _filteredIncomes;
+                            final List<IncomeItem> paginatedIncomes = filtered
+                                .skip(_currentPage * _itemsPerPage)
+                                .take(_itemsPerPage)
+                                .toList();
+
+                            return CustomDataTable<IncomeItem>(
+                              data: paginatedIncomes,
+                              showToolbar: true,
+                              isFiltered: _isFilterActive || _showFilterPanel,
+                              filterPanel: _showFilterPanel
+                                  ? _buildInlineFilterPanel(context)
+                                  : null,
+                              activeFilterChips:
+                                  (_isFilterActive || _searchQuery.isNotEmpty)
+                                  ? _buildActiveFilterChips(context)
+                                  : null,
+                              searchHint:
+                                  'Search by name, category, or amount...',
+                              onSearch: (final String query) {
+                                setState(() {
+                                  _searchQuery = query;
+                                  _currentPage = 0;
+                                });
+                              },
+                              onFilter: () {
+                                setState(() {
+                                  _showFilterPanel = !_showFilterPanel;
+                                });
+                              },
+                              // onExport: () {},
+                              dataColumns: <String>[
+                                context.translate('name'),
+                                context.translate('frequency'),
+                                context.translate('comment'),
+                                context.translate('currency'),
+                                context.translate('amount'),
+                                context.translate('date_to_receive'),
+                                context.translate('status'),
                               ],
-                              tooltip: context.translate('options'),
-                              onSelect: (final CustomOptions option) {
-                                Navigator.of(context).pop();
-                                Future<void>.delayed(
-                                  const Duration(milliseconds: 150),
-                                  () {
-                                    switch (option) {
-                                      case CustomOptions.edit:
-                                        _editIncome(item);
-                                        break;
-                                      case CustomOptions.delete:
-                                        _removeIncome(item);
-                                        break;
-                                      case CustomOptions.activate:
-                                        _activateIncome(item);
-                                        break;
-                                      case CustomOptions.deactivate:
-                                        _deactivateIncome(item);
-                                        break;
-                                    }
+                              rowBuilder: (final IncomeItem data) {
+                                return <Widget>[
+                                  Text(data.name),
+                                  Text(data.frequency.toTranslate(context)),
+                                  Text(data.comment),
+                                  Text(data.currency),
+                                  Text(data.amount.toStringAsFixed(2)),
+                                  Text(data.dateToReceive),
+                                  CustomChipStatus(isActive: data.status),
+                                ];
+                              },
+                              popupMenuBuilder: (final IncomeItem item) {
+                                return PrimaryPopupMenu<CustomOptions>(
+                                  popupItems: <PopupItem<CustomOptions>>[
+                                    PopupItem<CustomOptions>(
+                                      title: CustomOptions.edit.toTranslate(
+                                        context,
+                                      ),
+                                      value: CustomOptions.edit,
+                                    ),
+                                    PopupItem<CustomOptions>(
+                                      title: CustomOptions.delete.toTranslate(
+                                        context,
+                                      ),
+                                      value: CustomOptions.delete,
+                                    ),
+                                    if (!item.status)
+                                      PopupItem<CustomOptions>(
+                                        title: CustomOptions.activate
+                                            .toTranslate(context),
+                                        value: CustomOptions.activate,
+                                      ),
+                                    if (item.status)
+                                      PopupItem<CustomOptions>(
+                                        title: CustomOptions.deactivate
+                                            .toTranslate(context),
+                                        value: CustomOptions.deactivate,
+                                      ),
+                                  ],
+                                  tooltip: context.translate('options'),
+                                  onSelect: (final CustomOptions option) {
+                                    Navigator.of(context).pop();
+                                    Future<void>.delayed(
+                                      const Duration(milliseconds: 150),
+                                      () {
+                                        switch (option) {
+                                          case CustomOptions.edit:
+                                            _editIncome(item);
+                                            break;
+                                          case CustomOptions.delete:
+                                            _removeIncome(item);
+                                            break;
+                                          case CustomOptions.activate:
+                                            _activateIncome(item);
+                                            break;
+                                          case CustomOptions.deactivate:
+                                            _deactivateIncome(item);
+                                            break;
+                                        }
+                                      },
+                                    );
                                   },
                                 );
                               },
+                              paginator: PaginationWidget(
+                                currentPage: _currentPage,
+                                totalItems: filtered.length,
+                                itemsPerPage: _itemsPerPage,
+                                onPageChanged: (final int newPage) {
+                                  setState(() {
+                                    _currentPage = newPage;
+                                  });
+                                },
+                              ),
                             );
                           },
-                          paginator: PaginationWidget(
-                            currentPage: _currentPage,
-                            totalItems: _incomeItems.length,
-                            itemsPerPage: _itemsPerPage,
-                            onPageChanged: (final int newPage) {
-                              setState(() {
-                                _currentPage = newPage;
-                              });
-                            },
-                          ),
                         ),
                 ),
               ],

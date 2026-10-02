@@ -125,5 +125,10 @@
   "expenses_low": "Your expenses are {percentage}% of your income. Well done!",
   "expenses_moderate": "Your expenses are {percentage}% of your income. Keep an eye on your spending!",
   "expenses_high": "Your expenses are {percentage}% of your income. Consider reducing your expenses!",
-  "optional": "optional"
+  "optional": "optional",
+  "filter": "Filter",
+  "filter_incomes": "Filter Incomes",
+  "all": "All",
+  "clear_filters": "Clear Filters",
+  "apply": "Apply"
 }
