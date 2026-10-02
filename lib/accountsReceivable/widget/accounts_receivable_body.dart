@@ -157,6 +157,8 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
                       case CustomOptions.deactivate:
                         _deactivateAccountReceivable(item);
                         break;
+                      default:
+                        break;
                     }
                   });
                 },

@@ -147,6 +147,8 @@ class _SavingsBodyState extends State<SavingsBody> {
                       case CustomOptions.deactivate:
                         _deactivateSaving(item);
                         break;
+                      default:
+                        break;
                     }
                   });
                 },

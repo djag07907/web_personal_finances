@@ -156,6 +156,8 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                       case CustomOptions.deactivate:
                         _deactivateAccountToPay(item);
                         break;
+                      default:
+                        break;
                     }
                   });
                 },

@@ -142,5 +142,9 @@
   "received": "Recibido",
   "pending": "Pendiente",
   "payment_status": "Estado de Pago",
-  "monthly_projected": "Proyección Mensual"
+  "monthly_projected": "Proyección Mensual",
+  "mark_as_received": "Marcar como Recibido",
+  "mark_as_pending": "Marcar como Pendiente",
+  "income_marked_received": "Ingreso marcado como recibido",
+  "income_marked_pending": "Ingreso marcado como pendiente"
 }

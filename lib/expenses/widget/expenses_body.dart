@@ -148,6 +148,8 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                       case CustomOptions.deactivate:
                         _deactivateExpense(item);
                         break;
+                      default:
+                        break;
                     }
                   });
                 },

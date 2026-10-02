@@ -56,6 +56,7 @@ class _IncomesBodyState extends State<IncomesBody> {
   bool _showFilterPanel = false;
   String _searchQuery = emptyString;
   CustomFrequencyOptions? _selectedFrequencyFilter;
+  CustomIncomeCategoryOptions? _selectedCategoryFilter;
   bool? _selectedStatusFilter;
   String? _selectedDateFilter;
 
@@ -70,6 +71,10 @@ class _IncomesBodyState extends State<IncomesBody> {
         );
         final bool matchesAmount = item.amount.toString().contains(query);
         final bool matchesFrequency = item.frequency
+            .toTranslate(context)
+            .toLowerCase()
+            .contains(query);
+        final bool matchesCategory = item.category
             .toTranslate(context)
             .toLowerCase()
             .contains(query);
@@ -91,11 +96,17 @@ class _IncomesBodyState extends State<IncomesBody> {
             !matchesCurrency &&
             !matchesAmount &&
             !matchesFrequency &&
+            !matchesCategory &&
             !matchesDate &&
             !matchesTags &&
             !matchesStatus) {
           return false;
         }
+      }
+
+      if (_selectedCategoryFilter != null &&
+          item.category != _selectedCategoryFilter) {
+        return false;
       }
 
       if (_selectedFrequencyFilter != null &&
@@ -119,6 +130,7 @@ class _IncomesBodyState extends State<IncomesBody> {
   }
 
   bool get _isFilterActive =>
+      _selectedCategoryFilter != null ||
       _selectedFrequencyFilter != null ||
       _selectedStatusFilter != null ||
       (_selectedDateFilter != null && _selectedDateFilter!.isNotEmpty);
@@ -132,6 +144,8 @@ class _IncomesBodyState extends State<IncomesBody> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           _buildStatusSegmentedControl(context, isDark),
+          const SizedBox(width: 8.0),
+          _buildCategoryDropdown(context, isDark),
           const SizedBox(width: 8.0),
           _buildFrequencyDropdown(context, isDark),
           const SizedBox(width: 8.0),
@@ -147,6 +161,7 @@ class _IncomesBodyState extends State<IncomesBody> {
               ),
               onPressed: () {
                 setState(() {
+                  _selectedCategoryFilter = null;
                   _selectedFrequencyFilter = null;
                   _selectedStatusFilter = null;
                   _selectedDateFilter = null;
@@ -156,6 +171,76 @@ class _IncomesBodyState extends State<IncomesBody> {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryDropdown(final BuildContext context, final bool isDark) {
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: isDark ? DarkColors.surface : const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? DarkColors.border : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<CustomIncomeCategoryOptions?>(
+          value: _selectedCategoryFilter,
+          hint: Text(
+            context.translate('category'),
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? DarkColors.textSecondary : greyHard,
+            ),
+          ),
+          icon: Icon(
+            Icons.arrow_drop_down,
+            size: 18,
+            color: isDark ? DarkColors.textSecondary : greyHard,
+          ),
+          style: TextStyle(
+            fontSize: 12,
+            color: isDark ? DarkColors.textPrimary : LightColors.textPrimary,
+          ),
+          dropdownColor: isDark ? DarkColors.surface : Colors.white,
+          items: <DropdownMenuItem<CustomIncomeCategoryOptions?>>[
+            DropdownMenuItem<CustomIncomeCategoryOptions?>(
+              value: null,
+              child: Text(
+                '${context.translate('all')} ${context.translate('category')}',
+              ),
+            ),
+            ...CustomIncomeCategoryOptions.values.map(
+              (final CustomIncomeCategoryOptions cat) =>
+                  DropdownMenuItem<CustomIncomeCategoryOptions?>(
+                    value: cat,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Icon(
+                          cat.icon,
+                          size: 14,
+                          color: isDark
+                              ? DarkColors.primary
+                              : LightColors.primary,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(cat.toTranslate(context)),
+                      ],
+                    ),
+                  ),
+            ),
+          ],
+          onChanged: (final CustomIncomeCategoryOptions? val) {
+            setState(() {
+              _selectedCategoryFilter = val;
+              _currentPage = 0;
+            });
+          },
+        ),
       ),
     );
   }
@@ -202,6 +287,19 @@ class _IncomesBodyState extends State<IncomesBody> {
               onDeleted: () {
                 setState(() {
                   _selectedStatusFilter = null;
+                  _currentPage = 0;
+                });
+              },
+            ),
+          if (_selectedCategoryFilter != null)
+            _buildFilterChip(
+              context,
+              isDark,
+              label:
+                  'Category: ${_selectedCategoryFilter!.toTranslate(context)}',
+              onDeleted: () {
+                setState(() {
+                  _selectedCategoryFilter = null;
                   _currentPage = 0;
                 });
               },
@@ -738,6 +836,16 @@ class _IncomesBodyState extends State<IncomesBody> {
                                       value: CustomOptions.edit,
                                     ),
                                     PopupItem<CustomOptions>(
+                                      title: item.isReceived
+                                          ? CustomOptions.markAsPending
+                                                .toTranslate(context)
+                                          : CustomOptions.markAsReceived
+                                                .toTranslate(context),
+                                      value: item.isReceived
+                                          ? CustomOptions.markAsPending
+                                          : CustomOptions.markAsReceived,
+                                    ),
+                                    PopupItem<CustomOptions>(
                                       title: CustomOptions.delete.toTranslate(
                                         context,
                                       ),
@@ -765,6 +873,12 @@ class _IncomesBodyState extends State<IncomesBody> {
                                         switch (option) {
                                           case CustomOptions.edit:
                                             _editIncome(item);
+                                            break;
+                                          case CustomOptions.markAsReceived:
+                                            _toggleReceivedStatus(item, true);
+                                            break;
+                                          case CustomOptions.markAsPending:
+                                            _toggleReceivedStatus(item, false);
                                             break;
                                           case CustomOptions.delete:
                                             _removeIncome(item);
@@ -880,6 +994,31 @@ class _IncomesBodyState extends State<IncomesBody> {
     _editingItem = item;
     _isEditing = true;
     _openDrawer();
+  }
+
+  void _toggleReceivedStatus(final IncomeItem item, final bool isReceived) {
+    final IncomeItem updated = IncomeItem(
+      id: item.id,
+      userId: item.userId,
+      name: item.name,
+      comment: item.comment,
+      currency: item.currency,
+      amount: item.amount,
+      dateToReceive: item.dateToReceive,
+      status: item.status,
+      isReceived: isReceived,
+      category: item.category,
+      createdDate: item.createdDate,
+      frequency: item.frequency,
+      tags: item.tags,
+    );
+    _incomesBloc.add(IncomesUpdated(incomeItem: updated));
+    showSnackbar(
+      context,
+      isReceived
+          ? context.translate('income_marked_received')
+          : context.translate('income_marked_pending'),
+    );
   }
 
   void _removeIncome(final IncomeItem item) async {
