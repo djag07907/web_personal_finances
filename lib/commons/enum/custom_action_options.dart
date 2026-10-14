@@ -10,7 +10,8 @@ enum CustomOptions {
   markAsPending,
   markAsPaid,
   makePayment,
-  paymentHistory;
+  paymentHistory,
+  amortizationSchedule;
 
   String toTranslate(final BuildContext context) {
     final String Function(
@@ -40,6 +41,8 @@ enum CustomOptions {
         return translate('make_payment');
       case CustomOptions.paymentHistory:
         return translate('payment_history');
+      case CustomOptions.amortizationSchedule:
+        return translate('amortization_schedule');
     }
   }
 }

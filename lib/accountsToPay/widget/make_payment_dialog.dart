@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
+import 'package:web_personal_finances/accountsToPay/model/amortization_schedule_item.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/calendar/calendar_widget.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
 import 'package:web_personal_finances/commons/utils/account_to_pay_utils.dart';
 import 'package:web_personal_finances/commons/utils/currency_kpi_utils.dart';
+import 'package:web_personal_finances/commons/utils/loan_amortization_utils.dart';
 import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
@@ -56,6 +58,7 @@ class _MakePaymentDialogState extends State<MakePaymentDialog> {
   final TextEditingController _notesController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   String? _selectedMethod;
+  AmortizationScheduleItem? _nextLoanQuota;
 
   final List<String> _methods = <String>[
     'Cash',
@@ -70,9 +73,24 @@ class _MakePaymentDialogState extends State<MakePaymentDialog> {
   void initState() {
     super.initState();
     final double remaining = widget.item.remainingBalance;
-    _amountController.text = remaining > 0
-        ? remaining.toStringAsFixed(2)
-        : widget.item.amount.toStringAsFixed(2);
+
+    if (widget.item.isLoanAccount) {
+      final List<AmortizationScheduleItem> schedule =
+          LoanAmortizationUtils.generateSchedule(widget.item);
+      _nextLoanQuota = LoanAmortizationUtils.getNextDueQuota(schedule);
+    }
+
+    if (_nextLoanQuota != null) {
+      final double quotaAmt = _nextLoanQuota!.quotaAmount <= remaining
+          ? _nextLoanQuota!.quotaAmount
+          : remaining;
+      _amountController.text = quotaAmt.toStringAsFixed(2);
+    } else {
+      _amountController.text = remaining > 0
+          ? remaining.toStringAsFixed(2)
+          : widget.item.amount.toStringAsFixed(2);
+    }
+
     _dateController.text = DateFormat(dayMonthYearFormat).format(_selectedDate);
     _selectedMethod = widget.item.paymentMethod ?? 'Bank Transfer';
   }
@@ -89,6 +107,18 @@ class _MakePaymentDialogState extends State<MakePaymentDialog> {
     setState(() {
       _amountController.text = widget.item.remainingBalance.toStringAsFixed(2);
     });
+  }
+
+  void _fillQuotaAmount() {
+    if (_nextLoanQuota != null) {
+      final double remaining = widget.item.remainingBalance;
+      final double quotaAmt = _nextLoanQuota!.quotaAmount <= remaining
+          ? _nextLoanQuota!.quotaAmount
+          : remaining;
+      setState(() {
+        _amountController.text = quotaAmt.toStringAsFixed(2);
+      });
+    }
   }
 
   void _onConfirm() {
@@ -259,42 +289,142 @@ class _MakePaymentDialogState extends State<MakePaymentDialog> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
-
-                    // Amount to pay Input with trailing "Pay full balance" badge
-                    CustomLabelInput(
-                      label: context.translate('amount_to_pay'),
-                      trailingLabel: InkWell(
-                        onTap: _fillFullBalance,
-                        borderRadius: BorderRadius.circular(6),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: primary.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Icon(Icons.bolt, size: 13, color: primary),
-                              const SizedBox(width: 4),
-                              Text(
-                                context.translate('pay_full_balance'),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: primary,
-                                ),
-                              ),
-                            ],
+                    if (_nextLoanQuota != null) ...<Widget>[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12.0,
+                          vertical: 10.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: Colors.blue.withValues(alpha: 0.3),
                           ),
                         ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Row(
+                                  children: <Widget>[
+                                    Icon(
+                                      Icons.calendar_month,
+                                      size: 14,
+                                      color: Colors.blue.shade700,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${context.translate('next_quota_due')}: #${_nextLoanQuota!.quotaNumber} (${DateFormat(dayMonthYearFormat).format(_nextLoanQuota!.dueDate)})',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: isDark
+                                            ? white
+                                            : LightColors.textPrimary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  CurrencyKpiUtils.formatAmount(
+                                    _nextLoanQuota!.quotaAmount,
+                                    currency,
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${context.translate('principal')}: ${CurrencyKpiUtils.formatAmount(_nextLoanQuota!.principal, currency)}  •  ${context.translate('interest')}: ${CurrencyKpiUtils.formatAmount(_nextLoanQuota!.interest, currency)}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark
+                                    ? DarkColors.textSecondary
+                                    : LightColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+
+                    // Amount to pay Input with trailing quick action buttons
+                    CustomLabelInput(
+                      label: context.translate('amount_to_pay'),
+                      trailingLabel: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          if (_nextLoanQuota != null) ...<Widget>[
+                            InkWell(
+                              onTap: _fillQuotaAmount,
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: Colors.blue.withValues(alpha: 0.35),
+                                  ),
+                                ),
+                                child: Text(
+                                  '#${_nextLoanQuota!.quotaNumber}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.blue.shade700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          InkWell(
+                            onTap: _fillFullBalance,
+                            borderRadius: BorderRadius.circular(6),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: primary.withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Icon(Icons.bolt, size: 13, color: primary),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    context.translate('pay_full_balance'),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       hintText: '0.00',
                       keyboardType: const TextInputType.numberWithOptions(

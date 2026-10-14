@@ -20,6 +20,10 @@ class AccountToPayItem {
   final List<String> tags;
   final String? paymentMethod;
   final List<AccountToPayPayment> payments;
+  final bool isLoan;
+  final double? interestRate;
+  final int? totalQuotas;
+  final double? monthlyQuota;
 
   AccountToPayItem({
     required this.id,
@@ -38,7 +42,19 @@ class AccountToPayItem {
     this.tags = const <String>[],
     this.paymentMethod,
     this.payments = const <AccountToPayPayment>[],
+    this.isLoan = false,
+    this.interestRate,
+    this.totalQuotas,
+    this.monthlyQuota,
   });
+
+  /// True if this item represents a loan or installment financing.
+  bool get isLoanAccount =>
+      isLoan ||
+      category == CustomAccountToPayCategoryOptions.loan ||
+      category == CustomAccountToPayCategoryOptions.mortgage ||
+      category == CustomAccountToPayCategoryOptions.installmentDebt ||
+      (totalQuotas != null && totalQuotas! > 0);
 
   /// Total amount paid so far. If payments are recorded in the ledger, sums them.
   /// Otherwise falls back to full amount if marked isPaid.
@@ -79,6 +95,10 @@ class AccountToPayItem {
     final String? paymentMethod,
     final List<AccountToPayPayment>? payments,
     final bool clearPaymentDate = false,
+    final bool? isLoan,
+    final double? interestRate,
+    final int? totalQuotas,
+    final double? monthlyQuota,
   }) {
     return AccountToPayItem(
       id: id,
@@ -97,6 +117,10 @@ class AccountToPayItem {
       tags: tags ?? this.tags,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       payments: payments ?? this.payments,
+      isLoan: isLoan ?? this.isLoan,
+      interestRate: interestRate ?? this.interestRate,
+      totalQuotas: totalQuotas ?? this.totalQuotas,
+      monthlyQuota: monthlyQuota ?? this.monthlyQuota,
     );
   }
 
@@ -141,6 +165,16 @@ class AccountToPayItem {
                 )
                 .toList()
           : const <AccountToPayPayment>[],
+      isLoan: map['isLoan'] ?? false,
+      interestRate: map['interestRate'] != null
+          ? (map['interestRate'] as num).toDouble()
+          : null,
+      totalQuotas: map['totalQuotas'] != null
+          ? (map['totalQuotas'] as num).toInt()
+          : null,
+      monthlyQuota: map['monthlyQuota'] != null
+          ? (map['monthlyQuota'] as num).toDouble()
+          : null,
     );
   }
 
@@ -164,6 +198,10 @@ class AccountToPayItem {
       'payments': payments
           .map((final AccountToPayPayment p) => p.toMap())
           .toList(),
+      'isLoan': isLoan,
+      'interestRate': interestRate,
+      'totalQuotas': totalQuotas,
+      'monthlyQuota': monthlyQuota,
     };
   }
 }

@@ -29,6 +29,10 @@ class _FormWidgetState extends State<FormWidget> {
   CustomAccountToPayCategoryOptions? selectedCategory;
   CustomFrequencyOptions? selectedFrequency;
   bool isPaid = false;
+  bool isLoan = false;
+  final TextEditingController _interestRateController = TextEditingController();
+  final TextEditingController _totalQuotasController = TextEditingController();
+  final TextEditingController _monthlyQuotaController = TextEditingController();
   List<String> tags = <String>[];
   List<String> _availableCurrencies = <String>[hnlCurrency, usdCurrency];
 
@@ -48,12 +52,32 @@ class _FormWidgetState extends State<FormWidget> {
       selectedFrequency = item.frequency;
       isPaid = item.isPaid;
       tags = item.tags;
+      isLoan = item.isLoanAccount;
+      if (item.interestRate != null) {
+        _interestRateController.text = item.interestRate.toString();
+      }
+      if (item.totalQuotas != null) {
+        _totalQuotasController.text = item.totalQuotas.toString();
+      }
+      if (item.monthlyQuota != null) {
+        _monthlyQuotaController.text = item.monthlyQuota.toString();
+      }
     } else {
       selectedCategory = CustomAccountToPayCategoryOptions.other;
       selectedFrequency = CustomFrequencyOptions.once;
       isPaid = false;
+      isLoan = false;
     }
+    _amountController.addListener(_onFieldChanged);
+    _interestRateController.addListener(_onFieldChanged);
+    _totalQuotasController.addListener(_onFieldChanged);
     _loadUserCurrencies();
+  }
+
+  void _onFieldChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _loadUserCurrencies() async {
@@ -95,11 +119,17 @@ class _FormWidgetState extends State<FormWidget> {
 
   @override
   void dispose() {
+    _amountController.removeListener(_onFieldChanged);
+    _interestRateController.removeListener(_onFieldChanged);
+    _totalQuotasController.removeListener(_onFieldChanged);
     _scrollController.dispose();
     _nameController.dispose();
     _descriptionController.dispose();
     _amountController.dispose();
     _dueDateController.dispose();
+    _interestRateController.dispose();
+    _totalQuotasController.dispose();
+    _monthlyQuotaController.dispose();
     super.dispose();
   }
 
@@ -160,6 +190,19 @@ class _FormWidgetState extends State<FormWidget> {
                               ) =>
                                   element.toTranslate(context) == selectedLabel,
                             );
+                        if (selectedCategory ==
+                                CustomAccountToPayCategoryOptions.loan ||
+                            selectedCategory ==
+                                CustomAccountToPayCategoryOptions.mortgage ||
+                            selectedCategory ==
+                                CustomAccountToPayCategoryOptions
+                                    .installmentDebt) {
+                          isLoan = true;
+                          if (selectedFrequency ==
+                              CustomFrequencyOptions.once) {
+                            selectedFrequency = CustomFrequencyOptions.monthly;
+                          }
+                        }
                       });
                     },
                   ),
@@ -289,6 +332,175 @@ class _FormWidgetState extends State<FormWidget> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Text(
+                          context.translate('is_loan'),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: isDark
+                                    ? DarkColors.textSecondary
+                                    : LightColors.textSecondary,
+                              ),
+                        ),
+                        Switch(
+                          value: isLoan,
+                          activeThumbColor: isDark
+                              ? DarkColors.primary
+                              : LightColors.primary,
+                          onChanged: (final bool value) {
+                            setState(() {
+                              isLoan = value;
+                              if (value &&
+                                  selectedFrequency ==
+                                      CustomFrequencyOptions.once) {
+                                selectedFrequency =
+                                    CustomFrequencyOptions.monthly;
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (isLoan) ...<Widget>[
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8.0),
+                      padding: const EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        color:
+                            (isDark ? DarkColors.primary : LightColors.primary)
+                                .withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(10.0),
+                        border: Border.all(
+                          color:
+                              (isDark
+                                      ? DarkColors.primary
+                                      : LightColors.primary)
+                                  .withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          Text(
+                            context.translate('loan_details'),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? white : LightColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          CustomLabelInput(
+                            label: context.translate('interest_rate'),
+                            hintText: context.translate('interest_rate_hint'),
+                            validator: null,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            controller: _interestRateController,
+                          ),
+                          CustomLabelInput(
+                            label: context.translate('total_quotas'),
+                            hintText: context.translate('total_quotas_hint'),
+                            validator: null,
+                            keyboardType: TextInputType.number,
+                            controller: _totalQuotasController,
+                          ),
+                          Builder(
+                            builder: (final BuildContext ctx) {
+                              final double p =
+                                  double.tryParse(
+                                    _amountController.text.replaceAll(
+                                      ',',
+                                      emptyString,
+                                    ),
+                                  ) ??
+                                  0.0;
+                              final double r =
+                                  double.tryParse(
+                                    _interestRateController.text.trim(),
+                                  ) ??
+                                  0.0;
+                              final int n =
+                                  int.tryParse(
+                                    _totalQuotasController.text.trim(),
+                                  ) ??
+                                  0;
+
+                              if (p > 0 && n > 0) {
+                                final double estQuota =
+                                    LoanAmortizationUtils.calculateMonthlyQuota(
+                                      principal: p,
+                                      annualInterestRatePercent: r,
+                                      totalMonths: n,
+                                    );
+                                final double totalInterest = (estQuota * n) - p;
+                                final String cur =
+                                    selectedCurrency ?? emptyString;
+
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 8.0,
+                                  ),
+                                  padding: const EdgeInsets.all(10.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    border: Border.all(
+                                      color: Colors.blue.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        '${context.translate('monthly_quota')}: ~${CurrencyKpiUtils.formatAmount(estQuota, cur)}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue.shade700,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '${context.translate('total_interest')}: ~${CurrencyKpiUtils.formatAmount(totalInterest < 0 ? 0 : totalInterest, cur)}',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: isDark
+                                              ? DarkColors.textSecondary
+                                              : LightColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                          CustomLabelInput(
+                            label: context.translate('custom_monthly_quota'),
+                            hintText: context.translate('monthly_quota_hint'),
+                            validator: null,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: <MoneyInputFormatter>[
+                              MoneyInputFormatter(),
+                            ],
+                            controller: _monthlyQuotaController,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
                           context.translate('is_paid'),
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
@@ -388,6 +600,18 @@ class _FormWidgetState extends State<FormWidget> {
       tags: tags,
       paymentMethod: existing?.paymentMethod,
       payments: existing?.payments ?? const <AccountToPayPayment>[],
+      isLoan: isLoan,
+      interestRate: isLoan
+          ? double.tryParse(_interestRateController.text.trim())
+          : null,
+      totalQuotas: isLoan
+          ? int.tryParse(_totalQuotasController.text.trim())
+          : null,
+      monthlyQuota: isLoan
+          ? double.tryParse(
+              _monthlyQuotaController.text.replaceAll(',', emptyString),
+            )
+          : null,
     );
 
     widget.onSave(newItem);

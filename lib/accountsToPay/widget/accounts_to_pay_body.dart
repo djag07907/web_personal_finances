@@ -7,8 +7,10 @@ import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/accountsToPay/bloc/accounts_to_pay_bloc.dart';
 import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
 import 'package:web_personal_finances/accountsToPay/model/account_to_pay_payment.dart';
+import 'package:web_personal_finances/accountsToPay/widget/amortization_schedule_dialog.dart';
 import 'package:web_personal_finances/accountsToPay/widget/make_payment_dialog.dart';
 import 'package:web_personal_finances/accountsToPay/widget/payment_history_dialog.dart';
+import 'package:web_personal_finances/commons/utils/loan_amortization_utils.dart';
 import 'package:web_personal_finances/commons/bloc/app_auth_notifier.dart';
 import 'package:web_personal_finances/commons/bloc/base_state.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
@@ -823,6 +825,14 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                                             .toTranslate(context),
                                         value: CustomOptions.makePayment,
                                       ),
+                                    if (item.isLoanAccount)
+                                      PopupItem<CustomOptions>(
+                                        title: CustomOptions
+                                            .amortizationSchedule
+                                            .toTranslate(context),
+                                        value:
+                                            CustomOptions.amortizationSchedule,
+                                      ),
                                     if (item.payments.isNotEmpty)
                                       PopupItem<CustomOptions>(
                                         title: CustomOptions.paymentHistory
@@ -869,6 +879,10 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                                             break;
                                           case CustomOptions.makePayment:
                                             _recordPayment(item);
+                                            break;
+                                          case CustomOptions
+                                              .amortizationSchedule:
+                                            _viewAmortizationSchedule(item);
                                             break;
                                           case CustomOptions.paymentHistory:
                                             _viewPaymentHistory(item);
@@ -1087,6 +1101,22 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
           showSnackbar(
             context,
             context.translate('payment_deleted_successfully'),
+          );
+        }
+      },
+    );
+  }
+
+  void _viewAmortizationSchedule(final AccountToPayItem item) {
+    AmortizationScheduleDialog.show(
+      context: context,
+      item: item,
+      onPaymentRecorded: (final AccountToPayItem updated) {
+        _bloc.add(AccountsToPayUpdated(item: updated));
+        if (mounted) {
+          showSnackbar(
+            context,
+            context.translate('payment_recorded_successfully'),
           );
         }
       },
