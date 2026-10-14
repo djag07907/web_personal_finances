@@ -162,5 +162,21 @@
   "select_expense_type": "Seleccionar tipo de gasto",
   "please_select_expense_type": "Por favor seleccione tipo de gasto",
   "monthly_burn_rate": "Tasa de Gasto Mensual",
-  "total_paid": "Total Pagado"
+  "total_paid": "Total Pagado",
+  "overdue": "Vencido",
+  "edit_account_to_pay": "Editar Cuenta por Pagar",
+  "account_to_pay_activated": "Cuenta por pagar activada exitosamente",
+  "account_to_pay_marked_paid": "Cuenta por pagar marcada como pagada",
+  "account_to_pay_marked_pending": "Cuenta por pagar marcada como pendiente",
+  "please_enter_creditor_name": "Por favor ingrese el nombre del acreedor",
+  "please_enter_description": "Por favor ingrese la descripción",
+  "please_enter_date_due": "Por favor seleccione la fecha de vencimiento",
+  "loan": "Préstamo",
+  "credit_card": "Tarjeta de Crédito",
+  "rent_mortgage": "Alquiler / Hipoteca",
+  "utilities": "Servicios",
+  "taxes": "Impuestos",
+  "insurance": "Seguros",
+  "supplier": "Proveedor",
+  "personal_debt": "Deuda Personal"
 }

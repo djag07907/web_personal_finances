@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
+import 'package:web_personal_finances/commons/utils/account_to_pay_utils.dart';
 import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
 import 'package:web_personal_finances/expenses/model/expense_item.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
@@ -25,18 +27,11 @@ class KpiCardSpec {
   final bool isPositive;
   final IconData icon;
   final String currency;
-
-  /// Explains what the KPI means (shown in the hover popup).
   final String? description;
-
-  /// Explains how the KPI is computed (shown in the hover popup).
   final String? calculation;
 }
 
-/// Scalable utility for calculating financial summaries and generating
-/// KPI card specifications across currencies and financial flows.
 class CurrencyKpiUtils {
-  // --- KPI explanations shown in the hover popup ---
   static const String _monthlyConversion =
       'Each active item is converted to a monthly amount: weekly × 4.33, '
       'biweekly × 2.166, monthly × 1, yearly ÷ 12, daily × 30, '
@@ -373,6 +368,141 @@ class CurrencyKpiUtils {
           currency: secondary,
           description: _burnRateDescription,
           calculation: _burnRateCalculation,
+        ),
+      );
+    }
+
+    return cards;
+  }
+
+  static const String _pendingDescription =
+      'Total you still owe on your active accounts to pay, including the '
+      'ones that are already overdue.';
+  static const String _pendingCalculation =
+      'Sum of the amounts of all active accounts in this currency that are '
+      'not marked as paid.';
+
+  static const String _overdueDescription =
+      'Part of your pending balance whose due date has already passed. '
+      'These are the bills you should settle first.';
+  static const String _overdueCalculation =
+      'Sum of the amounts of all active, unpaid accounts in this currency '
+      'whose due date is before today.';
+
+  static const String _upcomingDescription =
+      'Amount you will need to have available soon to cover bills that are '
+      'about to be due.';
+  static const String _upcomingCalculation =
+      'Sum of the amounts of all active, unpaid accounts in this currency '
+      'due from today up to the next 30 days (overdue accounts excluded).';
+
+  static const String _paidAccountsDescription =
+      'Money you have already paid towards your active accounts to pay.';
+  static const String _paidAccountsCalculation =
+      'Sum of the amounts of all active accounts in this currency that are '
+      'marked as paid.';
+
+  /// Generates KPI card specs for Accounts to Pay based on dual-currency preference.
+  static List<KpiCardSpec> generateAccountToPayKpiCards({
+    required final List<AccountToPayItem> items,
+    required final UserModel? user,
+  }) {
+    final bool isDual = user?.enableDualCurrency ?? false;
+    final String primary =
+        (user?.primaryCurrency != null && user!.primaryCurrency.isNotEmpty)
+        ? user.primaryCurrency
+        : hnlCurrency;
+    final String secondary = primary == hnlCurrency ? usdCurrency : hnlCurrency;
+    final List<String> currencies = <String>[primary, if (isDual) secondary];
+
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime limit = today.add(const Duration(days: 30));
+
+    DateTime dateOnly(final DateTime d) => DateTime(d.year, d.month, d.day);
+
+    final List<KpiCardSpec> cards = <KpiCardSpec>[];
+
+    for (final String currency in currencies) {
+      final List<AccountToPayItem> active = items
+          .where(
+            (final AccountToPayItem item) =>
+                item.status && item.currency == currency,
+          )
+          .toList();
+      final List<AccountToPayItem> pending = active
+          .where((final AccountToPayItem item) => !item.isPaid)
+          .toList();
+      final List<AccountToPayItem> overdue = pending
+          .where(
+            (final AccountToPayItem item) => AccountToPayUtils.isOverdue(item),
+          )
+          .toList();
+      final List<AccountToPayItem> upcoming = pending.where((
+        final AccountToPayItem item,
+      ) {
+        final DateTime due = dateOnly(item.dueDate);
+        return !due.isBefore(today) && !due.isAfter(limit);
+      }).toList();
+      final List<AccountToPayItem> paid = active
+          .where((final AccountToPayItem item) => item.isPaid)
+          .toList();
+
+      double sum(final List<AccountToPayItem> list) => list.fold(
+        0.0,
+        (final double total, final AccountToPayItem item) =>
+            total + item.amount,
+      );
+
+      String suffix(final String label) =>
+          isDual ? '$label ($currency)' : label;
+
+      cards.add(
+        KpiCardSpec(
+          title: suffix('Total Pending'),
+          amount: formatAmount(sum(pending), currency),
+          subtitle: '${pending.length} unpaid',
+          isPositive: false,
+          icon: Icons.hourglass_bottom_outlined,
+          currency: currency,
+          description: _pendingDescription,
+          calculation: _pendingCalculation,
+        ),
+      );
+      cards.add(
+        KpiCardSpec(
+          title: suffix('Overdue'),
+          amount: formatAmount(sum(overdue), currency),
+          subtitle: '${overdue.length} past due date',
+          isPositive: false,
+          icon: Icons.warning_amber_rounded,
+          currency: currency,
+          description: _overdueDescription,
+          calculation: _overdueCalculation,
+        ),
+      );
+      cards.add(
+        KpiCardSpec(
+          title: suffix('Due in 30 Days'),
+          amount: formatAmount(sum(upcoming), currency),
+          subtitle: '${upcoming.length} upcoming',
+          isPositive: false,
+          icon: Icons.event_outlined,
+          currency: currency,
+          description: _upcomingDescription,
+          calculation: _upcomingCalculation,
+        ),
+      );
+      cards.add(
+        KpiCardSpec(
+          title: suffix('Total Paid'),
+          amount: formatAmount(sum(paid), currency),
+          subtitle: '${paid.length} settled',
+          isPositive: true,
+          icon: Icons.check_circle_outline,
+          currency: currency,
+          description: _paidAccountsDescription,
+          calculation: _paidAccountsCalculation,
         ),
       );
     }
