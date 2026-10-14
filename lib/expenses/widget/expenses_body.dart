@@ -9,6 +9,7 @@ import 'package:web_personal_finances/commons/bloc/base_state.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/calendar/calendar_widget.dart';
 import 'package:web_personal_finances/commons/cards/custom_card_body.dart';
+import 'package:web_personal_finances/commons/cards/kpi_info_tooltip.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_status.dart';
 import 'package:web_personal_finances/commons/chip/custom_chip_tag.dart';
 import 'package:web_personal_finances/commons/dialog/custom_confirmation_dialog.dart';
@@ -1261,6 +1262,8 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                 changePercent: spec.changePercent,
                 isPositive: spec.isPositive,
                 icon: spec.icon,
+                description: spec.description,
+                calculation: spec.calculation,
               ),
             );
           }).toList(),

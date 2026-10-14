@@ -14,6 +14,8 @@ class KpiCardSpec {
     this.isPositive = true,
     required this.icon,
     required this.currency,
+    this.description,
+    this.calculation,
   });
 
   final String title;
@@ -23,11 +25,45 @@ class KpiCardSpec {
   final bool isPositive;
   final IconData icon;
   final String currency;
+
+  /// Explains what the KPI means (shown in the hover popup).
+  final String? description;
+
+  /// Explains how the KPI is computed (shown in the hover popup).
+  final String? calculation;
 }
 
 /// Scalable utility for calculating financial summaries and generating
 /// KPI card specifications across currencies and financial flows.
 class CurrencyKpiUtils {
+  // --- KPI explanations shown in the hover popup ---
+  static const String _monthlyConversion =
+      'Each active item is converted to a monthly amount: weekly × 4.33, '
+      'biweekly × 2.166, monthly × 1, yearly ÷ 12, daily × 30, '
+      'one-time × 1.';
+
+  static const String _receivedDescription =
+      'Money you have already collected from your active income entries.';
+  static const String _receivedCalculation =
+      'Sum of the amounts of all active incomes in this currency that are '
+      'marked as received.';
+
+  static const String _monthlyRateDescription =
+      'Your estimated income in a typical month, based on all your active '
+      'income streams regardless of whether they were received yet.';
+  static const String _monthlyRateCalculation = _monthlyConversion;
+
+  static const String _paidDescription =
+      'Money you have already spent on your active expense entries.';
+  static const String _paidCalculation =
+      'Sum of the amounts of all active expenses in this currency that are '
+      'marked as paid.';
+
+  static const String _burnRateDescription =
+      'Your estimated spending in a typical month, based on all your active '
+      'expenses regardless of whether they were paid yet.';
+  static const String _burnRateCalculation = _monthlyConversion;
+
   /// Returns currency symbol for display ('L.' for HNL, '$' for USD).
   static String getCurrencySymbol(final String currency) {
     if (currency == hnlCurrency) {
@@ -151,6 +187,8 @@ class CurrencyKpiUtils {
         isPositive: true,
         icon: Icons.payments_outlined,
         currency: primary,
+        description: _receivedDescription,
+        calculation: _receivedCalculation,
       ),
     );
 
@@ -162,6 +200,8 @@ class CurrencyKpiUtils {
         isPositive: true,
         icon: Icons.trending_up,
         currency: primary,
+        description: _monthlyRateDescription,
+        calculation: _monthlyRateCalculation,
       ),
     );
 
@@ -188,6 +228,8 @@ class CurrencyKpiUtils {
           isPositive: true,
           icon: Icons.account_balance_wallet_outlined,
           currency: secondary,
+          description: _receivedDescription,
+          calculation: _receivedCalculation,
         ),
       );
 
@@ -199,6 +241,8 @@ class CurrencyKpiUtils {
           isPositive: true,
           icon: Icons.auto_graph,
           currency: secondary,
+          description: _monthlyRateDescription,
+          calculation: _monthlyRateCalculation,
         ),
       );
     }
@@ -275,6 +319,8 @@ class CurrencyKpiUtils {
         isPositive: false,
         icon: Icons.shopping_bag_outlined,
         currency: primary,
+        description: _paidDescription,
+        calculation: _paidCalculation,
       ),
     );
 
@@ -285,6 +331,8 @@ class CurrencyKpiUtils {
         isPositive: false,
         icon: Icons.trending_down,
         currency: primary,
+        description: _burnRateDescription,
+        calculation: _burnRateCalculation,
       ),
     );
 
@@ -311,6 +359,8 @@ class CurrencyKpiUtils {
           isPositive: false,
           icon: Icons.receipt_long_outlined,
           currency: secondary,
+          description: _paidDescription,
+          calculation: _paidCalculation,
         ),
       );
 
@@ -321,6 +371,8 @@ class CurrencyKpiUtils {
           isPositive: false,
           icon: Icons.analytics_outlined,
           currency: secondary,
+          description: _burnRateDescription,
+          calculation: _burnRateCalculation,
         ),
       );
     }
