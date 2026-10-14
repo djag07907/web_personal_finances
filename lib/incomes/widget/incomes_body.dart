@@ -700,6 +700,19 @@ class _IncomesBodyState extends State<IncomesBody> {
                             return CustomDataTable<IncomeItem>(
                               data: paginatedIncomes,
                               showToolbar: true,
+                              minWidth: 1020.0,
+                              cellPadding: const EdgeInsets.only(left: 14.0),
+                              columnFlexes: const <int>[
+                                14, // Name
+                                12, // Category
+                                9, // Frequency
+                                14, // Comment
+                                6, // Currency
+                                9, // Amount
+                                10, // Date to receive
+                                13, // Payment Status
+                                8, // Status
+                              ],
                               isFiltered: _isFilterActive || _showFilterPanel,
                               filterPanel: _showFilterPanel
                                   ? _buildInlineFilterPanel(context)
@@ -737,6 +750,10 @@ class _IncomesBodyState extends State<IncomesBody> {
                                 final bool isDark =
                                     Theme.of(context).brightness ==
                                     Brightness.dark;
+                                final String paymentStatusLabel =
+                                    data.isReceived
+                                    ? context.translate('received')
+                                    : context.translate('pending');
 
                                 return <Widget>[
                                   Text(
@@ -773,55 +790,62 @@ class _IncomesBodyState extends State<IncomesBody> {
                                   Text(data.currency),
                                   Text(data.amount.toStringAsFixed(2)),
                                   Text(data.dateToReceive),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: data.isReceived
-                                          ? Colors.green.withValues(alpha: 0.12)
-                                          : Colors.amber.withValues(
-                                              alpha: 0.12,
-                                            ),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
+                                  Tooltip(
+                                    message: paymentStatusLabel,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
                                         color: data.isReceived
                                             ? Colors.green.withValues(
-                                                alpha: 0.5,
+                                                alpha: 0.12,
                                               )
                                             : Colors.amber.withValues(
-                                                alpha: 0.5,
+                                                alpha: 0.12,
                                               ),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        Icon(
-                                          data.isReceived
-                                              ? Icons.check_circle_outline
-                                              : Icons.schedule,
-                                          size: 13,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
                                           color: data.isReceived
-                                              ? Colors.green
-                                              : Colors.amber.shade800,
+                                              ? Colors.green.withValues(
+                                                  alpha: 0.5,
+                                                )
+                                              : Colors.amber.withValues(
+                                                  alpha: 0.5,
+                                                ),
+                                          width: 1,
                                         ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          data.isReceived
-                                              ? context.translate('received')
-                                              : context.translate('pending'),
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          Icon(
+                                            data.isReceived
+                                                ? Icons.check_circle_outline
+                                                : Icons.schedule,
+                                            size: 13,
                                             color: data.isReceived
                                                 ? Colors.green
                                                 : Colors.amber.shade800,
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(width: 4),
+                                          Flexible(
+                                            child: Text(
+                                              paymentStatusLabel,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                                color: data.isReceived
+                                                    ? Colors.green
+                                                    : Colors.amber.shade800,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                   CustomChipStatus(isActive: data.status),

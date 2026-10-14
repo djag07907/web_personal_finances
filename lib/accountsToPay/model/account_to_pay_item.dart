@@ -1,3 +1,4 @@
+import 'package:web_personal_finances/accountsToPay/model/account_to_pay_payment.dart';
 import 'package:web_personal_finances/commons/enum/custom_account_to_pay_category_options.dart';
 import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
 import 'package:web_personal_finances/resources/constants.dart';
@@ -18,6 +19,7 @@ class AccountToPayItem {
   final DateTime? createdDate;
   final List<String> tags;
   final String? paymentMethod;
+  final List<AccountToPayPayment> payments;
 
   AccountToPayItem({
     required this.id,
@@ -35,30 +37,66 @@ class AccountToPayItem {
     this.createdDate,
     this.tags = const <String>[],
     this.paymentMethod,
+    this.payments = const <AccountToPayPayment>[],
   });
 
+  /// Total amount paid so far. If payments are recorded in the ledger, sums them.
+  /// Otherwise falls back to full amount if marked isPaid.
+  double get totalPaid {
+    if (payments.isNotEmpty) {
+      return payments.fold(
+        0.0,
+        (final double sum, final AccountToPayPayment p) => sum + p.amount,
+      );
+    }
+    return isPaid ? amount : 0.0;
+  }
+
+  /// Outstanding balance still owed.
+  double get remainingBalance {
+    final double rem = amount - totalPaid;
+    return rem < 0 ? 0.0 : rem;
+  }
+
+  /// True when the account has been completely settled.
+  bool get isFullyPaid => isPaid || remainingBalance <= 0;
+
+  /// True when at least one payment was made but an outstanding balance remains.
+  bool get isPartiallyPaid => !isFullyPaid && totalPaid > 0;
+
   AccountToPayItem copyWith({
+    final String? creditorName,
+    final String? description,
+    final double? amount,
+    final String? currency,
+    final DateTime? dueDate,
+    final DateTime? paymentDate,
     final bool? isPaid,
     final bool? status,
-    final DateTime? paymentDate,
+    final CustomAccountToPayCategoryOptions? category,
+    final CustomFrequencyOptions? frequency,
+    final List<String>? tags,
+    final String? paymentMethod,
+    final List<AccountToPayPayment>? payments,
     final bool clearPaymentDate = false,
   }) {
     return AccountToPayItem(
       id: id,
       userId: userId,
-      creditorName: creditorName,
-      description: description,
-      amount: amount,
-      currency: currency,
-      dueDate: dueDate,
+      creditorName: creditorName ?? this.creditorName,
+      description: description ?? this.description,
+      amount: amount ?? this.amount,
+      currency: currency ?? this.currency,
+      dueDate: dueDate ?? this.dueDate,
       paymentDate: clearPaymentDate ? null : (paymentDate ?? this.paymentDate),
       isPaid: isPaid ?? this.isPaid,
       status: status ?? this.status,
-      category: category,
-      frequency: frequency,
+      category: category ?? this.category,
+      frequency: frequency ?? this.frequency,
       createdDate: createdDate,
-      tags: tags,
-      paymentMethod: paymentMethod,
+      tags: tags ?? this.tags,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      payments: payments ?? this.payments,
     );
   }
 
@@ -94,6 +132,15 @@ class AccountToPayItem {
           ? List<String>.from(map['tags'])
           : const <String>[],
       paymentMethod: map['paymentMethod'],
+      payments: map['payments'] != null
+          ? (map['payments'] as List<dynamic>)
+                .map(
+                  (final dynamic p) => AccountToPayPayment.fromMap(
+                    Map<String, dynamic>.from(p as Map<dynamic, dynamic>),
+                  ),
+                )
+                .toList()
+          : const <AccountToPayPayment>[],
     );
   }
 
@@ -114,6 +161,9 @@ class AccountToPayItem {
       'createdDate': createdDate?.toIso8601String(),
       'tags': tags,
       'paymentMethod': paymentMethod,
+      'payments': payments
+          .map((final AccountToPayPayment p) => p.toMap())
+          .toList(),
     };
   }
 }

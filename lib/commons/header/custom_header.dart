@@ -85,14 +85,16 @@ class CustomHeader extends StatelessWidget {
                   SizedBox(height: 12),
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: SizedBox(
-                      width: 140,
-                      height: 36,
-                      child: CustomButton(
-                        text: buttonText!,
-                        isPrimary: buttonIsPrimary ?? true,
-                        isAdd: buttonIsAdd ?? false,
-                        onPressed: onButtonPressed!,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minWidth: 140),
+                      child: SizedBox(
+                        height: 38,
+                        child: CustomButton(
+                          text: buttonText!,
+                          isPrimary: buttonIsPrimary ?? true,
+                          isAdd: buttonIsAdd ?? true,
+                          onPressed: onButtonPressed!,
+                        ),
                       ),
                     ),
                   ),
@@ -141,17 +143,18 @@ class CustomHeader extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Button
                 if (buttonText != null && onButtonPressed != null) ...<Widget>[
                   SizedBox(width: 16),
-                  SizedBox(
-                    width: 140,
-                    height: 36,
-                    child: CustomButton(
-                      text: buttonText!,
-                      isPrimary: buttonIsPrimary ?? true,
-                      isAdd: buttonIsAdd ?? true,
-                      onPressed: onButtonPressed!,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(minWidth: 140),
+                    child: SizedBox(
+                      height: 38,
+                      child: CustomButton(
+                        text: buttonText!,
+                        isPrimary: buttonIsPrimary ?? true,
+                        isAdd: buttonIsAdd ?? true,
+                        onPressed: onButtonPressed!,
+                      ),
                     ),
                   ),
                 ],

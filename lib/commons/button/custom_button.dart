@@ -6,6 +6,8 @@ class CustomButton extends StatelessWidget {
   final String text;
   final bool isPrimary;
   final bool? isAdd;
+  final double? fontSize;
+  final EdgeInsetsGeometry? padding;
   final VoidCallback onPressed;
 
   const CustomButton({
@@ -13,6 +15,8 @@ class CustomButton extends StatelessWidget {
     required this.text,
     required this.isPrimary,
     this.isAdd,
+    this.fontSize,
+    this.padding,
     required this.onPressed,
   });
 
@@ -29,6 +33,7 @@ class CustomButton extends StatelessWidget {
         backgroundColor: isPrimary
             ? (isDark ? DarkColors.primary : LightColors.primary)
             : (isDark ? DarkColors.surface : white),
+        padding: padding ?? const EdgeInsets.symmetric(horizontal: 16.0),
         shape: RoundedRectangleBorder(
           borderRadius: (isAdd ?? false)
               ? BorderRadius.circular(8.0)
@@ -40,7 +45,13 @@ class CustomButton extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(fontSize: (isAdd ?? false) ? fontSize14 : fontSize18),
+        maxLines: 1,
+        softWrap: false,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: fontSize ?? ((isAdd ?? false) ? fontSize14 : fontSize15),
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

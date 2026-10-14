@@ -6,6 +6,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/accountsToPay/bloc/accounts_to_pay_bloc.dart';
 import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
+import 'package:web_personal_finances/accountsToPay/model/account_to_pay_payment.dart';
+import 'package:web_personal_finances/accountsToPay/widget/make_payment_dialog.dart';
+import 'package:web_personal_finances/accountsToPay/widget/payment_history_dialog.dart';
 import 'package:web_personal_finances/commons/bloc/app_auth_notifier.dart';
 import 'package:web_personal_finances/commons/bloc/base_state.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
@@ -77,19 +80,15 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
         return context.translate('pending');
       case CustomPaymentFilters.overdue:
         return context.translate('overdue');
+      case CustomPaymentFilters.partiallyPaid:
+        return context.translate('partially_paid');
       case CustomPaymentFilters.paid:
         return context.translate('paid');
     }
   }
 
-  CustomPaymentFilters _paymentStateOf(final AccountToPayItem item) {
-    if (item.isPaid) {
-      return CustomPaymentFilters.paid;
-    }
-    return AccountToPayUtils.isOverdue(item)
-        ? CustomPaymentFilters.overdue
-        : CustomPaymentFilters.pending;
-  }
+  CustomPaymentFilters _paymentStateOf(final AccountToPayItem item) =>
+      AccountToPayUtils.getPaymentState(item);
 
   List<AccountToPayItem> get _filteredItems {
     return _items.where((final AccountToPayItem item) {
@@ -102,6 +101,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
             item.description.toLowerCase().contains(query) ||
             item.currency.toLowerCase().contains(query) ||
             item.amount.toString().contains(query) ||
+            item.remainingBalance.toString().contains(query) ||
             item.frequency.toTranslate(context).toLowerCase().contains(query) ||
             item.category.toTranslate(context).toLowerCase().contains(query) ||
             _formatDate(item.dueDate).contains(query) ||
@@ -612,33 +612,46 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
         color = Colors.red;
         icon = Icons.warning_amber_rounded;
         break;
+      case CustomPaymentFilters.partiallyPaid:
+        color = Colors.blue.shade700;
+        icon = Icons.pie_chart_outline_rounded;
+        break;
       case CustomPaymentFilters.pending:
         color = Colors.amber.shade800;
         icon = Icons.schedule;
         break;
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(icon, size: 13, color: color),
-          const SizedBox(width: 4),
-          Text(
-            _paymentLabel(context, state),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: color,
+    final String label = _paymentLabel(context, state);
+
+    return Tooltip(
+      message: label,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -695,6 +708,20 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                             return CustomDataTable<AccountToPayItem>(
                               data: paginated,
                               showToolbar: true,
+                              minWidth: 1080.0,
+                              cellPadding: const EdgeInsets.only(left: 14.0),
+                              columnFlexes: const <int>[
+                                14, // Creditor Name
+                                12, // Category
+                                8, // Frequency
+                                14, // Description
+                                7, // Currency (USD/CRC/EUR)
+                                9, // Amount
+                                10, // Remaining Balance
+                                9, // Due Date
+                                14, // Payment Status Chip (e.g. Partially Paid)
+                                9, // Status (Active/Inactive)
+                              ],
                               isFiltered: _isFilterActive || _showFilterPanel,
                               filterPanel: _showFilterPanel
                                   ? _buildInlineFilterPanel(context)
@@ -723,6 +750,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                                 context.translate('description'),
                                 context.translate('currency'),
                                 context.translate('amount'),
+                                context.translate('remaining_balance'),
                                 context.translate('date_due'),
                                 context.translate('payment_status'),
                                 context.translate('status'),
@@ -762,6 +790,19 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                                   ),
                                   Text(data.currency),
                                   Text(data.amount.toStringAsFixed(2)),
+                                  Text(
+                                    data.remainingBalance.toStringAsFixed(2),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: data.isFullyPaid
+                                          ? Colors.green
+                                          : (AccountToPayUtils.isOverdue(data)
+                                                ? Colors.red
+                                                : (data.isPartiallyPaid
+                                                      ? Colors.blue.shade700
+                                                      : null)),
+                                    ),
+                                  ),
                                   Text(_formatDate(data.dueDate)),
                                   _buildPaymentStatusChip(context, data),
                                   CustomChipStatus(isActive: data.status),
@@ -776,13 +817,25 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                                       ),
                                       value: CustomOptions.edit,
                                     ),
+                                    if (!item.isFullyPaid)
+                                      PopupItem<CustomOptions>(
+                                        title: CustomOptions.makePayment
+                                            .toTranslate(context),
+                                        value: CustomOptions.makePayment,
+                                      ),
+                                    if (item.payments.isNotEmpty)
+                                      PopupItem<CustomOptions>(
+                                        title: CustomOptions.paymentHistory
+                                            .toTranslate(context),
+                                        value: CustomOptions.paymentHistory,
+                                      ),
                                     PopupItem<CustomOptions>(
-                                      title: item.isPaid
+                                      title: item.isFullyPaid
                                           ? CustomOptions.markAsPending
                                                 .toTranslate(context)
                                           : CustomOptions.markAsPaid
                                                 .toTranslate(context),
-                                      value: item.isPaid
+                                      value: item.isFullyPaid
                                           ? CustomOptions.markAsPending
                                           : CustomOptions.markAsPaid,
                                     ),
@@ -813,6 +866,12 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                                         switch (option) {
                                           case CustomOptions.edit:
                                             _editAccountToPay(item);
+                                            break;
+                                          case CustomOptions.makePayment:
+                                            _recordPayment(item);
+                                            break;
+                                          case CustomOptions.paymentHistory:
+                                            _viewPaymentHistory(item);
                                             break;
                                           case CustomOptions.markAsPaid:
                                             _togglePaidStatus(item, true);
@@ -999,6 +1058,38 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
       context.translate(
         isPaid ? 'account_to_pay_marked_paid' : 'account_to_pay_marked_pending',
       ),
+    );
+  }
+
+  void _recordPayment(final AccountToPayItem item) {
+    MakePaymentDialog.show(
+      context: context,
+      item: item,
+      onPaymentRecorded: (final AccountToPayItem updated) {
+        _bloc.add(AccountsToPayUpdated(item: updated));
+        if (mounted) {
+          showSnackbar(
+            context,
+            context.translate('payment_recorded_successfully'),
+          );
+        }
+      },
+    );
+  }
+
+  void _viewPaymentHistory(final AccountToPayItem item) {
+    PaymentHistoryDialog.show(
+      context: context,
+      item: item,
+      onPaymentRemoved: (final AccountToPayItem updated) {
+        _bloc.add(AccountsToPayUpdated(item: updated));
+        if (mounted) {
+          showSnackbar(
+            context,
+            context.translate('payment_deleted_successfully'),
+          );
+        }
+      },
     );
   }
 

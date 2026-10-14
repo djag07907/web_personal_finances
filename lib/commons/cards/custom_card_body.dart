@@ -29,13 +29,20 @@ class CustomCardBody extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double horizontalMargin = screenWidth < 1300
+        ? (screenWidth < 900 ? 12.0 : 20.0)
+        : 50.0;
+    final double horizontalPadding = screenWidth < 1300
+        ? (screenWidth < 900 ? 14.0 : 20.0)
+        : 30.0;
 
     return Container(
       clipBehavior: Clip.hardEdge,
-      margin: const EdgeInsets.only(
+      margin: EdgeInsets.only(
         top: 20.0,
-        left: 50.0,
-        right: 50.0,
+        left: horizontalMargin,
+        right: horizontalMargin,
         bottom: 20.0,
       ),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(30.0)),
@@ -53,14 +60,14 @@ class CustomCardBody extends StatelessWidget {
               onButtonPressed: onButtonPressed,
             ),
           ),
-          SizedBox(height: 10.0),
+          const SizedBox(height: 10.0),
           Expanded(
             child: Container(
               color: isDark ? DarkColors.surface : white,
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
+              padding: EdgeInsets.symmetric(
                 vertical: 20.0,
-                horizontal: 30.0,
+                horizontal: horizontalPadding,
               ),
               child: body,
             ),

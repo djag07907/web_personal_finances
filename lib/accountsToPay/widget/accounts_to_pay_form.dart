@@ -387,6 +387,7 @@ class _FormWidgetState extends State<FormWidget> {
       createdDate: existing?.createdDate ?? DateTime.now(),
       tags: tags,
       paymentMethod: existing?.paymentMethod,
+      payments: existing?.payments ?? const <AccountToPayPayment>[],
     );
 
     widget.onSave(newItem);

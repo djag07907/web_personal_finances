@@ -18,6 +18,10 @@ class CustomDataTable<T> extends StatefulWidget {
   final Widget? filterPanel;
   final Widget? activeFilterChips;
 
+  final List<int>? columnFlexes;
+  final double? minWidth;
+  final EdgeInsetsGeometry? cellPadding;
+
   const CustomDataTable({
     super.key,
     this.headers,
@@ -34,6 +38,9 @@ class CustomDataTable<T> extends StatefulWidget {
     this.isFiltered = false,
     this.filterPanel,
     this.activeFilterChips,
+    this.columnFlexes,
+    this.minWidth,
+    this.cellPadding,
   });
 
   @override
@@ -43,10 +50,12 @@ class CustomDataTable<T> extends StatefulWidget {
 class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
   int? _hoveredIndex;
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _horizontalScrollController = ScrollController();
 
   @override
   void dispose() {
     _searchController.dispose();
+    _horizontalScrollController.dispose();
     super.dispose();
   }
 
@@ -60,88 +69,183 @@ class _CustomDataTableState<T> extends State<CustomDataTable<T>> {
         const SizedBox(height: 16.0),
         if (widget.showToolbar) _buildToolbar(context, isDark),
         const SizedBox(height: 16.0),
-        Row(
-          children: <Widget>[
-            ...widget.dataColumns.map(
-              (final String column) => Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 25.0),
-                  child: Text(
-                    column,
-                    textAlign: TextAlign.left,
-                    style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                      color: isDark ? DarkColors.textSecondary : greyHard,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 40.0),
-          ],
-        ),
-        const SizedBox(height: 12.0),
         Expanded(
-          child: widget.data.isEmpty
-              ? Center(
-                  child: Text(
-                    'No data to display',
-                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                      color: isDark ? DarkColors.textSecondary : greyHard,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                )
-              : ListView(
-                  children: widget.data.map((final T rowItem) {
-                    final int index = widget.data.indexOf(rowItem);
-                    final List<Widget> cell = widget.rowBuilder(rowItem);
-                    final bool isHovered = _hoveredIndex == index;
+          child: LayoutBuilder(
+            builder:
+                (final BuildContext context, final BoxConstraints constraints) {
+                  final double availableWidth = constraints.maxWidth;
+                  final double effectiveWidth =
+                      (widget.minWidth != null &&
+                          availableWidth < widget.minWidth!)
+                      ? widget.minWidth!
+                      : availableWidth;
+                  final bool needsScroll =
+                      widget.minWidth != null &&
+                      availableWidth < widget.minWidth!;
 
-                    return MouseRegion(
-                      onEnter: (final PointerEvent row) {
-                        setState(() => _hoveredIndex = index);
-                      },
-                      onExit: (final PointerEvent row) {
-                        setState(() => _hoveredIndex = null);
-                      },
-                      child: Container(
-                        color: index.isEven
-                            ? (isDark
-                                  ? DarkColors.background
-                                  : LightColors.background)
-                            : transparent,
-                        child: Container(
-                          color: isHovered
-                              ? (isDark
-                                    ? DarkColors.primary.withValues(alpha: 0.1)
-                                    : LightColors.primary.withValues(
-                                        alpha: 0.1,
-                                      ))
-                              : transparent,
-                          height: 60.0,
-                          child: Row(
+                  Widget buildTableContent() {
+                    return SizedBox(
+                      width: effectiveWidth,
+                      child: Column(
+                        children: <Widget>[
+                          Row(
                             children: <Widget>[
-                              ...cell.map((final Widget cell) {
+                              ...widget.dataColumns.asMap().entries.map((
+                                final MapEntry<int, String> entry,
+                              ) {
+                                final int i = entry.key;
+                                final String column = entry.value;
+                                final int flex =
+                                    (widget.columnFlexes != null &&
+                                        i < widget.columnFlexes!.length)
+                                    ? widget.columnFlexes![i]
+                                    : 1;
                                 return Expanded(
+                                  flex: flex,
                                   child: Padding(
-                                    padding: const EdgeInsets.only(left: 25.0),
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: cell,
+                                    padding:
+                                        widget.cellPadding ??
+                                        const EdgeInsets.only(left: 25.0),
+                                    child: Text(
+                                      column,
+                                      textAlign: TextAlign.left,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall!
+                                          .copyWith(
+                                            color: isDark
+                                                ? DarkColors.textSecondary
+                                                : greyHard,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     ),
                                   ),
                                 );
                               }),
-                              if (widget.popupMenuBuilder != null)
-                                widget.popupMenuBuilder!(rowItem),
+                              const SizedBox(width: 40.0),
                             ],
                           ),
-                        ),
+                          const SizedBox(height: 12.0),
+                          Expanded(
+                            child: widget.data.isEmpty
+                                ? Center(
+                                    child: Text(
+                                      'No data to display',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium!
+                                          .copyWith(
+                                            color: isDark
+                                                ? DarkColors.textSecondary
+                                                : greyHard,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                    ),
+                                  )
+                                : ListView(
+                                    children: widget.data.map((
+                                      final T rowItem,
+                                    ) {
+                                      final int index = widget.data.indexOf(
+                                        rowItem,
+                                      );
+                                      final List<Widget> cell = widget
+                                          .rowBuilder(rowItem);
+                                      final bool isHovered =
+                                          _hoveredIndex == index;
+
+                                      return MouseRegion(
+                                        onEnter: (final PointerEvent row) {
+                                          setState(() => _hoveredIndex = index);
+                                        },
+                                        onExit: (final PointerEvent row) {
+                                          setState(() => _hoveredIndex = null);
+                                        },
+                                        child: Container(
+                                          color: index.isEven
+                                              ? (isDark
+                                                    ? DarkColors.background
+                                                    : LightColors.background)
+                                              : transparent,
+                                          child: Container(
+                                            color: isHovered
+                                                ? (isDark
+                                                      ? DarkColors.primary
+                                                            .withValues(
+                                                              alpha: 0.1,
+                                                            )
+                                                      : LightColors.primary
+                                                            .withValues(
+                                                              alpha: 0.1,
+                                                            ))
+                                                : transparent,
+                                            height: 60.0,
+                                            child: Row(
+                                              children: <Widget>[
+                                                ...cell.asMap().entries.map((
+                                                  final MapEntry<int, Widget>
+                                                  entry,
+                                                ) {
+                                                  final int i = entry.key;
+                                                  final Widget c = entry.value;
+                                                  final int flex =
+                                                      (widget.columnFlexes !=
+                                                              null &&
+                                                          i <
+                                                              widget
+                                                                  .columnFlexes!
+                                                                  .length)
+                                                      ? widget.columnFlexes![i]
+                                                      : 1;
+                                                  return Expanded(
+                                                    flex: flex,
+                                                    child: Padding(
+                                                      padding:
+                                                          widget.cellPadding ??
+                                                          const EdgeInsets.only(
+                                                            left: 25.0,
+                                                          ),
+                                                      child: Align(
+                                                        alignment: Alignment
+                                                            .centerLeft,
+                                                        child: c,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }),
+                                                if (widget.popupMenuBuilder !=
+                                                    null)
+                                                  widget.popupMenuBuilder!(
+                                                    rowItem,
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                          ),
+                        ],
                       ),
                     );
-                  }).toList(),
-                ),
+                  }
+
+                  if (needsScroll) {
+                    return Scrollbar(
+                      controller: _horizontalScrollController,
+                      thumbVisibility: true,
+                      child: SingleChildScrollView(
+                        controller: _horizontalScrollController,
+                        scrollDirection: Axis.horizontal,
+                        child: buildTableContent(),
+                      ),
+                    );
+                  }
+
+                  return buildTableContent();
+                },
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),

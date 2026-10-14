@@ -4,8 +4,8 @@ import 'package:internationalization/internationalization.dart';
 enum CustomAccountToPayCategoryOptions {
   loan,
   creditCard,
-  rentMortgage,
-  utilities,
+  mortgage,
+  installmentDebt,
   taxes,
   insurance,
   supplier,
@@ -26,10 +26,10 @@ enum CustomAccountToPayCategoryOptions {
         return translate('loan');
       case CustomAccountToPayCategoryOptions.creditCard:
         return translate('credit_card');
-      case CustomAccountToPayCategoryOptions.rentMortgage:
-        return translate('rent_mortgage');
-      case CustomAccountToPayCategoryOptions.utilities:
-        return translate('utilities');
+      case CustomAccountToPayCategoryOptions.mortgage:
+        return translate('mortgage');
+      case CustomAccountToPayCategoryOptions.installmentDebt:
+        return translate('installment_debt');
       case CustomAccountToPayCategoryOptions.taxes:
         return translate('taxes');
       case CustomAccountToPayCategoryOptions.insurance:
@@ -49,10 +49,10 @@ enum CustomAccountToPayCategoryOptions {
         return Icons.account_balance_outlined;
       case CustomAccountToPayCategoryOptions.creditCard:
         return Icons.credit_card_outlined;
-      case CustomAccountToPayCategoryOptions.rentMortgage:
+      case CustomAccountToPayCategoryOptions.mortgage:
         return Icons.home_outlined;
-      case CustomAccountToPayCategoryOptions.utilities:
-        return Icons.bolt_outlined;
+      case CustomAccountToPayCategoryOptions.installmentDebt:
+        return Icons.format_list_numbered_rtl_outlined;
       case CustomAccountToPayCategoryOptions.taxes:
         return Icons.receipt_long_outlined;
       case CustomAccountToPayCategoryOptions.insurance:

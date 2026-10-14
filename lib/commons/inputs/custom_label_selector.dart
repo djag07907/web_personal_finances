@@ -44,6 +44,15 @@ class _CustomLabelSelectorState extends State<CustomLabelSelector> {
     if (targetBox == null) return;
 
     final Size inputSize = targetBox.size;
+    final Offset targetGlobal = targetBox.localToGlobal(Offset.zero);
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double spaceBelow =
+        screenHeight - targetGlobal.dy - inputSize.height - 16.0;
+    final double spaceAbove = targetGlobal.dy - 16.0;
+    final bool openUpwards = spaceBelow < 200 && spaceAbove > spaceBelow;
+    final double dropdownMaxHeight = openUpwards
+        ? spaceAbove.clamp(120.0, 260.0)
+        : spaceBelow.clamp(120.0, 260.0);
 
     _overlayEntry = OverlayEntry(
       builder: (final BuildContext context) {
@@ -63,14 +72,20 @@ class _CustomLabelSelectorState extends State<CustomLabelSelector> {
               child: CompositedTransformFollower(
                 link: _layerLink,
                 showWhenUnlinked: false,
-                offset: Offset(0.0, inputSize.height + 2.0),
+                targetAnchor: openUpwards
+                    ? Alignment.topLeft
+                    : Alignment.bottomLeft,
+                followerAnchor: openUpwards
+                    ? Alignment.bottomLeft
+                    : Alignment.topLeft,
+                offset: Offset(0.0, openUpwards ? -4.0 : 4.0),
                 child: Material(
                   color: transparent,
                   elevation: 8,
                   shadowColor: black.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    constraints: const BoxConstraints(maxHeight: 260),
+                    constraints: BoxConstraints(maxHeight: dropdownMaxHeight),
                     decoration: BoxDecoration(
                       color: isDark ? DarkColors.surface : white,
                       borderRadius: BorderRadius.circular(16),

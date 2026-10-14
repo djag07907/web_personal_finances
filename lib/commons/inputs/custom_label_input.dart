@@ -12,6 +12,7 @@ class CustomLabelInput extends StatelessWidget {
   final bool isCalendar;
   final bool isReadOnly;
   final VoidCallback? onTap;
+  final Widget? trailingLabel;
 
   CustomLabelInput({
     super.key,
@@ -24,6 +25,7 @@ class CustomLabelInput extends StatelessWidget {
     this.isCalendar = false,
     this.isReadOnly = false,
     this.onTap,
+    this.trailingLabel,
   });
 
   @override
@@ -36,13 +38,19 @@ class CustomLabelInput extends StatelessWidget {
         spacing: 8.0,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: isDark ? DarkColors.textPrimary : null,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? DarkColors.textPrimary : null,
+                ),
+              ),
+              ?trailingLabel,
+            ],
           ),
           TextFormField(
             controller: controller,
