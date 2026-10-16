@@ -40,7 +40,7 @@ class PrimaryPopupMenu<T> extends StatelessWidget {
       ),
       position: PopupMenuPosition.under,
       color: isDark ? DarkColors.surface : white,
-      constraints: BoxConstraints(maxWidth: 110.0, maxHeight: 170),
+      constraints: BoxConstraints(maxWidth: 180.0, maxHeight: 170),
       child: child,
     );
   }
