@@ -221,5 +221,14 @@
   "all_quotas_paid": "Todas las Cuotas Pagadas",
   "quotas_progress": "Cuotas Pagadas",
   "loan_summary": "Resumen del Préstamo",
-  "close": "Cerrar"
+  "close": "Cerrar",
+  "due_soon": "Vence Pronto",
+  "due_today": "Vence Hoy",
+  "due_tomorrow": "Vence Mañana",
+  "due_in_days": "Vence en {days}d",
+  "quotas_progress_tooltip": "{paid} de {total} cuotas pagadas ({percent}%)",
+  "please_enter_interest_rate": "Por favor ingrese la tasa de interés anual",
+  "please_enter_valid_interest_rate": "Por favor ingrese una tasa válida (0 - 100)",
+  "please_enter_total_quotas": "Por favor ingrese el plazo en cuotas (meses)",
+  "please_enter_valid_total_quotas": "Por favor ingrese un número de cuotas válido (al menos 1)"
 }

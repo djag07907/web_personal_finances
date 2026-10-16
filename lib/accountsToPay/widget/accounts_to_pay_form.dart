@@ -393,7 +393,30 @@ class _FormWidgetState extends State<FormWidget> {
                           CustomLabelInput(
                             label: context.translate('interest_rate'),
                             hintText: context.translate('interest_rate_hint'),
-                            validator: null,
+                            inputFormatters: <TextInputFormatter>[
+                              DecimalInputFormatter(decimalRange: 2),
+                            ],
+                            validator: (final String? value) {
+                              if (!isLoan) {
+                                return null;
+                              }
+                              if (value == null || value.trim().isEmpty) {
+                                return context.translate(
+                                  'please_enter_interest_rate',
+                                );
+                              }
+                              final double? parsed = double.tryParse(
+                                value.trim(),
+                              );
+                              if (parsed == null ||
+                                  parsed < 0 ||
+                                  parsed > 100) {
+                                return context.translate(
+                                  'please_enter_valid_interest_rate',
+                                );
+                              }
+                              return null;
+                            },
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
@@ -402,7 +425,26 @@ class _FormWidgetState extends State<FormWidget> {
                           CustomLabelInput(
                             label: context.translate('total_quotas'),
                             hintText: context.translate('total_quotas_hint'),
-                            validator: null,
+                            inputFormatters: <TextInputFormatter>[
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            validator: (final String? value) {
+                              if (!isLoan) {
+                                return null;
+                              }
+                              if (value == null || value.trim().isEmpty) {
+                                return context.translate(
+                                  'please_enter_total_quotas',
+                                );
+                              }
+                              final int? parsed = int.tryParse(value.trim());
+                              if (parsed == null || parsed <= 0) {
+                                return context.translate(
+                                  'please_enter_valid_total_quotas',
+                                );
+                              }
+                              return null;
+                            },
                             keyboardType: TextInputType.number,
                             controller: _totalQuotasController,
                           ),

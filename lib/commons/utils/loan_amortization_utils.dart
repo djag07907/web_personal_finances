@@ -232,4 +232,19 @@ class LoanAmortizationUtils {
       date.second,
     );
   }
+
+  /// Returns the number of paid quotas for a loan account item.
+  static int getPaidQuotasCount(final AccountToPayItem item) {
+    final int total = item.totalQuotas ?? 0;
+    if (total <= 0) {
+      return 0;
+    }
+    if (item.isFullyPaid) {
+      return total;
+    }
+    final List<AmortizationScheduleItem> schedule = generateSchedule(item);
+    return schedule
+        .where((final AmortizationScheduleItem q) => q.isPaid)
+        .length;
+  }
 }

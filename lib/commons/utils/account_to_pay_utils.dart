@@ -64,6 +64,33 @@ class AccountToPayUtils {
     return due.isBefore(today);
   }
 
+  /// Number of days until next due date relative to [now].
+  /// Returns 0 if due today, positive if due in the future, negative if past due.
+  static int daysUntilDue(final AccountToPayItem item, {final DateTime? now}) {
+    final DateTime reference = now ?? DateTime.now();
+    final DateTime today = DateTime(
+      reference.year,
+      reference.month,
+      reference.day,
+    );
+    final DateTime nextDue = getNextDueDate(item);
+    final DateTime due = DateTime(nextDue.year, nextDue.month, nextDue.day);
+    return due.difference(today).inDays;
+  }
+
+  /// Checks whether an unpaid active account is due soon (within [days] days, inclusive of today).
+  static bool isDueSoon(
+    final AccountToPayItem item, {
+    final DateTime? now,
+    final int days = 3,
+  }) {
+    if (item.isFullyPaid || !item.status) {
+      return false;
+    }
+    final int diff = daysUntilDue(item, now: now);
+    return diff >= 0 && diff <= days;
+  }
+
   /// Evaluates the payment state: paid, overdue, partially paid, or pending.
   static CustomPaymentFilters getPaymentState(
     final AccountToPayItem item, {

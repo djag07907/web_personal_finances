@@ -35,7 +35,9 @@ import 'package:web_personal_finances/commons/popupMenu/primary_popup_menu.dart'
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/commons/table/custom_data_table.dart';
 import 'package:web_personal_finances/commons/utils/account_to_pay_utils.dart';
+import 'package:flutter/services.dart';
 import 'package:web_personal_finances/commons/utils/currency_kpi_utils.dart';
+import 'package:web_personal_finances/commons/utils/decimal_input_formatter.dart';
 import 'package:web_personal_finances/commons/utils/money_input_formatter.dart';
 import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
@@ -665,6 +667,112 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
     );
   }
 
+  Widget _buildDueSoonBadge(
+    final BuildContext context, {
+    required final int daysLeft,
+    required final bool isDark,
+  }) {
+    final String label;
+    if (daysLeft == 0) {
+      label = context.translate('due_today');
+    } else if (daysLeft == 1) {
+      label = context.translate('due_tomorrow');
+    } else {
+      label = context.translate(
+        'due_in_days',
+        namedArgs: <String, String>{'days': '$daysLeft'},
+      );
+    }
+
+    final Color badgeColor = daysLeft == 0
+        ? Colors.red.shade700
+        : Colors.deepOrange;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: badgeColor.withValues(alpha: 0.4), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(Icons.alarm, size: 10, color: badgeColor),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: badgeColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniQuotaProgress(
+    final BuildContext context,
+    final AccountToPayItem data, {
+    required final bool isDark,
+  }) {
+    final int total = data.totalQuotas ?? 0;
+    if (total <= 0) {
+      return const SizedBox.shrink();
+    }
+    final int paid = LoanAmortizationUtils.getPaidQuotasCount(data);
+    final double percent = (paid / total).clamp(0.0, 1.0);
+    final Color progressColor = percent >= 1.0
+        ? Colors.green
+        : (isDark ? DarkColors.primary : LightColors.primary);
+    final Color trackColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.black.withValues(alpha: 0.08);
+
+    final String tooltipText = context.translate(
+      'quotas_progress_tooltip',
+      namedArgs: <String, String>{
+        'paid': '$paid',
+        'total': '$total',
+        'percent': (percent * 100).toStringAsFixed(0),
+      },
+    );
+
+    return Tooltip(
+      message: tooltipText,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          SizedBox(
+            width: 44,
+            height: 4,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: percent,
+                backgroundColor: trackColor,
+                valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+              ),
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            '$paid/$total',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: isDark
+                  ? DarkColors.textSecondary
+                  : LightColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(final BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
@@ -766,10 +874,31 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                               ],
                               rowBuilder: (final AccountToPayItem data) {
                                 return <Widget>[
-                                  Text(
-                                    data.creditorName,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Text(
+                                        data.creditorName,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      if (data.isLoanAccount &&
+                                          (data.totalQuotas ?? 0) >
+                                              0) ...<Widget>[
+                                        const SizedBox(height: 3),
+                                        _buildMiniQuotaProgress(
+                                          context,
+                                          data,
+                                          isDark: isDark,
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -812,10 +941,45 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                                                       : null)),
                                     ),
                                   ),
-                                  Text(
-                                    _formatDate(
-                                      AccountToPayUtils.getNextDueDate(data),
-                                    ),
+                                  Builder(
+                                    builder: (final BuildContext ctx) {
+                                      final bool isDueSoon =
+                                          AccountToPayUtils.isDueSoon(data);
+                                      final int daysLeft =
+                                          AccountToPayUtils.daysUntilDue(data);
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          Text(
+                                            _formatDate(
+                                              AccountToPayUtils.getNextDueDate(
+                                                data,
+                                              ),
+                                            ),
+                                            style: TextStyle(
+                                              fontWeight: isDueSoon
+                                                  ? FontWeight.w600
+                                                  : FontWeight.normal,
+                                              color: isDueSoon
+                                                  ? Colors.deepOrange.shade800
+                                                  : null,
+                                            ),
+                                          ),
+                                          if (isDueSoon) ...<Widget>[
+                                            const SizedBox(height: 3),
+                                            _buildDueSoonBadge(
+                                              context,
+                                              daysLeft: daysLeft,
+                                              isDark: isDark,
+                                            ),
+                                          ],
+                                        ],
+                                      );
+                                    },
                                   ),
                                   _buildPaymentStatusChip(context, data),
                                   CustomChipStatus(isActive: data.status),

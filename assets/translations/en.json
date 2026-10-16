@@ -221,5 +221,14 @@
   "all_quotas_paid": "All Quotas Paid",
   "quotas_progress": "Quotas Paid",
   "loan_summary": "Loan Summary",
-  "close": "Close"
+  "close": "Close",
+  "due_soon": "Due Soon",
+  "due_today": "Due Today",
+  "due_tomorrow": "Due Tomorrow",
+  "due_in_days": "Due in {days}d",
+  "quotas_progress_tooltip": "{paid} of {total} quotas paid ({percent}%)",
+  "please_enter_interest_rate": "Please enter annual interest rate",
+  "please_enter_valid_interest_rate": "Please enter a valid interest rate (0 - 100)",
+  "please_enter_total_quotas": "Please enter total quotas (months)",
+  "please_enter_valid_total_quotas": "Please enter a valid number of quotas (at least 1)"
 }
