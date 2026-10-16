@@ -440,7 +440,7 @@ class CurrencyKpiUtils {
       final List<AccountToPayItem> upcoming = pending.where((
         final AccountToPayItem item,
       ) {
-        final DateTime due = dateOnly(item.dueDate);
+        final DateTime due = dateOnly(AccountToPayUtils.getNextDueDate(item));
         return !due.isBefore(today) && !due.isAfter(limit);
       }).toList();
       final List<AccountToPayItem> paid = active

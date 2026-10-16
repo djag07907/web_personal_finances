@@ -106,6 +106,9 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
             item.remainingBalance.toString().contains(query) ||
             item.frequency.toTranslate(context).toLowerCase().contains(query) ||
             item.category.toTranslate(context).toLowerCase().contains(query) ||
+            _formatDate(
+              AccountToPayUtils.getNextDueDate(item),
+            ).contains(query) ||
             _formatDate(item.dueDate).contains(query) ||
             _paymentLabel(
               context,
@@ -139,13 +142,17 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
       }
       if (_selectedDateFilter != null &&
           _selectedDateFilter!.isNotEmpty &&
+          _formatDate(AccountToPayUtils.getNextDueDate(item)) !=
+              _selectedDateFilter &&
           _formatDate(item.dueDate) != _selectedDateFilter) {
         return false;
       }
       return true;
     }).toList()..sort(
       (final AccountToPayItem a, final AccountToPayItem b) =>
-          a.dueDate.compareTo(b.dueDate),
+          AccountToPayUtils.getNextDueDate(
+            a,
+          ).compareTo(AccountToPayUtils.getNextDueDate(b)),
     );
   }
 
@@ -805,7 +812,11 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                                                       : null)),
                                     ),
                                   ),
-                                  Text(_formatDate(data.dueDate)),
+                                  Text(
+                                    _formatDate(
+                                      AccountToPayUtils.getNextDueDate(data),
+                                    ),
+                                  ),
                                   _buildPaymentStatusChip(context, data),
                                   CustomChipStatus(isActive: data.status),
                                 ];
