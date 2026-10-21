@@ -1,7 +1,9 @@
 import 'dart:math' as math;
+import 'package:web_personal_finances/accountsReceivable/model/account_receivable_item.dart';
 import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
 import 'package:web_personal_finances/accountsToPay/model/amortization_schedule_item.dart';
 import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
+import 'package:web_personal_finances/commons/enum/custom_interest_type.dart';
 
 class LoanAmortizationUtils {
   /// Returns the standard number of payment periods per year for the given [frequency].
@@ -21,13 +23,14 @@ class LoanAmortizationUtils {
     }
   }
 
-  /// Calculates the standard fixed periodic quota payment (French Amortization System)
-  /// given principal, annual interest rate percentage, total quotas, and payment frequency.
+  /// Calculates the periodic quota payment given principal, annual interest rate percentage,
+  /// total quotas, payment frequency, and interest calculation type (flat vs French).
   static double calculatePeriodicQuota({
     required final double principal,
     required final double annualInterestRatePercent,
     required final int totalQuotas,
     final CustomFrequencyOptions frequency = CustomFrequencyOptions.monthly,
+    final CustomInterestType interestType = CustomInterestType.flat,
   }) {
     if (principal <= 0 || totalQuotas <= 0) {
       return 0.0;
@@ -37,10 +40,18 @@ class LoanAmortizationUtils {
     }
 
     final int periodsPerYear = getPeriodsPerYear(frequency);
+
+    if (interestType == CustomInterestType.flat) {
+      // Flat (Simple) Interest: Total interest is calculated on the initial principal
+      final double years = totalQuotas / periodsPerYear;
+      final double totalInterest =
+          principal * (annualInterestRatePercent / 100.0) * years;
+      return (principal + totalInterest) / totalQuotas;
+    }
+
+    // French Amortization System (declining balance / saldo insoluto)
     final double periodicRate =
         (annualInterestRatePercent / 100.0) / periodsPerYear;
-
-    // French formula: A = P * [i * (1 + i)^n] / [(1 + i)^n - 1]
     final double factor = math.pow(1.0 + periodicRate, totalQuotas).toDouble();
     if (factor - 1.0 == 0) {
       return principal / totalQuotas;
@@ -49,18 +60,20 @@ class LoanAmortizationUtils {
     return quota;
   }
 
-  /// Calculates the standard fixed monthly payment (French Amortization System)
-  /// given principal, annual interest rate percentage, and total duration in months.
+  /// Calculates the standard monthly payment given principal, annual interest rate percentage,
+  /// total duration in months, and interest calculation type.
   static double calculateMonthlyQuota({
     required final double principal,
     required final double annualInterestRatePercent,
     required final int totalMonths,
+    final CustomInterestType interestType = CustomInterestType.flat,
   }) {
     return calculatePeriodicQuota(
       principal: principal,
       annualInterestRatePercent: annualInterestRatePercent,
       totalQuotas: totalMonths,
       frequency: CustomFrequencyOptions.monthly,
+      interestType: interestType,
     );
   }
 
@@ -107,36 +120,104 @@ class LoanAmortizationUtils {
     );
   }
 
-  /// Generates the complete amortization schedule for a loan item.
-  static List<AmortizationScheduleItem> generateSchedule(
-    final AccountToPayItem item,
-  ) {
-    final int totalQuotas = item.totalQuotas ?? 0;
-    final double principal = item.amount;
-    final double annualRate = item.interestRate ?? 0.0;
-
+  /// Generates schedule for generic terms.
+  static List<AmortizationScheduleItem> generateScheduleForTerms({
+    required final double principal,
+    required final double annualRate,
+    required final int totalQuotas,
+    required final CustomFrequencyOptions frequency,
+    final double? monthlyQuota,
+    required final double totalPaid,
+    required final bool isFullyPaid,
+    required final DateTime startDate,
+    final CustomInterestType interestType = CustomInterestType.flat,
+  }) {
     if (totalQuotas <= 0 || principal <= 0) {
       return const <AmortizationScheduleItem>[];
     }
 
-    final double quotaAmount =
-        item.monthlyQuota != null && item.monthlyQuota! > 0
-        ? item.monthlyQuota!
+    final double quotaAmount = monthlyQuota != null && monthlyQuota > 0
+        ? monthlyQuota
         : calculatePeriodicQuota(
             principal: principal,
             annualInterestRatePercent: annualRate,
             totalQuotas: totalQuotas,
-            frequency: item.frequency,
+            frequency: frequency,
+            interestType: interestType,
           );
 
-    final int periodsPerYear = getPeriodsPerYear(item.frequency);
-    final double periodicRate = (annualRate / 100.0) / periodsPerYear;
-    double currentBalance = principal;
-    final double totalPaid = item.totalPaid;
+    final int periodsPerYear = getPeriodsPerYear(frequency);
     double runningPaidConsumed = totalPaid;
-
     final List<AmortizationScheduleItem> schedule =
         <AmortizationScheduleItem>[];
+
+    if (interestType == CustomInterestType.flat) {
+      // Flat Rate: interest is uniform across periods
+      final double years = totalQuotas / periodsPerYear;
+      final double totalFlatInterest = annualRate > 0
+          ? principal * (annualRate / 100.0) * years
+          : 0.0;
+      final double periodicInterest = totalQuotas > 0
+          ? totalFlatInterest / totalQuotas
+          : 0.0;
+      final double periodicPrincipal = totalQuotas > 0
+          ? principal / totalQuotas
+          : 0.0;
+
+      double remainingPrincipal = principal;
+
+      for (int k = 1; k <= totalQuotas; k++) {
+        double principalPayment = periodicPrincipal;
+        double interest = periodicInterest;
+        double actualQuota = quotaAmount;
+
+        if (k == totalQuotas) {
+          principalPayment = remainingPrincipal;
+          actualQuota = principalPayment + interest;
+          remainingPrincipal = 0.0;
+        } else {
+          remainingPrincipal = math.max(
+            0.0,
+            remainingPrincipal - principalPayment,
+          );
+        }
+
+        final DateTime dueDate = calculateDueDateForPeriod(
+          startDate: startDate,
+          periodIndex: k - 1,
+          frequency: frequency,
+        );
+
+        bool isPaid = false;
+        if (isFullyPaid) {
+          isPaid = true;
+        } else if (runningPaidConsumed >= (actualQuota - 0.05)) {
+          isPaid = true;
+          runningPaidConsumed = math.max(
+            0.0,
+            runningPaidConsumed - actualQuota,
+          );
+        }
+
+        schedule.add(
+          AmortizationScheduleItem(
+            quotaNumber: k,
+            dueDate: dueDate,
+            quotaAmount: actualQuota,
+            principal: principalPayment,
+            interest: interest,
+            remainingBalance: remainingPrincipal,
+            isPaid: isPaid,
+          ),
+        );
+      }
+
+      return schedule;
+    }
+
+    // French Amortization System (declining balance)
+    final double periodicRate = (annualRate / 100.0) / periodsPerYear;
+    double currentBalance = principal;
 
     for (int k = 1; k <= totalQuotas; k++) {
       final double interest = periodicRate > 0
@@ -154,14 +235,13 @@ class LoanAmortizationUtils {
       }
 
       final DateTime dueDate = calculateDueDateForPeriod(
-        startDate: item.dueDate,
+        startDate: startDate,
         periodIndex: k - 1,
-        frequency: item.frequency,
+        frequency: frequency,
       );
 
-      // Determine if this quota has been covered by payments
       bool isPaid = false;
-      if (item.isFullyPaid) {
+      if (isFullyPaid) {
         isPaid = true;
       } else if (runningPaidConsumed >= (actualQuota - 0.05)) {
         isPaid = true;
@@ -181,12 +261,45 @@ class LoanAmortizationUtils {
       );
 
       if (currentBalance <= 0) {
-        // Loan fully amortized before all quota slots
         break;
       }
     }
 
     return schedule;
+  }
+
+  /// Generates the complete amortization schedule for a loan item.
+  static List<AmortizationScheduleItem> generateSchedule(
+    final AccountToPayItem item,
+  ) {
+    return generateScheduleForTerms(
+      principal: item.amount,
+      annualRate: item.interestRate ?? 0.0,
+      totalQuotas: item.totalQuotas ?? 0,
+      frequency: item.frequency,
+      monthlyQuota: item.monthlyQuota,
+      totalPaid: item.totalPaid,
+      isFullyPaid: item.isFullyPaid,
+      startDate: item.dueDate,
+      interestType: item.interestType,
+    );
+  }
+
+  /// Generates the complete amortization schedule for a receivable financing/loan item.
+  static List<AmortizationScheduleItem> generateReceivableSchedule(
+    final AccountReceivableItem item,
+  ) {
+    return generateScheduleForTerms(
+      principal: item.amount,
+      annualRate: item.interestRate ?? 0.0,
+      totalQuotas: item.totalQuotas ?? 0,
+      frequency: item.frequency,
+      monthlyQuota: item.monthlyQuota,
+      totalPaid: item.totalCollected,
+      isFullyPaid: item.isFullyPaid,
+      startDate: item.dueDate,
+      interestType: item.interestType,
+    );
   }
 
   /// Calculates total interest that will be paid across all scheduled quotas.
@@ -243,6 +356,23 @@ class LoanAmortizationUtils {
       return total;
     }
     final List<AmortizationScheduleItem> schedule = generateSchedule(item);
+    return schedule
+        .where((final AmortizationScheduleItem q) => q.isPaid)
+        .length;
+  }
+
+  /// Returns the number of paid/collected quotas for a receivable loan/financing item.
+  static int getPaidReceivableQuotasCount(final AccountReceivableItem item) {
+    final int total = item.totalQuotas ?? 0;
+    if (total <= 0) {
+      return 0;
+    }
+    if (item.isFullyPaid) {
+      return total;
+    }
+    final List<AmortizationScheduleItem> schedule = generateReceivableSchedule(
+      item,
+    );
     return schedule
         .where((final AmortizationScheduleItem q) => q.isPaid)
         .length;

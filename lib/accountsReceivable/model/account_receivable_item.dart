@@ -1,61 +1,262 @@
+import 'dart:math' as math;
+import 'package:web_personal_finances/accountsReceivable/model/account_receivable_payment.dart';
+import 'package:web_personal_finances/commons/enum/custom_account_receivable_category_options.dart';
+import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
+import 'package:web_personal_finances/commons/enum/custom_interest_type.dart';
+import 'package:web_personal_finances/commons/utils/loan_amortization_utils.dart';
+import 'package:web_personal_finances/resources/constants.dart';
+
 class AccountReceivableItem {
   final String id;
+  final String userId;
   final String debtorName;
   final String description;
   final double amount;
   final String currency;
   final DateTime dueDate;
-  final DateTime? receivedDate;
+  final DateTime? paymentDate;
   final bool isReceived;
+  final bool status;
+  final CustomAccountReceivableCategoryOptions category;
+  final CustomFrequencyOptions frequency;
   final DateTime? createdDate;
   final List<String> tags;
   final String? paymentMethod;
+  final List<AccountReceivablePayment> payments;
+  final bool isLoan;
+  final double? interestRate;
+  final int? totalQuotas;
+  final double? monthlyQuota;
+  final CustomInterestType interestType;
 
   AccountReceivableItem({
     required this.id,
+    this.userId = emptyString,
     required this.debtorName,
     required this.description,
     required this.amount,
     required this.currency,
     required this.dueDate,
-    this.receivedDate,
+    this.paymentDate,
     this.isReceived = false,
+    this.status = true,
+    this.category = CustomAccountReceivableCategoryOptions.other,
+    this.frequency = CustomFrequencyOptions.once,
     this.createdDate,
     this.tags = const <String>[],
     this.paymentMethod,
+    this.payments = const <AccountReceivablePayment>[],
+    this.isLoan = false,
+    this.interestRate,
+    this.totalQuotas,
+    this.monthlyQuota,
+    this.interestType = CustomInterestType.flat,
   });
+
+  /// True if this item represents a loan, promissory note, or installment financing given to others.
+  bool get isLoanAccount =>
+      isLoan ||
+      category == CustomAccountReceivableCategoryOptions.personalLoan ||
+      category == CustomAccountReceivableCategoryOptions.promissoryNote ||
+      (totalQuotas != null && totalQuotas! > 0);
+
+  /// Total amount collected so far from recorded payments, or the full amount if marked received.
+  double get totalCollected {
+    if (payments.isNotEmpty) {
+      return payments.fold(
+        0.0,
+        (final double sum, final AccountReceivablePayment p) => sum + p.amount,
+      );
+    }
+    return isReceived ? amount : 0.0;
+  }
+
+  /// Alias for totalCollected to match loan and accounting terminology.
+  double get totalPaid => totalCollected;
+
+  /// Total interest to be earned across all quotas.
+  double get totalLoanInterest {
+    if (!isLoanAccount ||
+        (totalQuotas == null || totalQuotas! <= 0) ||
+        (interestRate == null || interestRate! <= 0)) {
+      return 0.0;
+    }
+    final double quota =
+        monthlyQuota ??
+        LoanAmortizationUtils.calculatePeriodicQuota(
+          principal: amount,
+          annualInterestRatePercent: interestRate!,
+          totalQuotas: totalQuotas!,
+          frequency: frequency,
+          interestType: interestType,
+        );
+    final double total = quota * totalQuotas!;
+    return math.max(0.0, total - amount);
+  }
+
+  /// Total receivable amount to collect (principal + total interest).
+  double get totalReceivableAmount {
+    if (!isLoanAccount || (totalQuotas == null || totalQuotas! <= 0)) {
+      return amount;
+    }
+    if (monthlyQuota != null && monthlyQuota! > 0) {
+      return monthlyQuota! * totalQuotas!;
+    }
+    return amount + totalLoanInterest;
+  }
+
+  /// Outstanding balance still owed to you.
+  double get remainingBalance {
+    final double total = isLoanAccount ? totalReceivableAmount : amount;
+    final double rem = total - totalCollected;
+    return rem < 0 ? 0.0 : rem;
+  }
+
+  /// True when the receivable has been completely settled.
+  bool get isFullyPaid => isReceived || remainingBalance <= 0;
+
+  /// True when the receivable has been completely settled.
+  bool get isFullyReceived => isFullyPaid;
+
+  /// True when at least one collection was recorded but an outstanding balance remains.
+  bool get isPartiallyPaid => !isFullyPaid && totalCollected > 0;
+
+  /// True when at least one collection was recorded but an outstanding balance remains.
+  bool get isPartiallyReceived => isPartiallyPaid;
+
+  AccountReceivableItem copyWith({
+    final String? debtorName,
+    final String? description,
+    final double? amount,
+    final String? currency,
+    final DateTime? dueDate,
+    final DateTime? paymentDate,
+    final bool? isReceived,
+    final bool? status,
+    final CustomAccountReceivableCategoryOptions? category,
+    final CustomFrequencyOptions? frequency,
+    final List<String>? tags,
+    final String? paymentMethod,
+    final List<AccountReceivablePayment>? payments,
+    final bool clearPaymentDate = false,
+    final bool? isLoan,
+    final double? interestRate,
+    final int? totalQuotas,
+    final double? monthlyQuota,
+    final CustomInterestType? interestType,
+  }) {
+    return AccountReceivableItem(
+      id: id,
+      userId: userId,
+      debtorName: debtorName ?? this.debtorName,
+      description: description ?? this.description,
+      amount: amount ?? this.amount,
+      currency: currency ?? this.currency,
+      dueDate: dueDate ?? this.dueDate,
+      paymentDate: clearPaymentDate ? null : (paymentDate ?? this.paymentDate),
+      isReceived: isReceived ?? this.isReceived,
+      status: status ?? this.status,
+      category: category ?? this.category,
+      frequency: frequency ?? this.frequency,
+      createdDate: createdDate,
+      tags: tags ?? this.tags,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      payments: payments ?? this.payments,
+      isLoan: isLoan ?? this.isLoan,
+      interestRate: interestRate ?? this.interestRate,
+      totalQuotas: totalQuotas ?? this.totalQuotas,
+      monthlyQuota: monthlyQuota ?? this.monthlyQuota,
+      interestType: interestType ?? this.interestType,
+    );
+  }
 
   factory AccountReceivableItem.fromMap(final Map<String, dynamic> map) {
     return AccountReceivableItem(
-      id: map['id'],
-      debtorName: map['debtorName'],
-      description: map['description'],
-      amount: map['amount'].toDouble(),
-      currency: map['currency'],
-      dueDate: DateTime.parse(map['dueDate']),
-      receivedDate: map['receivedDate'] != null
-          ? DateTime.parse(map['receivedDate'])
-          : null,
+      id: map['id'] ?? emptyString,
+      userId: map['userId'] ?? emptyString,
+      debtorName: map['debtorName'] ?? emptyString,
+      description: map['description'] ?? emptyString,
+      amount: (map['amount'] ?? 0).toDouble(),
+      currency: map['currency'] ?? usdCurrency,
+      dueDate:
+          DateTime.tryParse(map['dueDate'] ?? emptyString) ?? DateTime.now(),
+      paymentDate: map['paymentDate'] != null
+          ? DateTime.tryParse(map['paymentDate'])
+          : (map['receivedDate'] != null
+                ? DateTime.tryParse(map['receivedDate'])
+                : null),
       isReceived: map['isReceived'] ?? false,
-      createdDate: DateTime.parse(map['createdDate']),
-      tags: List<String>.from(map['tags'] ?? const <String>[]),
+      status: map['status'] ?? true,
+      category: CustomAccountReceivableCategoryOptions.values.firstWhere(
+        (final CustomAccountReceivableCategoryOptions element) =>
+            element.name == map['category'],
+        orElse: () => CustomAccountReceivableCategoryOptions.other,
+      ),
+      frequency: CustomFrequencyOptions.values.firstWhere(
+        (final CustomFrequencyOptions element) =>
+            element.name == map['frequency'],
+        orElse: () => CustomFrequencyOptions.once,
+      ),
+      createdDate: map['createdDate'] != null
+          ? DateTime.tryParse(map['createdDate'])
+          : DateTime.now(),
+      tags: map['tags'] != null
+          ? List<String>.from(map['tags'])
+          : const <String>[],
       paymentMethod: map['paymentMethod'],
+      payments: map['payments'] != null
+          ? (map['payments'] as List<dynamic>)
+                .map(
+                  (final dynamic p) => AccountReceivablePayment.fromMap(
+                    Map<String, dynamic>.from(p as Map<dynamic, dynamic>),
+                  ),
+                )
+                .toList()
+          : const <AccountReceivablePayment>[],
+      isLoan: map['isLoan'] ?? false,
+      interestRate: map['interestRate'] != null
+          ? (map['interestRate'] as num).toDouble()
+          : null,
+      totalQuotas: map['totalQuotas'] != null
+          ? (map['totalQuotas'] as num).toInt()
+          : null,
+      monthlyQuota: map['monthlyQuota'] != null
+          ? (map['monthlyQuota'] as num).toDouble()
+          : null,
+      interestType: CustomInterestType.values.firstWhere(
+        (final CustomInterestType element) =>
+            element.name == map['interestType'],
+        orElse: () => CustomInterestType.flat,
+      ),
     );
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
+      'userId': userId,
       'debtorName': debtorName,
       'description': description,
       'amount': amount,
       'currency': currency,
       'dueDate': dueDate.toIso8601String(),
-      'receivedDate': receivedDate?.toIso8601String(),
+      'paymentDate': paymentDate?.toIso8601String(),
+      'receivedDate': paymentDate?.toIso8601String(),
       'isReceived': isReceived,
+      'status': status,
+      'category': category.name,
+      'frequency': frequency.name,
       'createdDate': createdDate?.toIso8601String(),
       'tags': tags,
       'paymentMethod': paymentMethod,
+      'payments': payments
+          .map((final AccountReceivablePayment p) => p.toMap())
+          .toList(),
+      'isLoan': isLoan,
+      'interestRate': interestRate,
+      'totalQuotas': totalQuotas,
+      'monthlyQuota': monthlyQuota,
+      'interestType': interestType.name,
     };
   }
 }

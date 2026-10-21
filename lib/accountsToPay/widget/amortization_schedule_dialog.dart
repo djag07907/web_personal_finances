@@ -157,7 +157,7 @@ class _AmortizationScheduleDialogState
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        '${_currentItem.creditorName} • ${CurrencyKpiUtils.formatAmount(_currentItem.amount, currency)} (${_currentItem.totalQuotas ?? _schedule.length} months @ ${_currentItem.interestRate ?? 0}% APR)',
+                        '${_currentItem.creditorName} • ${CurrencyKpiUtils.formatAmount(_currentItem.amount, currency)} (${_currentItem.totalQuotas ?? _schedule.length} months @ ${_currentItem.interestRate ?? 0}% APR • ${_currentItem.interestType.toTranslate(context)})',
                         style: TextStyle(
                           fontSize: 13,
                           color: isDark

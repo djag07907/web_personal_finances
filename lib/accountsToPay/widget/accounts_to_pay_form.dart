@@ -28,6 +28,7 @@ class _FormWidgetState extends State<FormWidget> {
   String? selectedCurrency;
   CustomAccountToPayCategoryOptions? selectedCategory;
   CustomFrequencyOptions? selectedFrequency;
+  CustomInterestType selectedInterestType = CustomInterestType.french;
   bool isPaid = false;
   bool isLoan = false;
   final TextEditingController _interestRateController = TextEditingController();
@@ -50,6 +51,7 @@ class _FormWidgetState extends State<FormWidget> {
       selectedCurrency = item.currency;
       selectedCategory = item.category;
       selectedFrequency = item.frequency;
+      selectedInterestType = item.interestType;
       isPaid = item.isPaid;
       tags = item.tags;
       isLoan = item.isLoanAccount;
@@ -65,6 +67,7 @@ class _FormWidgetState extends State<FormWidget> {
     } else {
       selectedCategory = CustomAccountToPayCategoryOptions.other;
       selectedFrequency = CustomFrequencyOptions.once;
+      selectedInterestType = CustomInterestType.french;
       isPaid = false;
       isLoan = false;
     }
@@ -390,6 +393,47 @@ class _FormWidgetState extends State<FormWidget> {
                             ),
                           ),
                           const SizedBox(height: 8),
+                          CustomLabelSelector(
+                            label: context.translate('interest_type'),
+                            hintText: context.translate('interest_type'),
+                            validator: (final String? value) => null,
+                            selectedValue: selectedInterestType.toTranslate(
+                              context,
+                            ),
+                            items: CustomInterestType.values
+                                .map(
+                                  (final CustomInterestType e) =>
+                                      e.toTranslate(context),
+                                )
+                                .toList(),
+                            onChanged: (final String? selectedLabel) {
+                              setState(() {
+                                selectedInterestType = CustomInterestType.values
+                                    .firstWhere(
+                                      (final CustomInterestType e) =>
+                                          e.toTranslate(context) ==
+                                          selectedLabel,
+                                      orElse: () => CustomInterestType.french,
+                                    );
+                              });
+                            },
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              top: 2.0,
+                              bottom: 8.0,
+                            ),
+                            child: Text(
+                              selectedInterestType.description(context),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontStyle: FontStyle.italic,
+                                color: isDark
+                                    ? DarkColors.textSecondary
+                                    : LightColors.textSecondary,
+                              ),
+                            ),
+                          ),
                           CustomLabelInput(
                             label: context.translate('interest_rate'),
                             hintText: context.translate('interest_rate_hint'),
@@ -471,10 +515,14 @@ class _FormWidgetState extends State<FormWidget> {
 
                               if (p > 0 && n > 0) {
                                 final double estQuota =
-                                    LoanAmortizationUtils.calculateMonthlyQuota(
+                                    LoanAmortizationUtils.calculatePeriodicQuota(
                                       principal: p,
                                       annualInterestRatePercent: r,
-                                      totalMonths: n,
+                                      totalQuotas: n,
+                                      frequency:
+                                          selectedFrequency ??
+                                          CustomFrequencyOptions.monthly,
+                                      interestType: selectedInterestType,
                                     );
                                 final double totalInterest = (estQuota * n) - p;
                                 final String cur =
@@ -654,6 +702,7 @@ class _FormWidgetState extends State<FormWidget> {
               _monthlyQuotaController.text.replaceAll(',', emptyString),
             )
           : null,
+      interestType: selectedInterestType,
     );
 
     widget.onSave(newItem);

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:web_personal_finances/accountsReceivable/model/account_receivable_item.dart';
 import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
+import 'package:web_personal_finances/commons/utils/account_receivable_utils.dart';
 import 'package:web_personal_finances/commons/utils/account_to_pay_utils.dart';
 import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
 import 'package:web_personal_finances/expenses/model/expense_item.dart';
@@ -508,6 +510,143 @@ class CurrencyKpiUtils {
           currency: currency,
           description: _paidAccountsDescription,
           calculation: _paidAccountsCalculation,
+        ),
+      );
+    }
+
+    return cards;
+  }
+
+  static const String _receivablePendingDescription =
+      'Total money owed to you from your active accounts receivable, including overdue items.';
+  static const String _receivablePendingCalculation =
+      'Sum of the remaining balance of all active receivable accounts in this currency that are not fully settled.';
+
+  static const String _receivableOverdueDescription =
+      'Pending payments owed to you whose due date has already passed. Follow up on these first.';
+  static const String _receivableOverdueCalculation =
+      'Sum of the remaining balance of all active, unsettled receivable accounts in this currency whose due date is before today.';
+
+  static const String _receivableUpcomingDescription =
+      'Amount expected to be collected soon from receivables due in the next 30 days.';
+  static const String _receivableUpcomingCalculation =
+      'Sum of the remaining balance of all active, unsettled receivable accounts in this currency due from today up to the next 30 days (overdue accounts excluded).';
+
+  static const String _receivableCollectedDescription =
+      'Money you have already collected from your active accounts receivable.';
+  static const String _receivableCollectedCalculation =
+      'Sum of all recorded payments collected towards active accounts receivable in this currency.';
+
+  /// Generates KPI card specs for Accounts Receivable based on dual-currency preference.
+  static List<KpiCardSpec> generateAccountReceivableKpiCards({
+    required final List<AccountReceivableItem> items,
+    required final UserModel? user,
+  }) {
+    final bool isDual = user?.enableDualCurrency ?? false;
+    final String primary =
+        (user?.primaryCurrency != null && user!.primaryCurrency.isNotEmpty)
+        ? user.primaryCurrency
+        : hnlCurrency;
+    final String secondary = primary == hnlCurrency ? usdCurrency : hnlCurrency;
+    final List<String> currencies = <String>[primary, if (isDual) secondary];
+
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime limit = today.add(const Duration(days: 30));
+
+    DateTime dateOnly(final DateTime d) => DateTime(d.year, d.month, d.day);
+
+    final List<KpiCardSpec> cards = <KpiCardSpec>[];
+
+    for (final String currency in currencies) {
+      final List<AccountReceivableItem> active = items
+          .where(
+            (final AccountReceivableItem item) =>
+                item.status && item.currency == currency,
+          )
+          .toList();
+      final List<AccountReceivableItem> pending = active
+          .where((final AccountReceivableItem item) => !item.isFullyPaid)
+          .toList();
+      final List<AccountReceivableItem> overdue = pending
+          .where(
+            (final AccountReceivableItem item) =>
+                AccountReceivableUtils.isOverdue(item),
+          )
+          .toList();
+      final List<AccountReceivableItem> upcoming = pending.where((
+        final AccountReceivableItem item,
+      ) {
+        final DateTime due = dateOnly(
+          AccountReceivableUtils.getNextDueDate(item),
+        );
+        return !due.isBefore(today) && !due.isAfter(limit);
+      }).toList();
+      final List<AccountReceivableItem> paid = active
+          .where((final AccountReceivableItem item) => item.isFullyPaid)
+          .toList();
+
+      double sumRemaining(final List<AccountReceivableItem> list) => list.fold(
+        0.0,
+        (final double total, final AccountReceivableItem item) =>
+            total + item.remainingBalance,
+      );
+
+      final double totalCollectedAmount = active.fold(
+        0.0,
+        (final double total, final AccountReceivableItem item) =>
+            total + item.totalCollected,
+      );
+
+      String suffix(final String label) =>
+          isDual ? '$label ($currency)' : label;
+
+      cards.add(
+        KpiCardSpec(
+          title: suffix('Total Pending'),
+          amount: formatAmount(sumRemaining(pending), currency),
+          subtitle: '${pending.length} outstanding',
+          isPositive: false,
+          icon: Icons.hourglass_top_outlined,
+          currency: currency,
+          description: _receivablePendingDescription,
+          calculation: _receivablePendingCalculation,
+        ),
+      );
+      cards.add(
+        KpiCardSpec(
+          title: suffix('Overdue'),
+          amount: formatAmount(sumRemaining(overdue), currency),
+          subtitle: '${overdue.length} past due date',
+          isPositive: false,
+          icon: Icons.warning_amber_rounded,
+          currency: currency,
+          description: _receivableOverdueDescription,
+          calculation: _receivableOverdueCalculation,
+        ),
+      );
+      cards.add(
+        KpiCardSpec(
+          title: suffix('Due in 30 Days'),
+          amount: formatAmount(sumRemaining(upcoming), currency),
+          subtitle: '${upcoming.length} upcoming',
+          isPositive: true,
+          icon: Icons.event_available_outlined,
+          currency: currency,
+          description: _receivableUpcomingDescription,
+          calculation: _receivableUpcomingCalculation,
+        ),
+      );
+      cards.add(
+        KpiCardSpec(
+          title: suffix('Total Collected'),
+          amount: formatAmount(totalCollectedAmount, currency),
+          subtitle: '${paid.length} settled',
+          isPositive: true,
+          icon: Icons.check_circle_outline,
+          currency: currency,
+          description: _receivableCollectedDescription,
+          calculation: _receivableCollectedCalculation,
         ),
       );
     }

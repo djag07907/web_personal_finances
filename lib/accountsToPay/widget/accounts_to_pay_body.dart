@@ -24,6 +24,7 @@ import 'package:web_personal_finances/commons/drawer/drawer_widget.dart';
 import 'package:web_personal_finances/commons/enum/custom_action_options.dart';
 import 'package:web_personal_finances/commons/enum/custom_account_to_pay_category_options.dart';
 import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
+import 'package:web_personal_finances/commons/enum/custom_interest_type.dart';
 import 'package:web_personal_finances/commons/enum/custom_payment_filters.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';

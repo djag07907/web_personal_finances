@@ -1,6 +1,9 @@
+import 'dart:math' as math;
 import 'package:web_personal_finances/accountsToPay/model/account_to_pay_payment.dart';
 import 'package:web_personal_finances/commons/enum/custom_account_to_pay_category_options.dart';
 import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart';
+import 'package:web_personal_finances/commons/enum/custom_interest_type.dart';
+import 'package:web_personal_finances/commons/utils/loan_amortization_utils.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 
 class AccountToPayItem {
@@ -24,6 +27,7 @@ class AccountToPayItem {
   final double? interestRate;
   final int? totalQuotas;
   final double? monthlyQuota;
+  final CustomInterestType interestType;
 
   AccountToPayItem({
     required this.id,
@@ -46,6 +50,7 @@ class AccountToPayItem {
     this.interestRate,
     this.totalQuotas,
     this.monthlyQuota,
+    this.interestType = CustomInterestType.french,
   });
 
   /// True if this item represents a loan or installment financing.
@@ -68,9 +73,41 @@ class AccountToPayItem {
     return isPaid ? amount : 0.0;
   }
 
+  /// Total interest to be paid over the life of the loan.
+  double get totalLoanInterest {
+    if (!isLoanAccount ||
+        (totalQuotas == null || totalQuotas! <= 0) ||
+        (interestRate == null || interestRate! <= 0)) {
+      return 0.0;
+    }
+    final double quota =
+        monthlyQuota ??
+        LoanAmortizationUtils.calculatePeriodicQuota(
+          principal: amount,
+          annualInterestRatePercent: interestRate!,
+          totalQuotas: totalQuotas!,
+          frequency: frequency,
+          interestType: interestType,
+        );
+    final double total = quota * totalQuotas!;
+    return math.max(0.0, total - amount);
+  }
+
+  /// Total obligation to be paid (principal + total interest).
+  double get totalObligation {
+    if (!isLoanAccount || (totalQuotas == null || totalQuotas! <= 0)) {
+      return amount;
+    }
+    if (monthlyQuota != null && monthlyQuota! > 0) {
+      return monthlyQuota! * totalQuotas!;
+    }
+    return amount + totalLoanInterest;
+  }
+
   /// Outstanding balance still owed.
   double get remainingBalance {
-    final double rem = amount - totalPaid;
+    final double total = isLoanAccount ? totalObligation : amount;
+    final double rem = total - totalPaid;
     return rem < 0 ? 0.0 : rem;
   }
 
@@ -99,6 +136,7 @@ class AccountToPayItem {
     final double? interestRate,
     final int? totalQuotas,
     final double? monthlyQuota,
+    final CustomInterestType? interestType,
   }) {
     return AccountToPayItem(
       id: id,
@@ -121,6 +159,7 @@ class AccountToPayItem {
       interestRate: interestRate ?? this.interestRate,
       totalQuotas: totalQuotas ?? this.totalQuotas,
       monthlyQuota: monthlyQuota ?? this.monthlyQuota,
+      interestType: interestType ?? this.interestType,
     );
   }
 
@@ -175,6 +214,11 @@ class AccountToPayItem {
       monthlyQuota: map['monthlyQuota'] != null
           ? (map['monthlyQuota'] as num).toDouble()
           : null,
+      interestType: CustomInterestType.values.firstWhere(
+        (final CustomInterestType element) =>
+            element.name == map['interestType'],
+        orElse: () => CustomInterestType.french,
+      ),
     );
   }
 
@@ -202,6 +246,7 @@ class AccountToPayItem {
       'interestRate': interestRate,
       'totalQuotas': totalQuotas,
       'monthlyQuota': monthlyQuota,
+      'interestType': interestType.name,
     };
   }
 }
