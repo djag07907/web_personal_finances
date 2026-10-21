@@ -1118,6 +1118,7 @@ class _IncomesBodyState extends State<IncomesBody> {
     final List<KpiCardSpec> specs = CurrencyKpiUtils.generateIncomeKpiCards(
       incomeItems: _incomeItems,
       user: _currentUser,
+      context: context,
     );
 
     return LayoutBuilder(

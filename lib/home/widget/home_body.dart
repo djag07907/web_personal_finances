@@ -160,6 +160,7 @@ class _HomeBodyState extends State<HomeBody> {
         CurrencyKpiUtils.generateIncomeKpiCards(
           incomeItems: incomes,
           user: profile,
+          context: context,
         );
 
     // 2. Expenses cards (THEN)
@@ -167,6 +168,7 @@ class _HomeBodyState extends State<HomeBody> {
         CurrencyKpiUtils.generateExpenseKpiCards(
           expenseItems: expenses,
           user: profile,
+          context: context,
         );
 
     // 3. Accounts cards (THEN ACCOUNTS: to pay and receivable)
@@ -174,11 +176,13 @@ class _HomeBodyState extends State<HomeBody> {
         CurrencyKpiUtils.generateAccountToPayKpiCards(
           items: accountsToPay,
           user: profile,
+          context: context,
         );
     final List<KpiCardSpec> receivableCards =
         CurrencyKpiUtils.generateAccountReceivableKpiCards(
           items: accountsReceivable,
           user: profile,
+          context: context,
         );
 
     // 4. Executive Overview & Net Cash Flow cards (ADDITIONAL CARDS)

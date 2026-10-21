@@ -1125,6 +1125,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
         CurrencyKpiUtils.generateAccountToPayKpiCards(
           items: _items,
           user: _currentUser,
+          context: context,
         );
 
     return LayoutBuilder(

@@ -1253,6 +1253,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
     final List<KpiCardSpec> specs = CurrencyKpiUtils.generateExpenseKpiCards(
       expenseItems: _expenseItems,
       user: _currentUser,
+      context: context,
     );
 
     return LayoutBuilder(

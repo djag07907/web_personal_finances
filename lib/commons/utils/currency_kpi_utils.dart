@@ -37,33 +37,6 @@ class KpiCardSpec {
 }
 
 class CurrencyKpiUtils {
-  static const String _monthlyConversion =
-      'Each active item is converted to a monthly amount: weekly × 4.33, '
-      'biweekly × 2.166, monthly × 1, yearly ÷ 12, daily × 30, '
-      'one-time × 1.';
-
-  static const String _receivedDescription =
-      'Money you have already collected from your active income entries.';
-  static const String _receivedCalculation =
-      'Sum of the amounts of all active incomes in this currency that are '
-      'marked as received.';
-
-  static const String _monthlyRateDescription =
-      'Your estimated income in a typical month, based on all your active '
-      'income streams regardless of whether they were received yet.';
-  static const String _monthlyRateCalculation = _monthlyConversion;
-
-  static const String _paidDescription =
-      'Money you have already spent on your active expense entries.';
-  static const String _paidCalculation =
-      'Sum of the amounts of all active expenses in this currency that are '
-      'marked as paid.';
-
-  static const String _burnRateDescription =
-      'Your estimated spending in a typical month, based on all your active '
-      'expenses regardless of whether they were paid yet.';
-  static const String _burnRateCalculation = _monthlyConversion;
-
   /// Returns currency symbol for display ('L.' for HNL, '$' for USD).
   static String getCurrencySymbol(final String currency) {
     if (currency == hnlCurrency) {
@@ -155,6 +128,7 @@ class CurrencyKpiUtils {
   static List<KpiCardSpec> generateIncomeKpiCards({
     required final List<IncomeItem> incomeItems,
     required final UserModel? user,
+    final BuildContext? context,
   }) {
     final bool isDual = user?.enableDualCurrency ?? false;
     final String primary =
@@ -180,28 +154,33 @@ class CurrencyKpiUtils {
       currency: primary,
     );
 
+    String suffix(final String label, final String curr) =>
+        isDual ? '$label ($curr)' : label;
+
     cards.add(
       KpiCardSpec(
-        title: isDual ? 'Total Received ($primary)' : 'Total Received',
+        title: suffix(context!.translate('total_received'), primary),
         amount: formatAmount(receivedPrimary, primary),
         isPositive: true,
         icon: Icons.payments_outlined,
         currency: primary,
-        description: _receivedDescription,
-        calculation: _receivedCalculation,
+        description: context.translate('income_received_desc'),
+        calculation: context.translate('income_received_calc'),
       ),
     );
 
     cards.add(
       KpiCardSpec(
-        title: isDual ? 'Monthly Rate ($primary)' : 'Monthly Projected Rate',
+        title: suffix(
+          context.translate(isDual ? 'monthly_rate' : 'monthly_projected_rate'),
+          primary,
+        ),
         amount: formatAmount(projectedPrimary, primary),
-        // subtitle: 'Normalized monthly income',
         isPositive: true,
         icon: Icons.trending_up,
         currency: primary,
-        description: _monthlyRateDescription,
-        calculation: _monthlyRateCalculation,
+        description: context.translate('income_monthly_rate_desc'),
+        calculation: context.translate('monthly_conversion_calc'),
       ),
     );
 
@@ -223,26 +202,25 @@ class CurrencyKpiUtils {
 
       cards.add(
         KpiCardSpec(
-          title: 'Total Received ($secondary)',
+          title: suffix(context.translate('total_received'), secondary),
           amount: formatAmount(receivedSecondary, secondary),
           isPositive: true,
           icon: Icons.account_balance_wallet_outlined,
           currency: secondary,
-          description: _receivedDescription,
-          calculation: _receivedCalculation,
+          description: context.translate('income_received_desc'),
+          calculation: context.translate('income_received_calc'),
         ),
       );
 
       cards.add(
         KpiCardSpec(
-          title: 'Monthly Rate ($secondary)',
+          title: suffix(context.translate('monthly_rate'), secondary),
           amount: formatAmount(projectedSecondary, secondary),
-          // subtitle: 'Normalized monthly income',
           isPositive: true,
           icon: Icons.auto_graph,
           currency: secondary,
-          description: _monthlyRateDescription,
-          calculation: _monthlyRateCalculation,
+          description: context.translate('income_monthly_rate_desc'),
+          calculation: context.translate('monthly_conversion_calc'),
         ),
       );
     }
@@ -287,6 +265,7 @@ class CurrencyKpiUtils {
   static List<KpiCardSpec> generateExpenseKpiCards({
     required final List<ExpenseItem> expenseItems,
     required final UserModel? user,
+    final BuildContext? context,
   }) {
     final bool isDual = user?.enableDualCurrency ?? false;
     final String primary =
@@ -312,27 +291,30 @@ class CurrencyKpiUtils {
       currency: primary,
     );
 
+    String suffix(final String label, final String curr) =>
+        isDual ? '$label ($curr)' : label;
+
     cards.add(
       KpiCardSpec(
-        title: isDual ? 'Total Paid ($primary)' : 'Total Paid',
+        title: suffix(context!.translate('total_paid'), primary),
         amount: formatAmount(paidPrimary, primary),
         isPositive: false,
         icon: Icons.shopping_bag_outlined,
         currency: primary,
-        description: _paidDescription,
-        calculation: _paidCalculation,
+        description: context.translate('expense_paid_desc'),
+        calculation: context.translate('expense_paid_calc'),
       ),
     );
 
     cards.add(
       KpiCardSpec(
-        title: isDual ? 'Monthly Burn Rate ($primary)' : 'Monthly Burn Rate',
+        title: suffix(context.translate('monthly_burn_rate'), primary),
         amount: formatAmount(burnRatePrimary, primary),
         isPositive: false,
         icon: Icons.trending_down,
         currency: primary,
-        description: _burnRateDescription,
-        calculation: _burnRateCalculation,
+        description: context.translate('expense_burn_rate_desc'),
+        calculation: context.translate('monthly_conversion_calc'),
       ),
     );
 
@@ -354,25 +336,25 @@ class CurrencyKpiUtils {
 
       cards.add(
         KpiCardSpec(
-          title: 'Total Paid ($secondary)',
+          title: suffix(context.translate('total_paid'), secondary),
           amount: formatAmount(paidSecondary, secondary),
           isPositive: false,
           icon: Icons.receipt_long_outlined,
           currency: secondary,
-          description: _paidDescription,
-          calculation: _paidCalculation,
+          description: context.translate('expense_paid_desc'),
+          calculation: context.translate('expense_paid_calc'),
         ),
       );
 
       cards.add(
         KpiCardSpec(
-          title: 'Monthly Burn Rate ($secondary)',
+          title: suffix(context.translate('monthly_burn_rate'), secondary),
           amount: formatAmount(burnRateSecondary, secondary),
           isPositive: false,
           icon: Icons.analytics_outlined,
           currency: secondary,
-          description: _burnRateDescription,
-          calculation: _burnRateCalculation,
+          description: context.translate('expense_burn_rate_desc'),
+          calculation: context.translate('monthly_conversion_calc'),
         ),
       );
     }
@@ -380,36 +362,11 @@ class CurrencyKpiUtils {
     return cards;
   }
 
-  static const String _pendingDescription =
-      'Total you still owe on your active accounts to pay, including the '
-      'ones that are already overdue.';
-  static const String _pendingCalculation =
-      'Sum of the remaining balance of all active accounts in this currency '
-      'that are not fully settled.';
-
-  static const String _overdueDescription =
-      'Part of your pending balance whose due date has already passed. '
-      'These are the bills you should settle first.';
-  static const String _overdueCalculation =
-      'Sum of the remaining balance of all active, unsettled accounts in this '
-      'currency whose due date is before today.';
-
-  static const String _upcomingDescription =
-      'Amount you will need to have available soon to cover bills that are '
-      'about to be due.';
-  static const String _upcomingCalculation =
-      'Sum of the remaining balance of all active, unsettled accounts in this '
-      'currency due from today up to the next 30 days (overdue accounts excluded).';
-
-  static const String _paidAccountsDescription =
-      'Money you have already paid towards your active accounts to pay.';
-  static const String _paidAccountsCalculation =
-      'Sum of all recorded payments made towards active accounts in this currency.';
-
   /// Generates KPI card specs for Accounts to Pay based on dual-currency preference.
   static List<KpiCardSpec> generateAccountToPayKpiCards({
     required final List<AccountToPayItem> items,
     required final UserModel? user,
+    final BuildContext? context,
   }) {
     final bool isDual = user?.enableDualCurrency ?? false;
     final String primary =
@@ -469,50 +426,50 @@ class CurrencyKpiUtils {
 
       cards.add(
         KpiCardSpec(
-          title: suffix('Total Pending'),
+          title: suffix(context!.translate('total_pending')),
           amount: formatAmount(sumRemaining(pending), currency),
-          subtitle: '${pending.length} outstanding',
+          subtitle: '${pending.length} ${context.translate('outstanding')}',
           isPositive: false,
           icon: Icons.hourglass_bottom_outlined,
           currency: currency,
-          description: _pendingDescription,
-          calculation: _pendingCalculation,
+          description: context.translate('accounts_to_pay_pending_desc'),
+          calculation: context.translate('accounts_to_pay_pending_calc'),
         ),
       );
       cards.add(
         KpiCardSpec(
-          title: suffix('Overdue'),
+          title: suffix(context.translate('overdue')),
           amount: formatAmount(sumRemaining(overdue), currency),
-          subtitle: '${overdue.length} past due date',
+          subtitle: '${overdue.length} ${context.translate('past_due_date')}',
           isPositive: false,
           icon: Icons.warning_amber_rounded,
           currency: currency,
-          description: _overdueDescription,
-          calculation: _overdueCalculation,
+          description: context.translate('accounts_to_pay_overdue_desc'),
+          calculation: context.translate('accounts_to_pay_overdue_calc'),
         ),
       );
       cards.add(
         KpiCardSpec(
-          title: suffix('Due in 30 Days'),
+          title: suffix(context.translate('due_in_30_days')),
           amount: formatAmount(sumRemaining(upcoming), currency),
-          subtitle: '${upcoming.length} upcoming',
+          subtitle: '${upcoming.length} ${context.translate('upcoming')}',
           isPositive: false,
           icon: Icons.event_outlined,
           currency: currency,
-          description: _upcomingDescription,
-          calculation: _upcomingCalculation,
+          description: context.translate('accounts_to_pay_upcoming_desc'),
+          calculation: context.translate('accounts_to_pay_upcoming_calc'),
         ),
       );
       cards.add(
         KpiCardSpec(
-          title: suffix('Total Paid'),
+          title: suffix(context.translate('total_paid')),
           amount: formatAmount(totalPaidAmount, currency),
-          subtitle: '${paid.length} settled',
+          subtitle: '${paid.length} ${context.translate('settled')}',
           isPositive: true,
           icon: Icons.check_circle_outline,
           currency: currency,
-          description: _paidAccountsDescription,
-          calculation: _paidAccountsCalculation,
+          description: context.translate('accounts_to_pay_paid_desc'),
+          calculation: context.translate('accounts_to_pay_paid_calc'),
         ),
       );
     }
@@ -520,30 +477,11 @@ class CurrencyKpiUtils {
     return cards;
   }
 
-  static const String _receivablePendingDescription =
-      'Total money owed to you from your active accounts receivable, including overdue items.';
-  static const String _receivablePendingCalculation =
-      'Sum of the remaining balance of all active receivable accounts in this currency that are not fully settled.';
-
-  static const String _receivableOverdueDescription =
-      'Pending payments owed to you whose due date has already passed. Follow up on these first.';
-  static const String _receivableOverdueCalculation =
-      'Sum of the remaining balance of all active, unsettled receivable accounts in this currency whose due date is before today.';
-
-  static const String _receivableUpcomingDescription =
-      'Amount expected to be collected soon from receivables due in the next 30 days.';
-  static const String _receivableUpcomingCalculation =
-      'Sum of the remaining balance of all active, unsettled receivable accounts in this currency due from today up to the next 30 days (overdue accounts excluded).';
-
-  static const String _receivableCollectedDescription =
-      'Money you have already collected from your active accounts receivable.';
-  static const String _receivableCollectedCalculation =
-      'Sum of all recorded payments collected towards active accounts receivable in this currency.';
-
   /// Generates KPI card specs for Accounts Receivable based on dual-currency preference.
   static List<KpiCardSpec> generateAccountReceivableKpiCards({
     required final List<AccountReceivableItem> items,
     required final UserModel? user,
+    final BuildContext? context,
   }) {
     final bool isDual = user?.enableDualCurrency ?? false;
     final String primary =
@@ -606,50 +544,50 @@ class CurrencyKpiUtils {
 
       cards.add(
         KpiCardSpec(
-          title: suffix('Total Pending'),
+          title: suffix(context!.translate('total_pending')),
           amount: formatAmount(sumRemaining(pending), currency),
-          subtitle: '${pending.length} outstanding',
+          subtitle: '${pending.length} ${context.translate('outstanding')}',
           isPositive: false,
           icon: Icons.hourglass_top_outlined,
           currency: currency,
-          description: _receivablePendingDescription,
-          calculation: _receivablePendingCalculation,
+          description: context.translate('accounts_receivable_pending_desc'),
+          calculation: context.translate('accounts_receivable_pending_calc'),
         ),
       );
       cards.add(
         KpiCardSpec(
-          title: suffix('Overdue'),
+          title: suffix(context.translate('overdue')),
           amount: formatAmount(sumRemaining(overdue), currency),
-          subtitle: '${overdue.length} past due date',
+          subtitle: '${overdue.length} ${context.translate('past_due_date')}',
           isPositive: false,
           icon: Icons.warning_amber_rounded,
           currency: currency,
-          description: _receivableOverdueDescription,
-          calculation: _receivableOverdueCalculation,
+          description: context.translate('accounts_receivable_overdue_desc'),
+          calculation: context.translate('accounts_receivable_overdue_calc'),
         ),
       );
       cards.add(
         KpiCardSpec(
-          title: suffix('Due in 30 Days'),
+          title: suffix(context.translate('due_in_30_days')),
           amount: formatAmount(sumRemaining(upcoming), currency),
-          subtitle: '${upcoming.length} upcoming',
+          subtitle: '${upcoming.length} ${context.translate('upcoming')}',
           isPositive: true,
           icon: Icons.event_available_outlined,
           currency: currency,
-          description: _receivableUpcomingDescription,
-          calculation: _receivableUpcomingCalculation,
+          description: context.translate('accounts_receivable_upcoming_desc'),
+          calculation: context.translate('accounts_receivable_upcoming_calc'),
         ),
       );
       cards.add(
         KpiCardSpec(
-          title: suffix('Total Collected'),
+          title: suffix(context.translate('total_collected')),
           amount: formatAmount(totalCollectedAmount, currency),
-          subtitle: '${paid.length} settled',
+          subtitle: '${paid.length} ${context.translate('settled')}',
           isPositive: true,
           icon: Icons.check_circle_outline,
           currency: currency,
-          description: _receivableCollectedDescription,
-          calculation: _receivableCollectedCalculation,
+          description: context.translate('accounts_receivable_collected_desc'),
+          calculation: context.translate('accounts_receivable_collected_calc'),
         ),
       );
     }

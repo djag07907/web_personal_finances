@@ -1202,6 +1202,7 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
         CurrencyKpiUtils.generateAccountReceivableKpiCards(
           items: _items,
           user: _currentUser,
+          context: context,
         );
 
     return LayoutBuilder(
