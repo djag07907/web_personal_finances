@@ -78,25 +78,23 @@ class UpcomingBillsCard extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
-              itemCount: bills.isEmpty ? 1 : bills.length,
-              itemBuilder: (final BuildContext context, final int index) {
-                if (bills.isEmpty) {
-                  return _buildEmptyState(context, isDark, isSmallScreen);
-                }
-                return Padding(
-                  padding: EdgeInsets.only(bottom: isSmallScreen ? 8 : 12),
-                  child: _buildBillItem(
-                    context,
-                    bills[index],
-                    isDark,
-                    isSmallScreen,
+          Padding(
+            padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
+            child: bills.isEmpty
+                ? _buildEmptyState(context, isDark, isSmallScreen)
+                : Column(
+                    children: bills.take(5).map((final BillItem bill) {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: isSmallScreen ? 8 : 12),
+                        child: _buildBillItem(
+                          context,
+                          bill,
+                          isDark,
+                          isSmallScreen,
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),

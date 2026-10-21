@@ -73,22 +73,43 @@ class RecentTransactionsCard extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: transactions.length,
-              itemBuilder: (final BuildContext context, final int index) {
-                final TransactionItem transaction = transactions[index];
-                return _buildTransactionItem(
-                  context,
-                  transaction,
-                  isDark,
-                  isSmallScreen,
-                  isLast: index == transactions.length - 1,
-                );
-              },
+          if (transactions.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Center(
+                child: Text(
+                  'No transactions recorded yet.',
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 11 : 12,
+                    fontWeight: FontWeight.w500,
+                    color: isDark
+                        ? DarkColors.textSecondary
+                        : LightColors.textSecondary,
+                  ),
+                ),
+              ),
+            )
+          else
+            Column(
+              children: transactions
+                  .take(6)
+                  .toList()
+                  .asMap()
+                  .entries
+                  .map((final MapEntry<int, TransactionItem> entry) {
+                    final int index = entry.key;
+                    final TransactionItem transaction = entry.value;
+                    final int totalShown = transactions.length.clamp(0, 6);
+                    return _buildTransactionItem(
+                      context,
+                      transaction,
+                      isDark,
+                      isSmallScreen,
+                      isLast: index == totalShown - 1,
+                    );
+                  })
+                  .toList(),
             ),
-          ),
         ],
       ),
     );

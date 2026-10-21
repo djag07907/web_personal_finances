@@ -1,9 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:web_personal_finances/accountsReceivable/repository/accounts_receivable_repository.dart';
+import 'package:web_personal_finances/accountsToPay/repository/accounts_to_pay_repository.dart';
+import 'package:web_personal_finances/expenses/repository/expenses_repository.dart';
 import 'package:web_personal_finances/home/bloc/home_bloc.dart';
 import 'package:web_personal_finances/home/bloc/home_event.dart';
 import 'package:web_personal_finances/home/widget/home_body.dart';
+import 'package:web_personal_finances/incomes/repository/incomes_repository.dart';
 import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 
@@ -16,8 +20,13 @@ class HomeScreen extends StatelessWidget {
       create: (final BuildContext ctx) {
         final String uid =
             FirebaseAuth.instance.currentUser?.uid ?? emptyString;
-        return HomeBloc(userRepository: ctx.read<UserRepository>())
-          ..add(HomeFetchProfile(uid: uid));
+        return HomeBloc(
+          userRepository: ctx.read<UserRepository>(),
+          incomeRepository: IncomeRepository(),
+          expenseRepository: ExpenseRepository(),
+          accountToPayRepository: AccountToPayRepository(),
+          accountReceivableRepository: AccountReceivableRepository(),
+        )..add(HomeFetchProfile(uid: uid));
       },
       child: const HomeBody(),
     );

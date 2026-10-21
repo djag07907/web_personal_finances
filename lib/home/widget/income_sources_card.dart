@@ -16,6 +16,32 @@ class IncomeSourcesCard extends StatelessWidget {
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isSmallScreen = screenWidth < 600;
 
+    if (incomeData.isEmpty) {
+      return Container(
+        decoration: BoxDecoration(
+          color: isDark ? DarkColors.surface : white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? Colors.grey[800]! : const Color(0xFFF0F4F3),
+          ),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: black.withValues(alpha: 0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: EmptyContentWidget(
+            icon: Icons.donut_large_outlined,
+            title: context.translate('incomes'),
+            subtitle: 'No income records found to generate source chart.',
+          ),
+        ),
+      );
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? DarkColors.surface : white,
@@ -61,35 +87,47 @@ class IncomeSourcesCard extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.all(isSmallScreen ? 12 : 20),
               child: LayoutBuilder(
-                builder: (
-                  final BuildContext context,
-                  final BoxConstraints constraints,
-                ) {
-                  final bool useVerticalLayout =
-                      constraints.maxWidth < 400 || isSmallScreen;
+                builder:
+                    (
+                      final BuildContext context,
+                      final BoxConstraints constraints,
+                    ) {
+                      final bool useVerticalLayout =
+                          constraints.maxWidth < 400 || isSmallScreen;
 
-                  return useVerticalLayout
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            _buildDonutChart(context, isSmallScreen, isDark),
-                            SizedBox(height: 24),
-                            _buildLegend(context, isDark, isSmallScreen),
-                          ],
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            _buildDonutChart(context, isSmallScreen, isDark),
-                            SizedBox(width: 24),
-                            Expanded(
-                              child:
-                                  _buildLegend(context, isDark, isSmallScreen),
-                            ),
-                          ],
-                        );
-                },
+                      return useVerticalLayout
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                _buildDonutChart(
+                                  context,
+                                  isSmallScreen,
+                                  isDark,
+                                ),
+                                SizedBox(height: 24),
+                                _buildLegend(context, isDark, isSmallScreen),
+                              ],
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                _buildDonutChart(
+                                  context,
+                                  isSmallScreen,
+                                  isDark,
+                                ),
+                                SizedBox(width: 24),
+                                Expanded(
+                                  child: _buildLegend(
+                                    context,
+                                    isDark,
+                                    isSmallScreen,
+                                  ),
+                                ),
+                              ],
+                            );
+                    },
               ),
             ),
           ),
@@ -118,12 +156,7 @@ class IncomeSourcesCard extends StatelessWidget {
               startDegreeOffset: -90,
               sections: _buildDonutSections(isSmall),
               borderData: FlBorderData(show: false),
-              pieTouchData: PieTouchData(
-                touchCallback: (
-                  final FlTouchEvent event,
-                  final PieTouchResponse? pieTouchResponse,
-                ) {},
-              ),
+              pieTouchData: PieTouchData(enabled: false),
             ),
           ),
         ),
@@ -204,10 +237,9 @@ class IncomeSourcesCard extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: entries
-          .asMap()
-          .entries
-          .map((final MapEntry<int, MapEntry<String, double>> entry) {
+      children: entries.asMap().entries.map((
+        final MapEntry<int, MapEntry<String, double>> entry,
+      ) {
         final int index = entry.key;
         final MapEntry<String, double> data = entry.value;
 
