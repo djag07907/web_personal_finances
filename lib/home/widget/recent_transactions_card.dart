@@ -52,7 +52,7 @@ class RecentTransactionsCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Text(
-                  'Recent Transactions',
+                  context.translate('recent_transactions'),
                   style: TextStyle(
                     fontSize: isSmallScreen ? 16 : 18,
                     fontWeight: FontWeight.bold,
@@ -62,7 +62,7 @@ class RecentTransactionsCard extends StatelessWidget {
                 InkWell(
                   onTap: onViewAll,
                   child: Text(
-                    'View All',
+                    context.translate('view_all'),
                     style: TextStyle(
                       fontSize: isSmallScreen ? 12 : 14,
                       fontWeight: FontWeight.bold,
@@ -78,7 +78,7 @@ class RecentTransactionsCard extends StatelessWidget {
               padding: const EdgeInsets.all(24.0),
               child: Center(
                 child: Text(
-                  'No transactions recorded yet.',
+                  context.translate('no_transactions_recorded'),
                   style: TextStyle(
                     fontSize: isSmallScreen ? 11 : 12,
                     fontWeight: FontWeight.w500,

@@ -32,7 +32,7 @@ class ExpenseBreakdownCard extends StatelessWidget {
           child: EmptyContentWidget(
             icon: Icons.pie_chart_outline,
             title: context.translate('expenses'),
-            subtitle: 'No expense records found to generate breakdown chart.',
+            subtitle: context.translate('no_expenses_chart_data'),
           ),
         ),
       );
@@ -62,7 +62,7 @@ class ExpenseBreakdownCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Text(
-                  'Expense Breakdown',
+                  context.translate('expense_breakdown'),
                   style: TextStyle(
                     fontSize: isSmallScreen ? 16 : 18,
                     fontWeight: FontWeight.bold,

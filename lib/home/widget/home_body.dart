@@ -19,6 +19,7 @@ import 'package:web_personal_finances/commons/utils/currency_kpi_utils.dart';
 import 'package:web_personal_finances/expenses/model/expense_item.dart';
 import 'package:web_personal_finances/home/bloc/home_bloc.dart';
 import 'package:web_personal_finances/home/bloc/home_state.dart';
+import 'package:web_personal_finances/home/model/category_breakdown_item.dart';
 import 'package:web_personal_finances/home/widget/expense_income_bar.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/resources/api_constants.dart';
@@ -182,6 +183,7 @@ class _HomeBodyState extends State<HomeBody> {
 
     // 4. Executive Overview & Net Cash Flow cards (ADDITIONAL CARDS)
     final List<KpiCardSpec> executiveCards = _generateExecutiveKpiCards(
+      context: context,
       incomes: incomes,
       expenses: expenses,
       accountsToPay: accountsToPay,
@@ -222,7 +224,7 @@ class _HomeBodyState extends State<HomeBody> {
       incomes,
       expenses,
     );
-    final List<BillItem> bills = _buildBillItems(accountsToPay);
+    final List<BillItem> bills = _buildBillItems(accountsToPay, context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -249,7 +251,7 @@ class _HomeBodyState extends State<HomeBody> {
                   _buildSectionHeader(
                     context: context,
                     title: context.translate('incomes'),
-                    subtitle: 'Active income streams & monthly earning power',
+                    subtitle: context.translate('incomes_section_subtitle'),
                     icon: Icons.trending_up,
                     iconColor: LightColors.primary,
                     count: incomes
@@ -262,8 +264,7 @@ class _HomeBodyState extends State<HomeBody> {
                   _buildSectionHeader(
                     context: context,
                     title: context.translate('expenses'),
-                    subtitle:
-                        'Recorded spending & normalized monthly burn rate',
+                    subtitle: context.translate('expenses_section_subtitle'),
                     icon: Icons.trending_down,
                     iconColor: Colors.orange[700] ?? Colors.orange,
                     count: expenses
@@ -276,8 +277,9 @@ class _HomeBodyState extends State<HomeBody> {
                   _buildSectionHeader(
                     context: context,
                     title: context.translate('accounts_to_pay'),
-                    subtitle:
-                        'Outstanding debts, upcoming bills & settled obligations',
+                    subtitle: context.translate(
+                      'accounts_to_pay_section_subtitle',
+                    ),
                     icon: Icons.receipt_long_outlined,
                     iconColor: Colors.amber[700] ?? Colors.amber,
                     count: accountsToPay
@@ -293,8 +295,9 @@ class _HomeBodyState extends State<HomeBody> {
                   _buildSectionHeader(
                     context: context,
                     title: context.translate('accounts_receivable'),
-                    subtitle:
-                        'Money owed to you, recovered debts & upcoming collections',
+                    subtitle: context.translate(
+                      'accounts_receivable_section_subtitle',
+                    ),
                     icon: Icons.call_received_outlined,
                     iconColor: Colors.teal[600] ?? Colors.teal,
                     count: accountsReceivable
@@ -309,9 +312,8 @@ class _HomeBodyState extends State<HomeBody> {
                   // Section 5: Executive Financial Health & Cash Flow (ADDITIONAL CARDS)
                   _buildSectionHeader(
                     context: context,
-                    title: 'Executive Cash Flow & Balance',
-                    subtitle:
-                        'Discretionary surplus, margin ratio & net debt position',
+                    title: context.translate('executive_cash_flow_title'),
+                    subtitle: context.translate('executive_cash_flow_subtitle'),
                     icon: Icons.balance_outlined,
                     iconColor: LightColors.primary,
                   ),
@@ -493,6 +495,7 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   List<KpiCardSpec> _generateExecutiveKpiCards({
+    required final BuildContext context,
     required final List<IncomeItem> incomes,
     required final List<ExpenseItem> expenses,
     required final List<AccountToPayItem> accountsToPay,
@@ -553,53 +556,50 @@ class _HomeBodyState extends State<HomeBody> {
 
       cards.add(
         KpiCardSpec(
-          title: suffix('Net Monthly Cash Flow'),
+          title: suffix(context.translate('net_monthly_cash_flow')),
           amount: CurrencyKpiUtils.formatAmount(netMonthlyCashFlow, currency),
           subtitle: netMonthlyCashFlow >= 0
-              ? 'Monthly Operating Surplus'
-              : 'Monthly Cash Deficit',
+              ? context.translate('monthly_operating_surplus')
+              : context.translate('monthly_cash_deficit'),
           isPositive: netMonthlyCashFlow >= 0,
           icon: netMonthlyCashFlow >= 0
               ? Icons.savings_outlined
               : Icons.warning_amber_rounded,
           currency: currency,
-          description:
-              'Estimated net surplus or deficit in a typical month after paying recurring expenses.',
-          calculation: 'Monthly Projected Incomes - Monthly Burn Rate.',
+          description: context.translate('net_monthly_cash_flow_desc'),
+          calculation: context.translate('net_monthly_cash_flow_calc'),
         ),
       );
 
       cards.add(
         KpiCardSpec(
-          title: suffix('Cash Flow Margin'),
+          title: suffix(context.translate('cash_flow_margin')),
           amount: '${margin.toStringAsFixed(1)}%',
           subtitle: margin >= 20
-              ? 'Strong savings capacity'
-              : (margin >= 0 ? 'Moderate margin' : 'Deficit burn'),
+              ? context.translate('strong_savings_capacity')
+              : (margin >= 0
+                    ? context.translate('moderate_margin')
+                    : context.translate('deficit_burn')),
           isPositive: margin >= 0,
           icon: Icons.pie_chart_outline,
           currency: currency,
-          description:
-              'Share of your monthly earnings retained after covering all recurring expenses.',
-          calculation:
-              '(Net Monthly Cash Flow ÷ Monthly Projected Incomes) × 100%.',
+          description: context.translate('cash_flow_margin_desc'),
+          calculation: context.translate('cash_flow_margin_calc'),
         ),
       );
 
       cards.add(
         KpiCardSpec(
-          title: suffix('Net Outstanding Position'),
+          title: suffix(context.translate('net_outstanding_position')),
           amount: CurrencyKpiUtils.formatAmount(netDebtBalance.abs(), currency),
           subtitle: netDebtBalance >= 0
-              ? 'Receivables exceed liabilities'
-              : 'Liabilities exceed receivables',
+              ? context.translate('receivables_exceed_liabilities')
+              : context.translate('liabilities_exceed_receivables'),
           isPositive: netDebtBalance >= 0,
           icon: Icons.balance_outlined,
           currency: currency,
-          description:
-              'Balance between total money owed to you and total debt you currently owe.',
-          calculation:
-              'Total Pending Receivables - Total Pending Accounts to Pay.',
+          description: context.translate('net_outstanding_position_desc'),
+          calculation: context.translate('net_outstanding_position_calc'),
         ),
       );
     }
@@ -753,28 +753,17 @@ class _HomeBodyState extends State<HomeBody> {
     return transactions;
   }
 
-  List<BillItem> _buildBillItems(final List<AccountToPayItem> accountsToPay) {
-    final List<String> monthNames = <String>[
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-
+  List<BillItem> _buildBillItems(
+    final List<AccountToPayItem> accountsToPay,
+    final BuildContext context,
+  ) {
+    final String languageCode = Localizations.localeOf(context).languageCode;
     final List<BillItem> bills = <BillItem>[];
     for (final AccountToPayItem item in accountsToPay.where(
       (final AccountToPayItem a) => a.status && !a.isFullyPaid,
     )) {
       final DateTime nextDue = AccountToPayUtils.getNextDueDate(item);
-      final String dueMonth = monthNames[nextDue.month - 1];
+      final String dueMonth = DateFormat('MMM', languageCode).format(nextDue);
       final String dueDate = nextDue.day.toString().padLeft(2, '0');
       final bool isPastDue = AccountToPayUtils.isOverdue(item);
       bills.add(
@@ -782,7 +771,7 @@ class _HomeBodyState extends State<HomeBody> {
           title: item.creditorName,
           provider: item.description.isNotEmpty
               ? item.description
-              : 'Account to Pay',
+              : context.translate('account_to_pay_fallback'),
           dueDate: dueDate,
           dueMonth: dueMonth,
           amount: (item.monthlyQuota != null && item.monthlyQuota! > 0)

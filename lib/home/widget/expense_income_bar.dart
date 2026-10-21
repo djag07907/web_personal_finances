@@ -33,7 +33,7 @@ class ExpenseToIncomeBar extends StatelessWidget {
 
     if (percentage < 20) {
       barColor = healthyGreen;
-      statusLabel = 'Optimal';
+      statusLabel = context.translate('status_optimal');
       statusBgColor = isDark
           ? healthyGreen.withValues(alpha: 0.2)
           : const Color(0xFFE6FBF4);
@@ -44,7 +44,7 @@ class ExpenseToIncomeBar extends StatelessWidget {
       );
     } else if (percentage < 40) {
       barColor = cautionOrange;
-      statusLabel = 'Moderate';
+      statusLabel = context.translate('status_moderate');
       statusBgColor = isDark
           ? cautionOrange.withValues(alpha: 0.2)
           : const Color(0xFFFFF7ED);
@@ -55,7 +55,7 @@ class ExpenseToIncomeBar extends StatelessWidget {
       );
     } else {
       barColor = unhealthyRed;
-      statusLabel = 'High Burn';
+      statusLabel = context.translate('status_high_burn');
       statusBgColor = isDark
           ? unhealthyRed.withValues(alpha: 0.2)
           : const Color(0xFFFEF2F2);
@@ -106,7 +106,7 @@ class ExpenseToIncomeBar extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Text(
-                        'Cash Flow Health & Spending Ratio',
+                        context.translate('cash_flow_health_title'),
                         style: TextStyle(
                           fontSize: isSmallScreen ? 14 : 16,
                           fontWeight: FontWeight.bold,
@@ -118,7 +118,7 @@ class ExpenseToIncomeBar extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Monthly Burn Rate vs. Earning Power',
+                        context.translate('cash_flow_health_subtitle'),
                         style: TextStyle(
                           fontSize: isSmallScreen ? 11 : 12,
                           color: isDark
@@ -204,7 +204,7 @@ class ExpenseToIncomeBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Text(
-                  'Incomes: ${CurrencyKpiUtils.formatAmount(totalIncomes, currency)}',
+                  '${context.translate('incomes')}: ${CurrencyKpiUtils.formatAmount(totalIncomes, currency)}',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -212,7 +212,7 @@ class ExpenseToIncomeBar extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Burn: ${CurrencyKpiUtils.formatAmount(totalExpenses, currency)}',
+                  '${context.translate('burn')}: ${CurrencyKpiUtils.formatAmount(totalExpenses, currency)}',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -226,7 +226,7 @@ class ExpenseToIncomeBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Text(
-                  'Incomes: ${CurrencyKpiUtils.formatAmount(totalIncomes, currency)}',
+                  '${context.translate('incomes')}: ${CurrencyKpiUtils.formatAmount(totalIncomes, currency)}',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -251,7 +251,7 @@ class ExpenseToIncomeBar extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Burn: ${CurrencyKpiUtils.formatAmount(totalExpenses, currency)}',
+                  '${context.translate('burn')}: ${CurrencyKpiUtils.formatAmount(totalExpenses, currency)}',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,

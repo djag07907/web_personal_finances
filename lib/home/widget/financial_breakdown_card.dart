@@ -1,19 +1,5 @@
 part of 'home_body.dart';
 
-class CategoryBreakdownItem {
-  final String categoryName;
-  final double amount;
-  final double percentage;
-  final Color color;
-
-  const CategoryBreakdownItem({
-    required this.categoryName,
-    required this.amount,
-    required this.percentage,
-    required this.color,
-  });
-}
-
 class FinancialBreakdownCard extends StatefulWidget {
   final List<CategoryBreakdownItem> expenseItems;
   final List<CategoryBreakdownItem> incomeItems;
@@ -87,9 +73,12 @@ class _FinancialBreakdownCardState extends State<FinancialBreakdownCard> {
                   icon: isExpensesTab
                       ? Icons.pie_chart_outline
                       : Icons.donut_large_outlined,
-                  title: 'No $activeLabel recorded',
-                  subtitle:
-                      'Start recording your active $activeLabel to see the detailed portfolio breakdown here.',
+                  title: context
+                      .translate('no_records_recorded')
+                      .replaceAll('{category}', activeLabel),
+                  subtitle: context
+                      .translate('no_records_recorded_desc')
+                      .replaceAll('{category}', activeLabel),
                 ),
               ),
             )
@@ -190,7 +179,7 @@ class _FinancialBreakdownCardState extends State<FinancialBreakdownCard> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
-                  'Financial Distribution',
+                  context.translate('financial_distribution_title'),
                   style: TextStyle(
                     fontSize: isSmallScreen ? 15 : 17,
                     fontWeight: FontWeight.bold,
@@ -202,7 +191,7 @@ class _FinancialBreakdownCardState extends State<FinancialBreakdownCard> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Category breakdown & portfolio concentration',
+                  context.translate('financial_distribution_subtitle'),
                   style: TextStyle(
                     fontSize: isSmallScreen ? 11 : 12,
                     color: isDark
@@ -361,7 +350,7 @@ class _FinancialBreakdownCardState extends State<FinancialBreakdownCard> {
                 return PieChartSectionData(
                   color: item.color,
                   value: item.percentage,
-                  title: '',
+                  title: emptyString,
                   radius: isSmall ? 40 : 48,
                 );
               }).toList(),
@@ -381,7 +370,7 @@ class _FinancialBreakdownCardState extends State<FinancialBreakdownCard> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                'TOTAL',
+                context.translate('total'),
                 style: TextStyle(
                   fontSize: 9,
                   fontWeight: FontWeight.bold,
@@ -430,7 +419,7 @@ class _FinancialBreakdownCardState extends State<FinancialBreakdownCard> {
               Expanded(
                 flex: 4,
                 child: Text(
-                  'CATEGORY',
+                  context.translate('category_col'),
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -444,7 +433,7 @@ class _FinancialBreakdownCardState extends State<FinancialBreakdownCard> {
               Expanded(
                 flex: 3,
                 child: Text(
-                  'SHARE',
+                  context.translate('share_col'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 10,
@@ -459,7 +448,7 @@ class _FinancialBreakdownCardState extends State<FinancialBreakdownCard> {
               Expanded(
                 flex: 4,
                 child: Text(
-                  'AMOUNT',
+                  context.translate('amount_col'),
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     fontSize: 10,
@@ -575,7 +564,7 @@ class _FinancialBreakdownCardState extends State<FinancialBreakdownCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               Text(
-                'Total Tracked',
+                context.translate('total_tracked'),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,

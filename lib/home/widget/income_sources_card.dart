@@ -36,7 +36,7 @@ class IncomeSourcesCard extends StatelessWidget {
           child: EmptyContentWidget(
             icon: Icons.donut_large_outlined,
             title: context.translate('incomes'),
-            subtitle: 'No income records found to generate source chart.',
+            subtitle: context.translate('no_incomes_chart_data'),
           ),
         ),
       );
@@ -66,7 +66,7 @@ class IncomeSourcesCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Text(
-                  'Income Sources',
+                  context.translate('income_sources'),
                   style: TextStyle(
                     fontSize: isSmallScreen ? 16 : 18,
                     fontWeight: FontWeight.bold,
@@ -171,7 +171,7 @@ class IncomeSourcesCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                'TOTAL',
+                context.translate('total'),
                 style: TextStyle(
                   fontSize: isSmall ? 8 : 10,
                   fontWeight: FontWeight.bold,
@@ -212,7 +212,7 @@ class IncomeSourcesCard extends StatelessWidget {
         PieChartSectionData(
           color: colors[i % colors.length],
           value: entries[i].value,
-          title: '',
+          title: emptyString,
           radius: isSmall ? 55 : 70,
         ),
       );

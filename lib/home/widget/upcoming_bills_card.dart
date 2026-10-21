@@ -52,7 +52,7 @@ class UpcomingBillsCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Text(
-                  'Upcoming Bills',
+                  context.translate('upcoming_bills'),
                   style: TextStyle(
                     fontSize: isSmallScreen ? 16 : 18,
                     fontWeight: FontWeight.bold,
@@ -218,7 +218,7 @@ class UpcomingBillsCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'Pay',
+                    context.translate('pay'),
                     style: TextStyle(
                       fontSize: isSmall ? 11 : 12,
                       fontWeight: FontWeight.bold,
@@ -251,7 +251,7 @@ class UpcomingBillsCard extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          'No more upcoming bills this month.',
+          context.translate('no_more_upcoming_bills'),
           style: TextStyle(
             fontSize: isSmall ? 11 : 12,
             fontWeight: FontWeight.w500,
