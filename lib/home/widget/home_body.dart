@@ -1,10 +1,10 @@
-import 'dart:convert';
+// import 'dart:convert';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:http/http.dart' as http;
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/accountsReceivable/model/account_receivable_item.dart';
 import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
@@ -22,7 +22,7 @@ import 'package:web_personal_finances/home/bloc/home_state.dart';
 import 'package:web_personal_finances/home/model/category_breakdown_item.dart';
 import 'package:web_personal_finances/home/widget/expense_income_bar.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
-import 'package:web_personal_finances/resources/api_constants.dart';
+// import 'package:web_personal_finances/resources/api_constants.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/resources/fonts_constants.dart';
@@ -43,14 +43,14 @@ class HomeBody extends StatefulWidget {
 }
 
 class _HomeBodyState extends State<HomeBody> {
-  double? exchangeRate;
-  bool isLoading = true;
+  // double? exchangeRate;
+  // bool isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    fetchExchangeRate();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   fetchExchangeRate();
+  // }
 
   @override
   Widget build(final BuildContext context) {
@@ -67,26 +67,29 @@ class _HomeBodyState extends State<HomeBody> {
                 title: context.translate('home'),
                 body: homeState is HomeLoaded
                     ? _buildDashboardContent(homeState)
-                    : const Center(child: Loader()),
+                    : homeState is HomeError
+                    ? Center(child: Text(homeState.message))
+                    : const SizedBox.shrink(),
               ),
             ),
-            if (!isLoading)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10.0),
-                child: Text(
-                  '$dollarValue ${exchangeRate?.toStringAsFixed(2)} $hnlCurrency',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? DarkColors.textPrimary
-                        : null,
-                  ),
-                ),
-              ),
+            // if (exchangeRate != null)
+            //   Padding(
+            //     padding: const EdgeInsets.only(bottom: 10.0),
+            //     child: Text(
+            //       '$dollarValue ${exchangeRate?.toStringAsFixed(2)} $hnlCurrency',
+            //       style: TextStyle(
+            //         fontSize: 20,
+            //         fontWeight: FontWeight.bold,
+            //         color: Theme.of(context).brightness == Brightness.dark
+            //             ? DarkColors.textPrimary
+            //             : null,
+            //       ),
+            //     ),
+            //   ),
           ],
         ),
-        if (isLoading || homeState is HomeLoading) const Loader(),
+        if (homeState is HomeLoading || homeState is HomeInitial)
+          const Loader(),
       ],
     );
   }
@@ -788,32 +791,32 @@ class _HomeBodyState extends State<HomeBody> {
     return bills;
   }
 
-  Future<void> fetchExchangeRate() async {
-    final String apiKey = dotenv.env['EXCHANGE_RATE_API_KEY'] ?? emptyString;
-
-    try {
-      final http.Response response = await http.get(
-        Uri.parse('$apiRoute$apiKey$latestUsdRoute'),
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data =
-            json.decode(response.body) as Map<String, dynamic>;
-        setState(() {
-          exchangeRate = data['conversion_rates']['HNL'];
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
-  }
+  // Future<void> fetchExchangeRate() async {
+  //   final String apiKey = dotenv.env['EXCHANGE_RATE_API_KEY'] ?? emptyString;
+  //
+  //   try {
+  //     final http.Response response = await http.get(
+  //       Uri.parse('$apiRoute$apiKey$latestUsdRoute'),
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final Map<String, dynamic> data =
+  //           json.decode(response.body) as Map<String, dynamic>;
+  //       setState(() {
+  //         exchangeRate = data['conversion_rates']['HNL'];
+  //         isLoading = false;
+  //       });
+  //     } else {
+  //       setState(() {
+  //         isLoading = false;
+  //       });
+  //     }
+  //   } catch (_) {
+  //     if (mounted) {
+  //       setState(() {
+  //         isLoading = false;
+  //       });
+  //     }
+  //   }
+  // }
 }

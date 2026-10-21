@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:go_router/go_router.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:provider/provider.dart';
 import 'package:web_personal_finances/commons/bloc/app_auth_notifier.dart';
@@ -35,12 +36,14 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late final UserRepository _userRepository;
   late final AppAuthNotifier _authNotifier;
+  late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
     _userRepository = UserRepository();
     _authNotifier = AppAuthNotifier(userRepository: _userRepository);
+    _router = buildAppRouter(_authNotifier);
   }
 
   @override
@@ -61,7 +64,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider<AppAuthNotifier>.value(value: _authNotifier),
       ],
       child: MaterialApp.router(
-        routerConfig: buildAppRouter(_authNotifier),
+        routerConfig: _router,
         title: appName,
         theme: lightTheme,
         darkTheme: darkTheme,
