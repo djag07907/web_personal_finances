@@ -13,7 +13,10 @@ enum CustomOptions {
   recordPayment,
   paymentHistory,
   collectionHistory,
-  amortizationSchedule;
+  amortizationSchedule,
+  recordDeposit,
+  recordWithdrawal,
+  savingHistory;
 
   String toTranslate(final BuildContext context) {
     final String Function(
@@ -49,6 +52,12 @@ enum CustomOptions {
         return translate('collection_history');
       case CustomOptions.amortizationSchedule:
         return translate('amortization_schedule');
+      case CustomOptions.recordDeposit:
+        return translate('record_deposit');
+      case CustomOptions.recordWithdrawal:
+        return translate('record_withdrawal');
+      case CustomOptions.savingHistory:
+        return translate('saving_history');
     }
   }
 }

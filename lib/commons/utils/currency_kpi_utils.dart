@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/accountsReceivable/model/account_receivable_item.dart';
 import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
 import 'package:web_personal_finances/commons/utils/account_receivable_utils.dart';
@@ -7,6 +8,8 @@ import 'package:web_personal_finances/commons/enum/custom_frequency_options.dart
 import 'package:web_personal_finances/expenses/model/expense_item.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/resources/constants.dart';
+import 'package:web_personal_finances/savings/model/saving_item.dart';
+import 'package:web_personal_finances/commons/utils/saving_utils.dart';
 import 'package:web_personal_finances/user/model/user_model.dart';
 
 class KpiCardSpec {
@@ -647,6 +650,124 @@ class CurrencyKpiUtils {
           currency: currency,
           description: _receivableCollectedDescription,
           calculation: _receivableCollectedCalculation,
+        ),
+      );
+    }
+
+    return cards;
+  }
+
+  static List<KpiCardSpec> generateSavingKpiCards({
+    required final List<SavingItem> items,
+    final UserModel? user,
+    final BuildContext? context,
+  }) {
+    final bool isDual = user?.enableDualCurrency ?? false;
+    final String primary =
+        (user?.primaryCurrency != null && user!.primaryCurrency.isNotEmpty)
+        ? user.primaryCurrency
+        : hnlCurrency;
+    final String secondary = primary == hnlCurrency ? usdCurrency : hnlCurrency;
+    final List<String> currencies = <String>[primary, if (isDual) secondary];
+    final List<KpiCardSpec> cards = <KpiCardSpec>[];
+
+    for (final String currency in currencies) {
+      final List<SavingItem> active = items
+          .where((final SavingItem i) => i.status && i.currency == currency)
+          .toList();
+
+      final double totalSaved = SavingUtils.calculateTotalSaved(
+        items,
+        currency,
+      );
+      final double totalGoal = SavingUtils.calculateTotalGoal(items, currency);
+      final double overallProgress = SavingUtils.calculateOverallProgress(
+        items,
+        currency,
+      );
+      final double monthlyContribution =
+          SavingUtils.calculateTotalMonthlyContribution(items, currency);
+
+      final int completedCount = active
+          .where((final SavingItem i) => i.isCompleted)
+          .length;
+
+      String suffix(final String label) =>
+          isDual ? '$label ($currency)' : label;
+
+      final String totalSavedTitle = context!.translate('total_savings');
+      final String totalSavedSubtitle =
+          '${active.length} ${context.translate('active_goals')}';
+      final String totalSavedDesc = context.translate('total_savings_desc');
+      final String totalSavedCalc = context.translate('total_savings_calc');
+
+      final String totalGoalTitle = context.translate('total_goal_amount');
+      final String totalGoalSubtitle =
+          '$completedCount ${context.translate('reached')}';
+      final String totalGoalDesc = context.translate('total_goal_desc');
+      final String totalGoalCalc = context.translate('total_goal_calc');
+
+      final String progressTitle = context.translate('overall_progress');
+      final String progressSubtitle =
+          '$completedCount ${context.translate('of')} ${active.length} ${context.translate('completed')}';
+      final String progressDesc = context.translate('overall_progress_desc');
+      final String progressCalc = context.translate('overall_progress_calc');
+
+      final String monthlyTitle = context.translate(
+        'monthly_contribution_needed',
+      );
+      final String monthlySubtitle = context.translate(
+        'to_meet_deadlines_on_time',
+      );
+      final String monthlyDesc = context.translate('monthly_contribution_desc');
+      final String monthlyCalc = context.translate('monthly_contribution_calc');
+
+      cards.add(
+        KpiCardSpec(
+          title: suffix(totalSavedTitle),
+          amount: formatAmount(totalSaved, currency),
+          subtitle: totalSavedSubtitle,
+          isPositive: true,
+          icon: Icons.savings_outlined,
+          currency: currency,
+          description: totalSavedDesc,
+          calculation: totalSavedCalc,
+        ),
+      );
+      cards.add(
+        KpiCardSpec(
+          title: suffix(totalGoalTitle),
+          amount: formatAmount(totalGoal, currency),
+          subtitle: totalGoalSubtitle,
+          isPositive: true,
+          icon: Icons.flag_outlined,
+          currency: currency,
+          description: totalGoalDesc,
+          calculation: totalGoalCalc,
+        ),
+      );
+      cards.add(
+        KpiCardSpec(
+          title: suffix(progressTitle),
+          amount: '${overallProgress.toStringAsFixed(1)}%',
+          subtitle: progressSubtitle,
+          isPositive: overallProgress >= 50,
+          icon: Icons.donut_large_outlined,
+          currency: currency,
+          description: progressDesc,
+          calculation: progressCalc,
+        ),
+      );
+      cards.add(
+        KpiCardSpec(
+          title: suffix(monthlyTitle),
+          amount: formatAmount(monthlyContribution, currency),
+          subtitle: monthlySubtitle,
+          isPositive: true,
+          icon: Icons.calendar_month_outlined,
+          currency: currency,
+          description: monthlyDesc,
+          calculation: monthlyCalc,
         ),
       );
     }
