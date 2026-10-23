@@ -150,10 +150,10 @@ flowchart LR
     Ciphertext -->|Stored as Ciphertext| Firestore[(Firestore Cloud)]
 ```
 
-- **True Zero-Knowledge**: Sensitive data fields (`amount`, `name`, `comment`, `source`) are encrypted on the client device using **AES-256-GCM** before touching Firestore. Decryption keys live exclusively in browser memory during an active session.
+- **True Zero-Knowledge**: Sensitive income fields (`amount`, `name`, `comment`) are encrypted on the client device using **AES-256-GCM** before touching Firestore. Decryption keys live exclusively in browser memory during an active session. Metadata needed for security rules and queries (such as `userId`, `currency`, dates and status flags) remains in plaintext. Encryption is currently piloted on **Incomes**; other modules are planned in the roadmap.
 - **Envelope Encryption**: The Data Encryption Key (DEK) is encrypted with keys derived from the user's password and an emergency recovery phrase via **PBKDF2** (HMAC-SHA256, 100k iterations).
 - **Emergency Kit Workflow**:
   - **Mandatory Download on Onboarding**: During initial onboarding, the user must download their Emergency Key file (`pecunia_recovery_key_<email>.txt`) to proceed.
   - **Always Accessible in Profile**: The recovery key file can be re-downloaded at any time from the Profile screen.
-  - **Dedicated Gatekeeper Route (`/vault-recovery`)**: If a user resets their password, the router locks the entire app behind a dedicated Gatekeeper screen until they upload their emergency key file or 12-word phrase to re-encrypt and unlock their records.
+  - **Dedicated Gatekeeper Route (`/vault-recovery`)**: If a user resets their password, the router locks the entire app behind a dedicated Gatekeeper screen until they upload their emergency key file or 12-word phrase. The password is verified against Firebase before the vault is re-encrypted, so the vault password always matches the account password.
 - **Detailed Specification**: See [ZERO_KNOWLEDGE_ENCRYPTION.md](ZERO_KNOWLEDGE_ENCRYPTION.md) for full cryptographic details, field partitioning, BLoC architecture, and rollout roadmap.

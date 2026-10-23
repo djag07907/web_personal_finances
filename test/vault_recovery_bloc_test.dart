@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:web_personal_finances/repositories/firebase_auth_repository.dart';
 import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/user/model/user_model.dart';
 import 'package:web_personal_finances/vaultRecovery/bloc/vault_recovery_bloc.dart';
@@ -13,11 +14,18 @@ class _FakeUserRepository extends Fake implements UserRepository {
   }
 }
 
+// Fake AuthRepository whose password verification always succeeds
+class _FakeAuthRepository extends Fake implements AuthRepository {
+  @override
+  Future<void> verifyPassword({required final String password}) async {}
+}
+
 void main() {
   group('VaultRecoveryBloc Tests', () {
     test('initial state is VaultRecoveryInitial', () {
       final VaultRecoveryBloc bloc = VaultRecoveryBloc(
         userRepository: _FakeUserRepository(),
+        authRepository: _FakeAuthRepository(),
       );
       expect(bloc.state, equals(VaultRecoveryInitial()));
     });
@@ -25,6 +33,7 @@ void main() {
     test('emits InProgress then Failure when no vault exists for user', () async {
       final VaultRecoveryBloc bloc = VaultRecoveryBloc(
         userRepository: _FakeUserRepository(),
+        authRepository: _FakeAuthRepository(),
       );
 
       expectLater(

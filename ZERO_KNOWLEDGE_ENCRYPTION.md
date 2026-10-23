@@ -98,19 +98,23 @@ Because Firestore security rules require authentication (`request.auth.uid == us
    - The user sets their new password securely via the Firebase reset page.
 2. **Authenticated Login with New Password**:
    - The user returns to the app and signs in with their new password.
-   - The client attempts to unlock the vault. Since the vault in Firestore was encrypted with the _old_ password, PBKDF2/AES-GCM decryption fails.
-   - `LoginBloc` stores the valid login password in `SessionVault.pendingAuthPassword`.
+   - `LoginBloc` marks the unlock as in progress (`SessionVault.beginUnlock()`) **before** calling Firebase, so the router does not gate the app while the login-time unlock is still running (PBKDF2 takes a moment).
+   - The client attempts to unlock the vault with the login password. Since the vault in Firestore was encrypted with the _old_ password, PBKDF2/AES-GCM decryption fails.
+   - `LoginBloc` stores the login password in `SessionVault.pendingAuthPassword` and calls `SessionVault.endUnlock()`, which notifies the router.
 3. **Dedicated Gatekeeper Redirect (`/vault-recovery`)**:
-   - The GoRouter redirect guard detects that the authenticated user has an encrypted vault but no active key (`authNotifier.isVaultLocked == true`).
-   - The router immediately locks access to the entire application (`/home`, `/incomes`, `/expenses`, etc.) and redirects the user to the full-screen **Vault Recovery Gatekeeper** (`/vault-recovery`).
+   - The GoRouter redirect guard detects that the authenticated user has an encrypted vault, no active key, and no unlock in progress (`authNotifier.isVaultLocked == true`).
+   - The router locks access to the entire application (`/home`, `/incomes`, `/expenses`, etc.) and redirects the user to the full-screen **Vault Recovery Gatekeeper** (`/vault-recovery`).
+   - Because the login password is already held in memory, the screen does **not** ask for it again.
 4. **Key Verification & Vault Re-encryption**:
    - On the Gatekeeper screen, the user uploads their `pecunia_recovery_key_<email>.txt` file or enters their 12-word recovery phrase.
+   - **Password verification**: `VaultRecoveryBloc` first calls `AuthRepository.verifyPassword(...)` (Firebase re-authentication). The vault is only ever re-encrypted with a password confirmed to be the real account password, so the vault password cannot drift from the login password.
    - `EncryptionService.unlockVaultWithRecoveryPhrase(...)` recovers the master DEK.
-   - The client derives a fresh Key Encryption Key (KEK) from the user's new password and re-encrypts the DEK.
-   - The re-encrypted vault is saved to Firestore, a fresh Emergency Key file is downloaded automatically for safety, and `authNotifier.refreshProfile()` is called.
+   - The client derives a fresh Key Encryption Key (KEK) from the verified password and re-encrypts the DEK.
+   - The re-encrypted vault is saved to Firestore, the temporary password is wiped from memory (`clearPendingAuthPassword()`), a fresh Emergency Key file is downloaded automatically, and `authNotifier.refreshProfile()` is called.
    - The router redirect automatically unlocks the app and transitions the user into `/home`.
+   - If the page is refreshed while on the Gatekeeper, the in-memory password is gone, so the screen asks for the current sign-in password. It is verified against Firebase before use; a wrong password is rejected.
 5. **Fresh Vault Fallback (Permanent Loss)**:
-   - If the user permanently lost their Emergency Key, the screen provides a controlled **"Reset Vault & Start Fresh"** option with explicit warnings, allowing them to reset their vault while retaining unencrypted profile configurations.
+   - If the user permanently lost their Emergency Key, the screen provides a controlled **"Reset Vault & Start Fresh"** option with explicit warnings. It also requires a verified password and creates a brand new vault. Previously encrypted records cannot be recovered without the original key.
 
 ---
 
@@ -124,29 +128,34 @@ classDiagram
         +String id (Plaintext)
         +String userId (Plaintext - Mandatory for firestore.rules)
         +String currency (Plaintext - HNL / USD)
-        +String date (Plaintext - ISO Timestamp)
-        +bool status (Plaintext - Active / Inactive)
+        +String dateToReceive (Plaintext)
+        +bool status (Plaintext)
+        +bool isReceived (Plaintext)
+        +DateTime createdDate (Plaintext)
+        +String frequency (Plaintext)
+        +String category (Plaintext)
+        +List tags (Plaintext)
         +String name (AES-256-GCM Ciphertext)
         +String amount (AES-256-GCM Ciphertext)
         +String comment (AES-256-GCM Ciphertext)
-        +String source (AES-256-GCM Ciphertext)
-        +String iv (Base64 Nonce)
     }
 ```
 
-### Plaintext Fields (Must Remain Unencrypted):
+### Plaintext Fields (Currently Unencrypted):
 
-- `userId`: **Required** by [firestore.rules](file:///Users/tectrans-danielalvarez/Documents/projects/web_personal_finances/firestore.rules#L23-L24) to authenticate ownership (`resource.data.userId == request.auth.uid`).
+- `id`, `userId`: `userId` is **required** by [firestore.rules](file:///Users/tectrans-danielalvarez/Documents/projects/web_personal_finances/firestore.rules#L23-L24) to authenticate ownership (`resource.data.userId == request.auth.uid`) and by the `where('userId', ...)` query.
 - `currency`: Enables dual-currency filtering without downloading foreign records.
-- `date`: Preserves date range ordering.
-- `status`: Preserves active vs. archived flags.
+- `dateToReceive`, `createdDate`: Preserve date range handling.
+- `status`, `isReceived`: Preserve active/received flags.
+- `frequency`, `category`, `tags`: Used for grouping and KPIs. They can reveal the nature of an income, so they are candidates for a later encryption phase.
 
 ### Encrypted Fields (AES-256-GCM):
 
-- `amount`: Float encoded to string, then encrypted into ciphertext.
+- `amount`: Number encoded to string, then encrypted into ciphertext.
 - `name`: Income title / employer name.
 - `comment`: User notes and transaction remarks.
-- `source`: Income origin / secondary description.
+
+Each ciphertext string carries its own random 12-byte IV, so there is no separate `iv` field. Records written before encryption was enabled (or while no key was available) are stored as plain values and are still read correctly.
 
 ---
 
@@ -183,17 +192,18 @@ lib/
 - Provides `encryptString`, `decryptString`, `encryptAmount`, and `decryptAmount`.
 - Uses authenticated **AES-256-GCM** with a fresh 12-byte IV per encryption operation.
 - **Backward Compatibility**: Automatically detects if an incoming record is legacy plaintext or ciphertext, allowing seamless operation on existing test records without database wipes.
-- `SessionVault`: Singleton in-memory store that holds the decrypted `SecretKey` and recovery phrase during the session. It is purged upon logout and never persisted to browser local storage.
+- `SessionVault`: Singleton in-memory store (also a `ChangeNotifier`) that holds the decrypted `SecretKey`, the recovery phrase, the temporary login password and an `isUnlockInProgress` flag. It is purged upon logout and never persisted to browser storage.
 
 ### 2. Router-Level Gatekeeper Guard (`landing_routes.dart` & `AppAuthNotifier`)
 
-- `AppAuthNotifier.isVaultLocked` evaluates to `true` when a user has a vault configured in Firestore (`userProfile?.vault != null`) but the active session lacks the decrypted DEK (`!SessionVault.instance.hasActiveKey`).
-- When `isVaultLocked == true`, `GoRouter`'s redirect guard intercepts all navigation attempts and routes the user exclusively to `/vault-recovery`.
-- Once the vault is successfully unlocked, `AppAuthNotifier.refreshProfile()` is called, immediately re-evaluating the redirect and transitioning the user to `/home`.
+- `AppAuthNotifier.isVaultLocked` is `true` when a user has a vault in Firestore (`userProfile?.vault != null`), the session lacks the decrypted DEK (`!hasActiveKey`), and no login-time unlock is running (`!isUnlockInProgress`).
+- `AppAuthNotifier` listens to `SessionVault`, so the lock state is re-evaluated when `endUnlock()` or `clear()` is called.
+- When `isVaultLocked == true`, `GoRouter`'s redirect guard routes the user exclusively to `/vault-recovery`.
+- Once the vault is successfully unlocked, `AppAuthNotifier.refreshProfile()` is called, immediately re-evaluating the redirect and transitioning the user to `/home`. `SessionVault.setDek` deliberately does not notify, so the Gatekeeper can finish its success handling (key download, snackbar) before the router leaves the screen.
 
 ### 3. `VaultRecoveryBloc` & SOLID Architecture
 
-- **BLoC (`VaultRecoveryBloc`)**: Strictly contains business and cryptographic coordination logic. It receives pre-validated inputs, delegates to `EncryptionService` and `UserRepository`, manages session keys, and emits distinct state transitions.
+- **BLoC (`VaultRecoveryBloc`)**: Strictly contains business and cryptographic coordination logic. It receives pre-validated inputs, verifies the password through `AuthRepository.verifyPassword`, delegates to `EncryptionService` and `UserRepository`, manages session keys, and emits distinct state transitions (maps Firebase auth errors to friendly messages).
 - **Body (`VaultRecoveryBody`)**: Responsibilities are strictly kept on the UI layer:
   - Form validation: Verifies that the emergency file or recovery phrase contains 12 valid words and that the password is provided before dispatching events.
   - Response handling: Listens to `VaultRecoverySuccess` and `VaultRecoveryResetSuccess` to trigger browser downloads of the updated emergency key file, display snackbars, and refresh auth state.
@@ -211,7 +221,7 @@ In [incomes_repository.dart](file:///Users/tectrans-danielalvarez/Documents/proj
 The encryption system is fully tested with automated unit tests under `test/`:
 
 - `test/encryption_service_test.dart`: Validates 256-bit DEK generation, AES-GCM string encryption/decryption, float amount encryption/decryption, legacy plaintext passthrough, password and recovery phrase vault derivation, and session key clearing.
-- `test/vault_recovery_bloc_test.dart`: Validates initial BLoC states and error handling when a user vault does not exist.
+- `test/vault_recovery_bloc_test.dart`: Validates initial BLoC states and error handling when a user vault does not exist (with a faked `AuthRepository.verifyPassword`).
 
 ---
 

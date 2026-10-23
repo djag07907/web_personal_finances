@@ -17,6 +17,7 @@ class AppAuthNotifier extends ChangeNotifier {
        _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance {
     // Start listening immediately.
     _authSubscription = _firebaseAuth.userChanges().listen(_onAuthChanged);
+    SessionVault.instance.addListener(notifyListeners);
   }
 
   final UserRepository _userRepository;
@@ -44,7 +45,9 @@ class AppAuthNotifier extends ChangeNotifier {
   /// `true` when the user has an encrypted vault in Firestore but the session
   /// does NOT have an active decrypted Data Encryption Key (DEK).
   bool get isVaultLocked =>
-      _userProfile?.vault != null && !SessionVault.instance.hasActiveKey;
+      _userProfile?.vault != null &&
+      !SessionVault.instance.hasActiveKey &&
+      !SessionVault.instance.isUnlockInProgress;
 
   /// Notifies the router that the vault has been successfully unlocked.
   void notifyVaultUnlocked() {
@@ -90,6 +93,7 @@ class AppAuthNotifier extends ChangeNotifier {
 
   @override
   void dispose() {
+    SessionVault.instance.removeListener(notifyListeners);
     _authSubscription.cancel();
     super.dispose();
   }

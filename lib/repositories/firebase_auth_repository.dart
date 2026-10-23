@@ -35,5 +35,18 @@ class AuthRepository {
     return await _firebaseAuth.sendPasswordResetEmail(email: email);
   }
 
+  /// Re-authenticates the current user with [password]. Throws a
+  /// [FirebaseAuthException] if the password is not the current account password.
+  Future<void> verifyPassword({required final String password}) async {
+    final User? user = _firebaseAuth.currentUser;
+    final String? email = user?.email;
+    if (user == null || email == null) {
+      throw FirebaseAuthException(code: 'no-current-user');
+    }
+    await user.reauthenticateWithCredential(
+      EmailAuthProvider.credential(email: email, password: password),
+    );
+  }
+
   Stream<User?> get userChanges => _firebaseAuth.userChanges();
 }

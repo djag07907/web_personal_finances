@@ -465,7 +465,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
                             fontSize: 13.5,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Enter your new login password',
+                            hintText: 'Enter the password you use to sign in',
                             hintStyle: TextStyle(
                               color: isDark
                                   ? DarkColors.textSecondary

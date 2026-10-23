@@ -27,6 +27,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     final Emitter<LoginState> emit,
   ) async {
     emit(LoginInProgress());
+    SessionVault.instance.beginUnlock();
     try {
       final UserCredential credential = await authRepository
           .signInWithEmailAndPassword(
@@ -87,6 +88,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           error: 'An unexpected error occurred. Please try again.',
         ),
       );
+    } finally {
+      SessionVault.instance.endUnlock();
     }
   }
 
