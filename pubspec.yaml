@@ -29,6 +29,7 @@ dependencies:
   intl: ^0.20.2
   cloud_firestore: ^6.1.2
   provider: ^6.1.5+1
+  cryptography: ^2.9.0
 
 dev_dependencies:
   flutter_test:

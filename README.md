@@ -135,3 +135,25 @@ graph TD
 | **Design System & Glassmorphism** | Unified color tokens (`DarkColors`, `LightColors`, `white`), responsive data tables (`CustomDataTable`), toolbar inline filters, dismissible filter chips, and interactive KPI tooltips.     |
 | **Bilingual Localization**        | 100% parity across English (`en.json`) and Spanish (`es.json`) without hardcoded UI strings.                                                                                                 |
 | **Code Quality & Testing**        | Zero analyzer warnings (`fvm flutter analyze`), with unit and widget tests covering financial calculations, amortizations, and KPI generators.                                               |
+
+---
+
+## 4. Zero-Knowledge Client-Side Encryption
+
+To guarantee institutional-grade privacy and ensure sensitive financial data is completely shielded from database administrators, cloud personnel, or compromised credentials, Pecunia implements **Zero-Knowledge Application-Layer Envelope Encryption**:
+
+```mermaid
+flowchart LR
+    UserPass[User Password / Recovery File] -->|PBKDF2| KEK[Key Encryption Key]
+    KEK -->|Unlocks in Memory| DEK[Data Encryption Key]
+    DEK -->|AES-256-GCM| Ciphertext[Encrypted Incomes / Amounts]
+    Ciphertext -->|Stored as Ciphertext| Firestore[(Firestore Cloud)]
+```
+
+- **True Zero-Knowledge**: Sensitive data fields (`amount`, `name`, `comment`, `source`) are encrypted on the client device using **AES-256-GCM** before touching Firestore. Decryption keys live exclusively in browser memory during an active session.
+- **Envelope Encryption**: The Data Encryption Key (DEK) is encrypted with keys derived from the user's password and an emergency recovery phrase via **PBKDF2** (HMAC-SHA256, 100k iterations).
+- **Emergency Kit Workflow**:
+  - **Mandatory Download on Onboarding**: During initial onboarding, the user must download their Emergency Key file (`pecunia_recovery_key_<email>.txt`) to proceed.
+  - **Always Accessible in Profile**: The recovery key file can be re-downloaded at any time from the Profile screen.
+  - **Dedicated Gatekeeper Route (`/vault-recovery`)**: If a user resets their password, the router locks the entire app behind a dedicated Gatekeeper screen until they upload their emergency key file or 12-word phrase to re-encrypt and unlock their records.
+- **Detailed Specification**: See [ZERO_KNOWLEDGE_ENCRYPTION.md](ZERO_KNOWLEDGE_ENCRYPTION.md) for full cryptographic details, field partitioning, BLoC architecture, and rollout roadmap.

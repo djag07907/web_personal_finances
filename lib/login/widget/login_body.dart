@@ -9,6 +9,7 @@ import 'package:web_personal_finances/commons/loader/loader.dart';
 import 'package:web_personal_finances/login/bloc/login_bloc.dart';
 import 'package:web_personal_finances/login/bloc/login_event.dart';
 import 'package:web_personal_finances/login/bloc/login_state.dart';
+import 'package:web_personal_finances/login/widget/forgot_password_dialog.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/routes/landing_routes.dart';
@@ -398,7 +399,10 @@ class _LoginBodyState extends State<LoginBody> {
         ),
         TextButton(
           onPressed: () {
-            // TODO: Implement forgot password
+            ForgotPasswordDialog.show(
+              context,
+              initialEmail: _emailController.text.trim(),
+            );
           },
           style: TextButton.styleFrom(
             padding: EdgeInsets.zero,

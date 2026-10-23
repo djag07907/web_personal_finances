@@ -9,6 +9,7 @@ class UserModel {
   final String primaryCurrency; // 'USD' or 'HNL'
   final bool enableDualCurrency; // false by default, true when toggled
   final bool isOnboarded;
+  final Map<String, dynamic>? vault;
 
   const UserModel({
     required this.uid,
@@ -19,6 +20,7 @@ class UserModel {
     this.primaryCurrency = usdCurrency,
     this.enableDualCurrency = false,
     this.isOnboarded = false,
+    this.vault,
   });
 
   Map<String, dynamic> toMap() {
@@ -31,6 +33,7 @@ class UserModel {
       'primaryCurrency': primaryCurrency,
       'enableDualCurrency': enableDualCurrency,
       'isOnboarded': isOnboarded,
+      if (vault != null) 'vault': vault,
     };
   }
 
@@ -46,6 +49,9 @@ class UserModel {
           (map['currency'] as String? ?? usdCurrency),
       enableDualCurrency: map['enableDualCurrency'] as bool? ?? false,
       isOnboarded: map['isOnboarded'] as bool? ?? false,
+      vault: map['vault'] != null
+          ? Map<String, dynamic>.from(map['vault'] as Map<dynamic, dynamic>)
+          : null,
     );
   }
 
@@ -58,6 +64,7 @@ class UserModel {
     final String? primaryCurrency,
     final bool? enableDualCurrency,
     final bool? isOnboarded,
+    final Map<String, dynamic>? vault,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -68,6 +75,7 @@ class UserModel {
       primaryCurrency: primaryCurrency ?? this.primaryCurrency,
       enableDualCurrency: enableDualCurrency ?? this.enableDualCurrency,
       isOnboarded: isOnboarded ?? this.isOnboarded,
+      vault: vault ?? this.vault,
     );
   }
 }

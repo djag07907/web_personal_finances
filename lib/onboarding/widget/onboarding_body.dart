@@ -1,5 +1,7 @@
+import 'package:cryptography/cryptography.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/bloc/app_auth_notifier.dart';
@@ -8,6 +10,10 @@ import 'package:web_personal_finances/commons/calendar/calendar_widget.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_selector.dart';
 import 'package:web_personal_finances/commons/loader/loader.dart';
+import 'package:web_personal_finances/commons/security/bip39_words.dart';
+import 'package:web_personal_finances/commons/security/encryption_service.dart';
+import 'package:web_personal_finances/commons/security/recovery_key_utils.dart';
+import 'package:web_personal_finances/commons/security/session_vault.dart';
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
 import 'package:web_personal_finances/onboarding/bloc/onboarding_bloc.dart';
 import 'package:web_personal_finances/onboarding/bloc/onboarding_event.dart';
@@ -32,6 +38,8 @@ class _OnboardingBodyState extends State<OnboardingBody> {
   int _currentStep = 0;
   String _selectedCurrencyLabel = '$hnlCurrency (L.) - Honduran Lempira';
   bool _enableDualCurrency = false;
+  late final String _recoveryPhrase;
+  bool _hasDownloadedKey = false;
 
   final List<String> _currencies = <String>[
     '$hnlCurrency (L.) - Honduran Lempira',
@@ -41,6 +49,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
   @override
   void initState() {
     super.initState();
+    _recoveryPhrase = generateRecoveryPhrase();
     final User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser?.displayName != null &&
         currentUser!.displayName!.isNotEmpty) {
@@ -63,7 +72,18 @@ class _OnboardingBodyState extends State<OnboardingBody> {
           _currentStep = 1;
         });
       }
+    } else if (_currentStep == 1) {
+      setState(() {
+        _currentStep = 2;
+      });
     } else {
+      if (!_hasDownloadedKey) {
+        showSnackbar(
+          context,
+          'Please download your emergency recovery key to proceed.',
+        );
+        return;
+      }
       _submitOnboarding();
     }
   }
@@ -76,13 +96,49 @@ class _OnboardingBodyState extends State<OnboardingBody> {
     }
   }
 
-  void _submitOnboarding() {
+  void _downloadEmergencyKey() {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+    final String email = currentUser?.email ?? emptyString;
+    final String uid = currentUser?.uid ?? emptyString;
+
+    RecoveryKeyUtils.downloadEmergencyKey(
+      email: email,
+      uid: uid,
+      recoveryPhrase: _recoveryPhrase,
+    );
+
+    setState(() {
+      _hasDownloadedKey = true;
+    });
+
+    showSnackbar(
+      context,
+      'Recovery key file downloaded. Keep it in a safe location!',
+    );
+  }
+
+  Future<void> _submitOnboarding() async {
     final User? currentUser = FirebaseAuth.instance.currentUser;
     final String uid = currentUser?.uid ?? emptyString;
     final String email = currentUser?.email ?? emptyString;
     final String primaryCode = _selectedCurrencyLabel.contains(usdCurrency)
         ? usdCurrency
         : hnlCurrency;
+
+    final EncryptionService encryptionService = EncryptionService();
+    final SecretKey dek = await encryptionService.generateDataEncryptionKey();
+    final List<int> salt = encryptionService.generateSalt();
+    final String password = SessionVault.instance.pendingAuthPassword ?? uid;
+
+    final Map<String, dynamic> vault = await encryptionService.createVault(
+      dek: dek,
+      password: password,
+      recoveryPhrase: _recoveryPhrase,
+      salt: salt,
+    );
+
+    SessionVault.instance.setDek(dek);
+    SessionVault.instance.setRecoveryPhrase(_recoveryPhrase);
 
     final UserModel userModel = UserModel(
       uid: uid,
@@ -93,11 +149,14 @@ class _OnboardingBodyState extends State<OnboardingBody> {
       primaryCurrency: primaryCode,
       enableDualCurrency: _enableDualCurrency,
       isOnboarded: true,
+      vault: vault,
     );
 
-    context.read<OnboardingBloc>().add(
-      OnboardingSubmitted(userModel: userModel),
-    );
+    if (mounted) {
+      context.read<OnboardingBloc>().add(
+        OnboardingSubmitted(userModel: userModel),
+      );
+    }
   }
 
   @override
@@ -108,8 +167,6 @@ class _OnboardingBodyState extends State<OnboardingBody> {
       listener: (final BuildContext context, final OnboardingState state) {
         if (state is OnboardingSuccess) {
           showSnackbar(context, context.translate('income_saved_successfully'));
-          // Refresh the notifier so GoRouter's redirect picks up
-          // isOnboarded == true and navigates to home automatically.
           context.read<AppAuthNotifier>().refreshProfile();
         } else if (state is OnboardingFailure) {
           showSnackbar(context, state.errorMessage);
@@ -125,7 +182,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24.0),
                 child: Container(
-                  constraints: const BoxConstraints(maxWidth: 540),
+                  constraints: const BoxConstraints(maxWidth: 580),
                   decoration: BoxDecoration(
                     color: isDark ? DarkColors.surface : white,
                     borderRadius: BorderRadius.circular(24),
@@ -186,7 +243,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Let\'s set up your profile preferences to customize your experience',
+                          'Let\'s set up your profile and security vault to protect your financial data',
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark
@@ -202,7 +259,9 @@ class _OnboardingBodyState extends State<OnboardingBody> {
                           duration: const Duration(milliseconds: 300),
                           child: _currentStep == 0
                               ? _buildStepOne(context)
-                              : _buildStepTwo(context, isDark),
+                              : (_currentStep == 1
+                                    ? _buildStepTwo(context, isDark)
+                                    : _buildStepThree(context, isDark)),
                         ),
                         const SizedBox(height: 24),
                         Row(
@@ -223,7 +282,9 @@ class _OnboardingBodyState extends State<OnboardingBody> {
                                 isPrimary: true,
                                 text: _currentStep == 0
                                     ? 'Continue'
-                                    : 'Complete Setup',
+                                    : (_currentStep == 1
+                                          ? 'Next: Security Vault'
+                                          : 'Complete Setup'),
                               ),
                             ),
                           ],
@@ -251,62 +312,59 @@ class _OnboardingBodyState extends State<OnboardingBody> {
   Widget _buildStepProgress(final bool isDark) {
     return Row(
       children: <Widget>[
-        Expanded(
-          child: Column(
-            children: <Widget>[
-              Container(
-                height: 4,
-                decoration: BoxDecoration(
-                  color: LightColors.primary,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '1. Profile Details',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: isDark
-                      ? DarkColors.textPrimary
-                      : LightColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
+        _buildProgressSegment(
+          isDark: isDark,
+          title: '1. Profile',
+          isActive: _currentStep >= 0,
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            children: <Widget>[
-              Container(
-                height: 4,
-                decoration: BoxDecoration(
-                  color: _currentStep >= 1
-                      ? LightColors.primary
-                      : (isDark ? DarkColors.border : Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '2. Currency Setup',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: _currentStep >= 1
-                      ? (isDark
-                            ? DarkColors.textPrimary
-                            : LightColors.textPrimary)
-                      : (isDark
-                            ? DarkColors.textSecondary
-                            : LightColors.textSecondary),
-                ),
-              ),
-            ],
-          ),
+        const SizedBox(width: 8),
+        _buildProgressSegment(
+          isDark: isDark,
+          title: '2. Currency',
+          isActive: _currentStep >= 1,
+        ),
+        const SizedBox(width: 8),
+        _buildProgressSegment(
+          isDark: isDark,
+          title: '3. Security',
+          isActive: _currentStep >= 2,
         ),
       ],
+    );
+  }
+
+  Widget _buildProgressSegment({
+    required final bool isDark,
+    required final String title,
+    required final bool isActive,
+  }) {
+    return Expanded(
+      child: Column(
+        children: <Widget>[
+          Container(
+            height: 4,
+            decoration: BoxDecoration(
+              color: isActive
+                  ? LightColors.primary
+                  : (isDark ? DarkColors.border : Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: isActive
+                  ? (isDark ? DarkColors.textPrimary : LightColors.textPrimary)
+                  : (isDark
+                        ? DarkColors.textSecondary
+                        : LightColors.textSecondary),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -428,6 +486,163 @@ class _OnboardingBodyState extends State<OnboardingBody> {
             ],
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildStepThree(final BuildContext context, final bool isDark) {
+    final List<String> words = _recoveryPhrase.split(' ');
+
+    return Column(
+      key: const ValueKey<int>(2),
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: LightColors.primary.withValues(alpha: 0.15),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.shield_outlined,
+            size: 38,
+            color: LightColors.primary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Zero-Knowledge Security Vault',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: isDark ? DarkColors.textPrimary : LightColors.textPrimary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Your financial data is encrypted on your device. Download your emergency recovery key below to ensure you can always recover your records.',
+          style: TextStyle(
+            fontSize: 13,
+            color: isDark
+                ? DarkColors.textSecondary
+                : LightColors.textSecondary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: isDark
+                ? DarkColors.background.withValues(alpha: 0.6)
+                : Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? DarkColors.border : Colors.grey.shade300,
+            ),
+          ),
+          child: Column(
+            children: <Widget>[
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: List<Widget>.generate(words.length, (
+                  final int index,
+                ) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark ? DarkColors.surface : white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isDark
+                            ? DarkColors.border
+                            : Colors.grey.shade300,
+                      ),
+                    ),
+                    child: Text(
+                      '${index + 1}. ${words[index]}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? DarkColors.textPrimary
+                            : LightColors.textPrimary,
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: _recoveryPhrase));
+                    showSnackbar(
+                      context,
+                      'Recovery phrase copied to clipboard',
+                    );
+                  },
+                  icon: const Icon(Icons.copy, size: 14),
+                  label: const Text(
+                    'Copy Phrase',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        CustomButton(
+          text: _hasDownloadedKey
+              ? 'Download Key Again (.txt)'
+              : 'Download Emergency Key (.txt) *',
+          onPressed: _downloadEmergencyKey,
+          isPrimary: !_hasDownloadedKey,
+        ),
+        const SizedBox(height: 12),
+        if (_hasDownloadedKey)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.green.shade400),
+            ),
+            child: Row(
+              children: <Widget>[
+                const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Emergency key downloaded! You can now complete setup.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? Colors.green.shade300
+                          : Colors.green.shade800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Text(
+            '⚠️ Downloading your emergency key is required to finish setup',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.amber.shade700,
+            ),
+          ),
       ],
     );
   }

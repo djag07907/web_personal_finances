@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:web_personal_finances/commons/security/session_vault.dart';
 import 'package:web_personal_finances/repositories/firebase_auth_repository.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_event.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_state.dart';
@@ -21,6 +22,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
         email: event.email,
         password: event.password,
       );
+      SessionVault.instance.setPendingAuthPassword(event.password);
       emit(SignUpSuccess());
     } on FirebaseAuthException catch (e) {
       emit(SignUpError(error: _mapFirebaseError(e.code)));

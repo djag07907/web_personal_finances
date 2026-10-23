@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:web_personal_finances/commons/security/session_vault.dart';
 import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/user/model/user_model.dart';
 
@@ -39,6 +40,16 @@ class AppAuthNotifier extends ChangeNotifier {
   /// Convenience: `true` when a user is signed in AND has completed onboarding.
   bool get isAuthenticated => _firebaseUser != null;
   bool get isOnboarded => _userProfile?.isOnboarded == true;
+
+  /// `true` when the user has an encrypted vault in Firestore but the session
+  /// does NOT have an active decrypted Data Encryption Key (DEK).
+  bool get isVaultLocked =>
+      _userProfile?.vault != null && !SessionVault.instance.hasActiveKey;
+
+  /// Notifies the router that the vault has been successfully unlocked.
+  void notifyVaultUnlocked() {
+    notifyListeners();
+  }
 
   // ─── Private helpers ─────────────────────────────────────────────────────
 

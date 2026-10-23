@@ -13,6 +13,7 @@ import 'package:web_personal_finances/onboarding/onboarding_screen.dart';
 import 'package:web_personal_finances/profile/profile_screen.dart';
 import 'package:web_personal_finances/savings/savings_screen.dart';
 import 'package:web_personal_finances/signUp/signup_screen.dart';
+import 'package:web_personal_finances/vaultRecovery/vault_recovery_screen.dart';
 
 part 'landing_constants.dart';
 
@@ -47,6 +48,17 @@ GoRouter buildAppRouter(final AppAuthNotifier authNotifier) {
       }
 
       // ── Authenticated AND onboarded ───────────────────────────────────────
+      // If the Zero-Knowledge Vault is locked (e.g. password was reset),
+      // lock the whole app and gate access behind the Vault Recovery screen.
+      if (authNotifier.isVaultLocked) {
+        return location == vaultRecoveryRoute ? null : vaultRecoveryRoute;
+      }
+
+      // If vault is NOT locked, redirect away from the recovery screen to home.
+      if (location == vaultRecoveryRoute) {
+        return homeRoute;
+      }
+
       // Redirect away from auth/onboarding pages to the home screen.
       if (_publicRoutes.contains(location) ||
           _semiPublicRoutes.contains(location)) {
@@ -84,6 +96,14 @@ GoRouter buildAppRouter(final AppAuthNotifier authNotifier) {
             snappyTransitionPage(
               key: state.pageKey,
               child: const OnboardingScreen(),
+            ),
+      ),
+      GoRoute(
+        path: vaultRecoveryRoute,
+        pageBuilder: (final BuildContext context, final GoRouterState state) =>
+            snappyTransitionPage(
+              key: state.pageKey,
+              child: const VaultRecoveryScreen(),
             ),
       ),
       ShellRoute(
