@@ -76,6 +76,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
               }
             }
           }
+        } else if (profile != null) {
+          // Existing account without a vault: the vault setup screen will
+          // create one using this (already verified) login password.
+          SessionVault.instance.setPendingAuthPassword(event.password);
         }
       }
 

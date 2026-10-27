@@ -49,6 +49,13 @@ class AppAuthNotifier extends ChangeNotifier {
       !SessionVault.instance.hasActiveKey &&
       !SessionVault.instance.isUnlockInProgress;
 
+  /// `true` when a signed-in user has a loaded profile but no encrypted vault
+  /// yet (account created before encryption existed).
+  bool get isVaultSetupRequired =>
+      _userProfile != null &&
+      _userProfile!.vault == null &&
+      !SessionVault.instance.isUnlockInProgress;
+
   /// Notifies the router that the vault has been successfully unlocked.
   void notifyVaultUnlocked() {
     notifyListeners();

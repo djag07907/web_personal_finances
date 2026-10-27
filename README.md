@@ -156,4 +156,5 @@ flowchart LR
   - **Mandatory Download on Onboarding**: During initial onboarding, the user must download their Emergency Key file (`pecunia_recovery_key_<email>.txt`) to proceed.
   - **Always Accessible in Profile**: The recovery key file can be re-downloaded at any time from the Profile screen.
   - **Dedicated Gatekeeper Route (`/vault-recovery`)**: If a user resets their password, the router locks the entire app behind a dedicated Gatekeeper screen until they upload their emergency key file or 12-word phrase. The password is verified against Firebase before the vault is re-encrypted, so the vault password always matches the account password.
+  - **Legacy Account Migration (`/vault-setup`)**: Existing accounts created before encryption was introduced are seamlessly intercepted upon login and prompted to initialize their vault and download their Emergency Key without re-doing general onboarding.
 - **Detailed Specification**: See [ZERO_KNOWLEDGE_ENCRYPTION.md](ZERO_KNOWLEDGE_ENCRYPTION.md) for full cryptographic details, field partitioning, BLoC architecture, and rollout roadmap.

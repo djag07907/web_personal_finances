@@ -12,3 +12,4 @@ const String accountsReceivableRoute = '/accountsReceivable';
 const String savingsRoute = '/savings';
 const String profileRoute = '/profile';
 const String vaultRecoveryRoute = '/vault-recovery';
+const String vaultSetupRoute = '/vault-setup';

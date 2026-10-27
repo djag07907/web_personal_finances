@@ -116,6 +116,26 @@ Because Firestore security rules require authentication (`request.auth.uid == us
 5. **Fresh Vault Fallback (Permanent Loss)**:
    - If the user permanently lost their Emergency Key, the screen provides a controlled **"Reset Vault & Start Fresh"** option with explicit warnings. It also requires a verified password and creates a brand new vault. Previously encrypted records cannot be recovered without the original key.
 
+### D. Existing Accounts Migration: Dedicated Setup Route (`/vault-setup`)
+
+Accounts created before the introduction of Zero-Knowledge encryption lack a `vault` map in their Firestore user document (`userProfile.vault == null`). To ensure 100% of users are protected without forcing existing users to re-do the general onboarding questions (currency, birth date, profession), a dedicated migration gatekeeper is used:
+
+1. **Detection on Login**:
+   - `LoginBloc` notes that the authenticated user profile exists but lacks a `vault`. It retains the verified login password in `SessionVault.pendingAuthPassword`.
+   - `AppAuthNotifier.isVaultSetupRequired` evaluates to `true` (`_userProfile != null && _userProfile.vault == null && !isUnlockInProgress`).
+2. **Dedicated Gatekeeper Redirect (`/vault-setup`)**:
+   - `GoRouter` intercepts the user before reaching `/home` and redirects them to the full-screen **Vault Setup** screen (`/vault-setup`).
+   - The user cannot bypass this screen or access protected views until their vault is initialized.
+3. **Emergency Key Generation & Download**:
+   - A fresh 12-word recovery phrase is generated for the account.
+   - The user is required to click **"Download Emergency Key (.txt)"** before proceeding; the submit action remains locked until the file is downloaded.
+4. **Vault Initialization**:
+   - `VaultSetupBloc` verifies the account password with Firebase (`AuthRepository.verifyPassword`). If the user navigated via a direct link or page reload, they can type their login password into the provided field.
+   - A fresh DEK is generated and encrypted using the verified password and recovery phrase.
+   - The user profile document in Firestore is updated with the new `vault` map.
+   - Session keys are set in `SessionVault`, temporary passwords cleared, and `authNotifier.refreshProfile()` is called.
+   - The router automatically detects the vault is now present and active, redirecting the user to `/home`.
+
 ---
 
 ## 4. Field Partitioning (Pilot: Incomes Flow)
@@ -175,16 +195,24 @@ lib/
 │       ├── recovery_key_utils.dart     # Key file generation, parsing & download helpers
 │       └── session_vault.dart          # In-memory session key holder (cleared on logout)
 ├── routes/
-│   ├── landing_constants.dart          # Defines `vaultRecoveryRoute = '/vault-recovery'`
-│   └── landing_routes.dart             # GoRouter redirect guard gating app access
-└── vaultRecovery/
+│   ├── landing_constants.dart          # Defines `vaultRecoveryRoute` & `vaultSetupRoute`
+│   └── landing_routes.dart             # GoRouter redirect guards gating app access
+├── vaultRecovery/
+│   ├── bloc/
+│   │   ├── vault_recovery_bloc.dart    # Pure BLoC coordinating recovery & reset logic
+│   │   ├── vault_recovery_event.dart   # VaultRecoveryUnlockSubmitted & VaultRecoveryResetSubmitted
+│   │   └── vault_recovery_state.dart   # Initial, InProgress, Success, Failure states
+│   ├── vault_recovery_screen.dart      # Screen providing VaultRecoveryBloc
+│   └── widget/
+│       └── vault_recovery_body.dart    # Form validation & response handling (file download, snackbars)
+└── vaultSetup/
     ├── bloc/
-    │   ├── vault_recovery_bloc.dart    # Pure BLoC coordinating recovery & reset logic
-    │   ├── vault_recovery_event.dart   # VaultRecoveryUnlockSubmitted & VaultRecoveryResetSubmitted
-    │   └── vault_recovery_state.dart   # Initial, InProgress, Success, Failure states
-    ├── vault_recovery_screen.dart      # Screen providing VaultRecoveryBloc
+    │   ├── vault_setup_bloc.dart       # Pure BLoC coordinating legacy vault creation
+    │   ├── vault_setup_event.dart      # VaultSetupSubmitted
+    │   └── vault_setup_state.dart      # Initial, InProgress, Success, Failure states
+    ├── vault_setup_screen.dart         # Screen providing VaultSetupBloc
     └── widget/
-        └── vault_recovery_body.dart    # Form validation & response handling (file download, snackbars)
+        └── vault_setup_body.dart       # Mandatory key download check & password confirmation
 ```
 
 ### 1. `EncryptionService` & `SessionVault`
@@ -194,19 +222,19 @@ lib/
 - **Backward Compatibility**: Automatically detects if an incoming record is legacy plaintext or ciphertext, allowing seamless operation on existing test records without database wipes.
 - `SessionVault`: Singleton in-memory store (also a `ChangeNotifier`) that holds the decrypted `SecretKey`, the recovery phrase, the temporary login password and an `isUnlockInProgress` flag. It is purged upon logout and never persisted to browser storage.
 
-### 2. Router-Level Gatekeeper Guard (`landing_routes.dart` & `AppAuthNotifier`)
+### 2. Router-Level Gatekeeper Guards (`landing_routes.dart` & `AppAuthNotifier`)
 
-- `AppAuthNotifier.isVaultLocked` is `true` when a user has a vault in Firestore (`userProfile?.vault != null`), the session lacks the decrypted DEK (`!hasActiveKey`), and no login-time unlock is running (`!isUnlockInProgress`).
-- `AppAuthNotifier` listens to `SessionVault`, so the lock state is re-evaluated when `endUnlock()` or `clear()` is called.
-- When `isVaultLocked == true`, `GoRouter`'s redirect guard routes the user exclusively to `/vault-recovery`.
-- Once the vault is successfully unlocked, `AppAuthNotifier.refreshProfile()` is called, immediately re-evaluating the redirect and transitioning the user to `/home`. `SessionVault.setDek` deliberately does not notify, so the Gatekeeper can finish its success handling (key download, snackbar) before the router leaves the screen.
+- **Vault Lock Guard**: `AppAuthNotifier.isVaultLocked` is `true` when a user has a vault in Firestore (`userProfile?.vault != null`), the session lacks the decrypted DEK (`!hasActiveKey`), and no login-time unlock is running (`!isUnlockInProgress`). Redirects immediately to `/vault-recovery`.
+- **Vault Setup Guard**: `AppAuthNotifier.isVaultSetupRequired` is `true` when an onboarded user has a profile but no vault (`userProfile != null && userProfile.vault == null && !isUnlockInProgress`). Redirects immediately to `/vault-setup`.
+- `AppAuthNotifier` listens to `SessionVault`, so lock state is re-evaluated when `endUnlock()` or `clear()` is called.
+- Once a vault is unlocked or created, `AppAuthNotifier.refreshProfile()` is called, immediately re-evaluating the redirect and transitioning the user to `/home`.
 
-### 3. `VaultRecoveryBloc` & SOLID Architecture
+### 3. `VaultRecoveryBloc` & `VaultSetupBloc` (SOLID Architecture)
 
-- **BLoC (`VaultRecoveryBloc`)**: Strictly contains business and cryptographic coordination logic. It receives pre-validated inputs, verifies the password through `AuthRepository.verifyPassword`, delegates to `EncryptionService` and `UserRepository`, manages session keys, and emits distinct state transitions (maps Firebase auth errors to friendly messages).
-- **Body (`VaultRecoveryBody`)**: Responsibilities are strictly kept on the UI layer:
-  - Form validation: Verifies that the emergency file or recovery phrase contains 12 valid words and that the password is provided before dispatching events.
-  - Response handling: Listens to `VaultRecoverySuccess` and `VaultRecoveryResetSuccess` to trigger browser downloads of the updated emergency key file, display snackbars, and refresh auth state.
+- **BLoCs (`VaultRecoveryBloc`, `VaultSetupBloc`)**: Strictly contain business and cryptographic coordination logic. They receive pre-validated inputs, verify passwords through `AuthRepository.verifyPassword`, delegate to `EncryptionService` and `UserRepository`, manage session keys, and emit distinct state transitions.
+- **Bodies (`VaultRecoveryBody`, `VaultSetupBody`)**: Responsibilities are strictly kept on the UI layer:
+  - Form validation: Verifies that recovery phrases/files are valid, mandatory emergency key download has occurred, and passwords are provided before dispatching events.
+  - Response handling: Listens to success states to trigger emergency key downloads, display snackbars, and refresh auth profiles.
 
 ### 4. Transparent Incomes Repository Integration
 
@@ -222,6 +250,7 @@ The encryption system is fully tested with automated unit tests under `test/`:
 
 - `test/encryption_service_test.dart`: Validates 256-bit DEK generation, AES-GCM string encryption/decryption, float amount encryption/decryption, legacy plaintext passthrough, password and recovery phrase vault derivation, and session key clearing.
 - `test/vault_recovery_bloc_test.dart`: Validates initial BLoC states and error handling when a user vault does not exist (with a faked `AuthRepository.verifyPassword`).
+- `test/vault_setup_bloc_test.dart`: Validates initial BLoC states and error handling when profile is missing during vault initialization.
 
 ---
 

@@ -14,6 +14,7 @@ import 'package:web_personal_finances/profile/profile_screen.dart';
 import 'package:web_personal_finances/savings/savings_screen.dart';
 import 'package:web_personal_finances/signUp/signup_screen.dart';
 import 'package:web_personal_finances/vaultRecovery/vault_recovery_screen.dart';
+import 'package:web_personal_finances/vaultSetup/vault_setup_screen.dart';
 
 part 'landing_constants.dart';
 
@@ -54,8 +55,14 @@ GoRouter buildAppRouter(final AppAuthNotifier authNotifier) {
         return location == vaultRecoveryRoute ? null : vaultRecoveryRoute;
       }
 
-      // If vault is NOT locked, redirect away from the recovery screen to home.
-      if (location == vaultRecoveryRoute) {
+      // Existing (already onboarded) users that have no vault yet must create
+      // one before using the app.
+      if (authNotifier.isVaultSetupRequired) {
+        return location == vaultSetupRoute ? null : vaultSetupRoute;
+      }
+
+      // If vault is NOT locked / missing, redirect away from the gate screens.
+      if (location == vaultRecoveryRoute || location == vaultSetupRoute) {
         return homeRoute;
       }
 
@@ -104,6 +111,14 @@ GoRouter buildAppRouter(final AppAuthNotifier authNotifier) {
             snappyTransitionPage(
               key: state.pageKey,
               child: const VaultRecoveryScreen(),
+            ),
+      ),
+      GoRoute(
+        path: vaultSetupRoute,
+        pageBuilder: (final BuildContext context, final GoRouterState state) =>
+            snappyTransitionPage(
+              key: state.pageKey,
+              child: const VaultSetupScreen(),
             ),
       ),
       ShellRoute(
