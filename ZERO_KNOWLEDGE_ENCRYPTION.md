@@ -138,7 +138,7 @@ Accounts created before the introduction of Zero-Knowledge encryption lack a `va
 
 ---
 
-## 4. Field Partitioning (Active: Incomes & Expenses Flows)
+## 4. Field Partitioning (Active: Incomes, Expenses, Accounts to Pay & Accounts Receivable)
 
 To preserve database indexing, security rules verification, and real-time streams, documents are partitioned into **Plaintext Fields** and **Encrypted Fields**:
 
@@ -177,22 +177,72 @@ classDiagram
         +String comment (AES-256-GCM Ciphertext)
         +String paymentMethod (AES-256-GCM Ciphertext)
     }
+
+    class FirestoreAccountToPayDocument {
+        +String id (Plaintext)
+        +String userId (Plaintext - Mandatory for firestore.rules)
+        +String currency (Plaintext - HNL / USD)
+        +DateTime dueDate (Plaintext)
+        +DateTime paymentDate (Plaintext)
+        +bool isPaid (Plaintext)
+        +bool status (Plaintext)
+        +bool isLoan (Plaintext)
+        +double interestRate (Plaintext)
+        +int totalQuotas (Plaintext)
+        +String interestType (Plaintext)
+        +String category (Plaintext)
+        +String frequency (Plaintext)
+        +DateTime createdDate (Plaintext)
+        +List tags (Plaintext)
+        +String creditorName (AES-256-GCM Ciphertext)
+        +String description (AES-256-GCM Ciphertext)
+        +String amount (AES-256-GCM Ciphertext)
+        +String monthlyQuota (AES-256-GCM Ciphertext)
+        +String paymentMethod (AES-256-GCM Ciphertext)
+        +List payments (AES-256-GCM Ciphertext for amount, notes, paymentMethod)
+    }
+
+    class FirestoreAccountReceivableDocument {
+        +String id (Plaintext)
+        +String userId (Plaintext - Mandatory for firestore.rules)
+        +String currency (Plaintext - HNL / USD)
+        +DateTime dueDate (Plaintext)
+        +DateTime paymentDate (Plaintext)
+        +bool isReceived (Plaintext)
+        +bool status (Plaintext)
+        +bool isLoan (Plaintext)
+        +double interestRate (Plaintext)
+        +int totalQuotas (Plaintext)
+        +String interestType (Plaintext)
+        +String category (Plaintext)
+        +String frequency (Plaintext)
+        +DateTime createdDate (Plaintext)
+        +List tags (Plaintext)
+        +String debtorName (AES-256-GCM Ciphertext)
+        +String description (AES-256-GCM Ciphertext)
+        +String amount (AES-256-GCM Ciphertext)
+        +String monthlyQuota (AES-256-GCM Ciphertext)
+        +String paymentMethod (AES-256-GCM Ciphertext)
+        +List payments (AES-256-GCM Ciphertext for amount, notes, paymentMethod)
+    }
 ```
 
 ### Plaintext Fields (Unencrypted):
 
 - `id`, `userId`: `userId` is **required** by [firestore.rules](file:///Users/tectrans-danielalvarez/Documents/projects/web_personal_finances/firestore.rules#L23-L24) to authenticate ownership (`resource.data.userId == request.auth.uid`) and by the `where('userId', ...)` query.
 - `currency`: Enables dual-currency filtering without downloading foreign records.
-- `dateToReceive` / `dateDue`, `createdDate`: Preserve date range handling and calendar display.
-- `status`, `isReceived`, `isPaid`, `isFixed`: Preserve active and payment status flags.
-- `frequency`, `category`, `tags`: Used for grouping and KPIs.
+- Dates (`dateToReceive`, `dateDue`, `dueDate`, `paymentDate`, `createdDate`): Preserve date range filtering and calendar/amortization displays.
+- Status booleans (`status`, `isReceived`, `isPaid`, `isFixed`, `isLoan`): Preserve queryable status and financial calculations.
+- Loan structure terms (`interestRate`, `totalQuotas`, `interestType`): Numerical calculation parameters.
+- Grouping enums (`frequency`, `category`, `tags`): Used for categorization and KPIs.
 
 ### Encrypted Fields (AES-256-GCM):
 
-- `amount`: Number encoded to string, then encrypted into ciphertext.
-- `name`: Income / Expense title, merchant, or vendor.
-- `comment`: User notes and transaction remarks.
-- `paymentMethod`: (Expenses) Card or bank reference notes.
+- Monetary amounts (`amount`, `monthlyQuota`): Numbers encoded to string, then encrypted into ciphertext.
+- Identifiers / Entities (`name`, `creditorName`, `debtorName`): Employer, merchant, debtor, or creditor identity.
+- Descriptions & Remarks (`comment`, `description`, payment `notes`).
+- Payment method strings (`paymentMethod`).
+- Ledger arrays (`payments` in both receivables and payables): Sub-items encrypt `amount`, `notes`, and `paymentMethod`.
 
 Each ciphertext string carries its own random 12-byte IV, so there is no separate `iv` field. Records written before encryption was enabled (or while no key was available) are stored as plain values and are still read correctly.
 

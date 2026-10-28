@@ -18,7 +18,9 @@ class AccountToPayPayment {
   factory AccountToPayPayment.fromMap(final Map<String, dynamic> map) {
     return AccountToPayPayment(
       id: map['id'] ?? emptyString,
-      amount: (map['amount'] ?? 0).toDouble(),
+      amount: map['amount'] is num
+          ? (map['amount'] as num).toDouble()
+          : double.tryParse(map['amount']?.toString() ?? emptyString) ?? 0.0,
       paymentDate:
           DateTime.tryParse(map['paymentDate'] ?? emptyString) ??
           DateTime.now(),

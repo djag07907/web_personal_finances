@@ -65,6 +65,80 @@ void main() {
       expect(await service.decryptString(encPaymentMethod, dek), equals(paymentMethod));
     });
 
+    test('encrypts and decrypts accountToPay payload fields and payments ledger', () async {
+      final SecretKey dek = await service.generateDataEncryptionKey();
+      const String creditorName = 'Banco Atlantida Loan';
+      const String description = 'Car financing loan 36 quotas';
+      const double amount = 15000.0;
+      const double monthlyQuota = 450.50;
+      const String paymentMethod = 'Bank Transfer';
+
+      final String encCreditor = await service.encryptString(creditorName, dek);
+      final String encDesc = await service.encryptString(description, dek);
+      final String encAmount = await service.encryptAmount(amount, dek);
+      final String encMonthlyQuota = await service.encryptAmount(monthlyQuota, dek);
+      final String encMethod = await service.encryptString(paymentMethod, dek);
+
+      expect(encCreditor.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encDesc.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encAmount.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encMonthlyQuota.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encMethod.startsWith(EncryptionService.cipherPrefix), isTrue);
+
+      expect(await service.decryptString(encCreditor, dek), equals(creditorName));
+      expect(await service.decryptString(encDesc, dek), equals(description));
+      expect(await service.decryptAmount(encAmount, dek), equals(amount));
+      expect(await service.decryptAmount(encMonthlyQuota, dek), equals(monthlyQuota));
+      expect(await service.decryptString(encMethod, dek), equals(paymentMethod));
+
+      // Payment ledger item
+      const double paymentAmount = 450.50;
+      const String paymentNotes = 'Quota 1 paid early';
+      final String encPMethod = await service.encryptString('Debit Card', dek);
+      final String encPAmount = await service.encryptAmount(paymentAmount, dek);
+      final String encPNotes = await service.encryptString(paymentNotes, dek);
+
+      expect(await service.decryptAmount(encPAmount, dek), equals(paymentAmount));
+      expect(await service.decryptString(encPNotes, dek), equals(paymentNotes));
+      expect(await service.decryptString(encPMethod, dek), equals('Debit Card'));
+    });
+
+    test('encrypts and decrypts accountReceivable payload fields and payments ledger', () async {
+      final SecretKey dek = await service.generateDataEncryptionKey();
+      const String debtorName = 'John Doe Consulting Client';
+      const String description = 'Invoice #2026-001 for mobile app';
+      const double amount = 3200.0;
+      const double monthlyQuota = 800.0;
+      const String paymentMethod = 'Direct Deposit';
+
+      final String encDebtor = await service.encryptString(debtorName, dek);
+      final String encDesc = await service.encryptString(description, dek);
+      final String encAmount = await service.encryptAmount(amount, dek);
+      final String encMonthlyQuota = await service.encryptAmount(monthlyQuota, dek);
+      final String encMethod = await service.encryptString(paymentMethod, dek);
+
+      expect(encDebtor.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encDesc.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encAmount.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encMonthlyQuota.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encMethod.startsWith(EncryptionService.cipherPrefix), isTrue);
+
+      expect(await service.decryptString(encDebtor, dek), equals(debtorName));
+      expect(await service.decryptString(encDesc, dek), equals(description));
+      expect(await service.decryptAmount(encAmount, dek), equals(amount));
+      expect(await service.decryptAmount(encMonthlyQuota, dek), equals(monthlyQuota));
+      expect(await service.decryptString(encMethod, dek), equals(paymentMethod));
+
+      // Payment ledger item
+      const double paymentAmount = 800.0;
+      const String paymentNotes = 'First milestone payment received';
+      final String encPAmount = await service.encryptAmount(paymentAmount, dek);
+      final String encPNotes = await service.encryptString(paymentNotes, dek);
+
+      expect(await service.decryptAmount(encPAmount, dek), equals(paymentAmount));
+      expect(await service.decryptString(encPNotes, dek), equals(paymentNotes));
+    });
+
     test(
       'backward compatibility: legacy unencrypted strings and numbers pass through',
       () async {

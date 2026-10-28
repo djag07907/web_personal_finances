@@ -176,7 +176,9 @@ class AccountReceivableItem {
       userId: map['userId'] ?? emptyString,
       debtorName: map['debtorName'] ?? emptyString,
       description: map['description'] ?? emptyString,
-      amount: (map['amount'] ?? 0).toDouble(),
+      amount: map['amount'] is num
+          ? (map['amount'] as num).toDouble()
+          : double.tryParse(map['amount']?.toString() ?? emptyString) ?? 0.0,
       currency: map['currency'] ?? usdCurrency,
       dueDate:
           DateTime.tryParse(map['dueDate'] ?? emptyString) ?? DateTime.now(),
@@ -221,7 +223,9 @@ class AccountReceivableItem {
           ? (map['totalQuotas'] as num).toInt()
           : null,
       monthlyQuota: map['monthlyQuota'] != null
-          ? (map['monthlyQuota'] as num).toDouble()
+          ? (map['monthlyQuota'] is num
+                ? (map['monthlyQuota'] as num).toDouble()
+                : double.tryParse(map['monthlyQuota'].toString()))
           : null,
       interestType: CustomInterestType.values.firstWhere(
         (final CustomInterestType element) =>
