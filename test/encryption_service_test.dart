@@ -42,6 +42,29 @@ void main() {
       expect(decrypted, equals(originalAmount));
     });
 
+    test('encrypts and decrypts expense payload fields (name, comment, amount, paymentMethod)', () async {
+      final SecretKey dek = await service.generateDataEncryptionKey();
+      const String expenseName = 'Supermarket Groceries';
+      const String expenseComment = 'Weekly shopping at Walmart';
+      const double expenseAmount = 142.85;
+      const String paymentMethod = 'BAC Visa **** 1234';
+
+      final String encName = await service.encryptString(expenseName, dek);
+      final String encComment = await service.encryptString(expenseComment, dek);
+      final String encAmount = await service.encryptAmount(expenseAmount, dek);
+      final String encPaymentMethod = await service.encryptString(paymentMethod, dek);
+
+      expect(encName.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encComment.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encAmount.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encPaymentMethod.startsWith(EncryptionService.cipherPrefix), isTrue);
+
+      expect(await service.decryptString(encName, dek), equals(expenseName));
+      expect(await service.decryptString(encComment, dek), equals(expenseComment));
+      expect(await service.decryptAmount(encAmount, dek), equals(expenseAmount));
+      expect(await service.decryptString(encPaymentMethod, dek), equals(paymentMethod));
+    });
+
     test(
       'backward compatibility: legacy unencrypted strings and numbers pass through',
       () async {

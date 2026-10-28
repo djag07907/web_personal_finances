@@ -1,21 +1,75 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cryptography/cryptography.dart';
+import 'package:web_personal_finances/commons/security/encryption_service.dart';
+import 'package:web_personal_finances/commons/security/session_vault.dart';
 import 'package:web_personal_finances/expenses/model/expense_item.dart';
 
 class ExpenseRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  ExpenseRepository({
+    final FirebaseFirestore? firestore,
+    final EncryptionService? encryptionService,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _encryptionService = encryptionService ?? EncryptionService();
+
+  final FirebaseFirestore _firestore;
+  final EncryptionService _encryptionService;
 
   Future<void> addExpense(final ExpenseItem expenseItem) async {
-    await _firestore
-        .collection('expenses')
-        .doc(expenseItem.id)
-        .set(expenseItem.toMap());
+    final Map<String, dynamic> data = expenseItem.toMap();
+    final SecretKey? key = SessionVault.instance.currentDek;
+
+    if (key != null) {
+      data['name'] = await _encryptionService.encryptString(
+        expenseItem.name,
+        key,
+      );
+      data['comment'] = await _encryptionService.encryptString(
+        expenseItem.comment,
+        key,
+      );
+      data['amount'] = await _encryptionService.encryptAmount(
+        expenseItem.amount,
+        key,
+      );
+      if (expenseItem.paymentMethod != null &&
+          expenseItem.paymentMethod!.isNotEmpty) {
+        data['paymentMethod'] = await _encryptionService.encryptString(
+          expenseItem.paymentMethod!,
+          key,
+        );
+      }
+    }
+
+    await _firestore.collection('expenses').doc(expenseItem.id).set(data);
   }
 
   Future<void> updateExpense(final ExpenseItem expenseItem) async {
-    await _firestore
-        .collection('expenses')
-        .doc(expenseItem.id)
-        .update(expenseItem.toMap());
+    final Map<String, dynamic> data = expenseItem.toMap();
+    final SecretKey? key = SessionVault.instance.currentDek;
+
+    if (key != null) {
+      data['name'] = await _encryptionService.encryptString(
+        expenseItem.name,
+        key,
+      );
+      data['comment'] = await _encryptionService.encryptString(
+        expenseItem.comment,
+        key,
+      );
+      data['amount'] = await _encryptionService.encryptAmount(
+        expenseItem.amount,
+        key,
+      );
+      if (expenseItem.paymentMethod != null &&
+          expenseItem.paymentMethod!.isNotEmpty) {
+        data['paymentMethod'] = await _encryptionService.encryptString(
+          expenseItem.paymentMethod!,
+          key,
+        );
+      }
+    }
+
+    await _firestore.collection('expenses').doc(expenseItem.id).update(data);
   }
 
   Future<void> deleteExpense(final String id) async {
@@ -30,13 +84,46 @@ class ExpenseRepository {
         .collection('expenses')
         .where('userId', isEqualTo: userId)
         .snapshots()
-        .map((final QuerySnapshot<Map<String, dynamic>> snapshot) {
-          return snapshot.docs
-              .map(
-                (final QueryDocumentSnapshot<Map<String, dynamic>> doc) =>
-                    ExpenseItem.fromMap(doc.data()),
-              )
-              .toList();
+        .asyncMap((final QuerySnapshot<Map<String, dynamic>> snapshot) async {
+          final SecretKey? key = SessionVault.instance.currentDek;
+          final List<ExpenseItem> items = <ExpenseItem>[];
+
+          for (final QueryDocumentSnapshot<Map<String, dynamic>> doc
+              in snapshot.docs) {
+            final Map<String, dynamic> data = Map<String, dynamic>.from(
+              doc.data(),
+            );
+
+            if (key != null) {
+              if (data['name'] is String) {
+                data['name'] = await _encryptionService.decryptString(
+                  data['name'] as String,
+                  key,
+                );
+              }
+              if (data['comment'] is String) {
+                data['comment'] = await _encryptionService.decryptString(
+                  data['comment'] as String,
+                  key,
+                );
+              }
+              if (data.containsKey('amount')) {
+                data['amount'] = await _encryptionService.decryptAmount(
+                  data['amount'],
+                  key,
+                );
+              }
+              if (data['paymentMethod'] is String) {
+                data['paymentMethod'] = await _encryptionService.decryptString(
+                  data['paymentMethod'] as String,
+                  key,
+                );
+              }
+            }
+            items.add(ExpenseItem.fromMap(data));
+          }
+
+          return items;
         });
   }
 }

@@ -138,7 +138,7 @@ Accounts created before the introduction of Zero-Knowledge encryption lack a `va
 
 ---
 
-## 4. Field Partitioning (Pilot: Incomes Flow)
+## 4. Field Partitioning (Active: Incomes & Expenses Flows)
 
 To preserve database indexing, security rules verification, and real-time streams, documents are partitioned into **Plaintext Fields** and **Encrypted Fields**:
 
@@ -159,21 +159,40 @@ classDiagram
         +String amount (AES-256-GCM Ciphertext)
         +String comment (AES-256-GCM Ciphertext)
     }
+
+    class FirestoreExpenseDocument {
+        +String id (Plaintext)
+        +String userId (Plaintext - Mandatory for firestore.rules)
+        +String currency (Plaintext - HNL / USD)
+        +String dateDue (Plaintext)
+        +bool status (Plaintext)
+        +bool isPaid (Plaintext)
+        +bool isFixed (Plaintext)
+        +DateTime createdDate (Plaintext)
+        +String frequency (Plaintext)
+        +String category (Plaintext)
+        +List tags (Plaintext)
+        +String name (AES-256-GCM Ciphertext)
+        +String amount (AES-256-GCM Ciphertext)
+        +String comment (AES-256-GCM Ciphertext)
+        +String paymentMethod (AES-256-GCM Ciphertext)
+    }
 ```
 
-### Plaintext Fields (Currently Unencrypted):
+### Plaintext Fields (Unencrypted):
 
 - `id`, `userId`: `userId` is **required** by [firestore.rules](file:///Users/tectrans-danielalvarez/Documents/projects/web_personal_finances/firestore.rules#L23-L24) to authenticate ownership (`resource.data.userId == request.auth.uid`) and by the `where('userId', ...)` query.
 - `currency`: Enables dual-currency filtering without downloading foreign records.
-- `dateToReceive`, `createdDate`: Preserve date range handling.
-- `status`, `isReceived`: Preserve active/received flags.
-- `frequency`, `category`, `tags`: Used for grouping and KPIs. They can reveal the nature of an income, so they are candidates for a later encryption phase.
+- `dateToReceive` / `dateDue`, `createdDate`: Preserve date range handling and calendar display.
+- `status`, `isReceived`, `isPaid`, `isFixed`: Preserve active and payment status flags.
+- `frequency`, `category`, `tags`: Used for grouping and KPIs.
 
 ### Encrypted Fields (AES-256-GCM):
 
 - `amount`: Number encoded to string, then encrypted into ciphertext.
-- `name`: Income title / employer name.
+- `name`: Income / Expense title, merchant, or vendor.
 - `comment`: User notes and transaction remarks.
+- `paymentMethod`: (Expenses) Card or bank reference notes.
 
 Each ciphertext string carries its own random 12-byte IV, so there is no separate `iv` field. Records written before encryption was enabled (or while no key was available) are stored as plain values and are still read correctly.
 
