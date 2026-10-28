@@ -44,7 +44,9 @@ class SavingRegistryItem {
     return SavingRegistryItem(
       id: map['id'] ?? emptyString,
       savingId: map['savingId'] ?? emptyString,
-      amount: (map['amount'] ?? 0).toDouble(),
+      amount: map['amount'] is num
+          ? (map['amount'] as num).toDouble()
+          : double.tryParse(map['amount']?.toString() ?? emptyString) ?? 0.0,
       type: CustomSavingTransactionType.values.firstWhere(
         (final CustomSavingTransactionType e) => e.name == map['type'],
         orElse: () => CustomSavingTransactionType.deposit,

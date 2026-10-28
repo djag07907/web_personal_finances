@@ -138,9 +138,9 @@ Accounts created before the introduction of Zero-Knowledge encryption lack a `va
 
 ---
 
-## 4. Field Partitioning (Active: Incomes, Expenses, Accounts to Pay & Accounts Receivable)
+## 4. Field Partitioning (Active Across All Financial Flows)
 
-To preserve database indexing, security rules verification, and real-time streams, documents are partitioned into **Plaintext Fields** and **Encrypted Fields**:
+To preserve database indexing, security rules verification, and real-time streams, documents across Incomes, Expenses, Accounts to Pay, Accounts Receivable, and Savings are partitioned into **Plaintext Fields** and **Encrypted Fields**:
 
 ```mermaid
 classDiagram
@@ -225,24 +225,43 @@ classDiagram
         +String paymentMethod (AES-256-GCM Ciphertext)
         +List payments (AES-256-GCM Ciphertext for amount, notes, paymentMethod)
     }
+
+    class FirestoreSavingDocument {
+        +String id (Plaintext)
+        +String userId (Plaintext - Mandatory for firestore.rules)
+        +String currency (Plaintext - HNL / USD)
+        +DateTime targetDate (Plaintext)
+        +String category (Plaintext)
+        +bool isGoalReached (Plaintext)
+        +bool status (Plaintext)
+        +DateTime createdDate (Plaintext)
+        +List tags (Plaintext)
+        +String name (AES-256-GCM Ciphertext)
+        +String comment (AES-256-GCM Ciphertext)
+        +String amount (AES-256-GCM Ciphertext)
+        +String goalAmount (AES-256-GCM Ciphertext)
+        +List registries (AES-256-GCM Ciphertext for amount, comment)
+    }
 ```
 
 ### Plaintext Fields (Unencrypted):
 
 - `id`, `userId`: `userId` is **required** by [firestore.rules](file:///Users/tectrans-danielalvarez/Documents/projects/web_personal_finances/firestore.rules#L23-L24) to authenticate ownership (`resource.data.userId == request.auth.uid`) and by the `where('userId', ...)` query.
 - `currency`: Enables dual-currency filtering without downloading foreign records.
-- Dates (`dateToReceive`, `dateDue`, `dueDate`, `paymentDate`, `createdDate`): Preserve date range filtering and calendar/amortization displays.
-- Status booleans (`status`, `isReceived`, `isPaid`, `isFixed`, `isLoan`): Preserve queryable status and financial calculations.
+- Dates (`dateToReceive`, `dateDue`, `dueDate`, `paymentDate`, `targetDate`, `createdDate`): Preserve date range filtering and calendar/amortization displays.
+- Status booleans (`status`, `isReceived`, `isPaid`, `isFixed`, `isLoan`, `isGoalReached`): Preserve queryable status and financial calculations.
 - Loan structure terms (`interestRate`, `totalQuotas`, `interestType`): Numerical calculation parameters.
 - Grouping enums (`frequency`, `category`, `tags`): Used for categorization and KPIs.
 
 ### Encrypted Fields (AES-256-GCM):
 
-- Monetary amounts (`amount`, `monthlyQuota`): Numbers encoded to string, then encrypted into ciphertext.
-- Identifiers / Entities (`name`, `creditorName`, `debtorName`): Employer, merchant, debtor, or creditor identity.
+- Monetary amounts (`amount`, `monthlyQuota`, `goalAmount`): Numbers encoded to string, then encrypted into ciphertext.
+- Identifiers / Entities (`name`, `creditorName`, `debtorName`): Employer, merchant, debtor, creditor, or goal identity.
 - Descriptions & Remarks (`comment`, `description`, payment `notes`).
 - Payment method strings (`paymentMethod`).
-- Ledger arrays (`payments` in both receivables and payables): Sub-items encrypt `amount`, `notes`, and `paymentMethod`.
+- Ledger arrays:
+  - `payments` (in receivables and payables): Sub-items encrypt `amount`, `notes`, and `paymentMethod`.
+  - `registries` (in savings): Sub-items encrypt `amount` and `comment`.
 
 Each ciphertext string carries its own random 12-byte IV, so there is no separate `iv` field. Records written before encryption was enabled (or while no key was available) are stored as plain values and are still read correctly.
 

@@ -139,6 +139,38 @@ void main() {
       expect(await service.decryptString(encPNotes, dek), equals(paymentNotes));
     });
 
+    test('encrypts and decrypts savings payload fields and registries ledger', () async {
+      final SecretKey dek = await service.generateDataEncryptionKey();
+      const String savingName = 'Emergency Safety Net';
+      const String savingComment = '6 months living expenses reserve';
+      const double initialAmount = 1500.0;
+      const double goalAmount = 10000.0;
+
+      final String encName = await service.encryptString(savingName, dek);
+      final String encComment = await service.encryptString(savingComment, dek);
+      final String encInitial = await service.encryptAmount(initialAmount, dek);
+      final String encGoal = await service.encryptAmount(goalAmount, dek);
+
+      expect(encName.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encComment.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encInitial.startsWith(EncryptionService.cipherPrefix), isTrue);
+      expect(encGoal.startsWith(EncryptionService.cipherPrefix), isTrue);
+
+      expect(await service.decryptString(encName, dek), equals(savingName));
+      expect(await service.decryptString(encComment, dek), equals(savingComment));
+      expect(await service.decryptAmount(encInitial, dek), equals(initialAmount));
+      expect(await service.decryptAmount(encGoal, dek), equals(goalAmount));
+
+      // Registry ledger item (deposit/withdrawal)
+      const double registryAmount = 350.0;
+      const String registryComment = 'Biweekly paycheck transfer';
+      final String encRAmount = await service.encryptAmount(registryAmount, dek);
+      final String encRComment = await service.encryptString(registryComment, dek);
+
+      expect(await service.decryptAmount(encRAmount, dek), equals(registryAmount));
+      expect(await service.decryptString(encRComment, dek), equals(registryComment));
+    });
+
     test(
       'backward compatibility: legacy unencrypted strings and numbers pass through',
       () async {

@@ -135,8 +135,13 @@ class SavingItem {
       name: map['name'] ?? emptyString,
       comment: map['comment'] ?? emptyString,
       currency: map['currency'] ?? usdCurrency,
-      amount: (map['amount'] ?? 0).toDouble(),
-      goalAmount: (map['goalAmount'] ?? 0).toDouble(),
+      amount: map['amount'] is num
+          ? (map['amount'] as num).toDouble()
+          : double.tryParse(map['amount']?.toString() ?? emptyString) ?? 0.0,
+      goalAmount: map['goalAmount'] is num
+          ? (map['goalAmount'] as num).toDouble()
+          : double.tryParse(map['goalAmount']?.toString() ?? emptyString) ??
+                0.0,
       targetDate: map['targetDate'] != null
           ? DateTime.tryParse(map['targetDate'])
           : null,
