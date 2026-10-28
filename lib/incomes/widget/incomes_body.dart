@@ -206,7 +206,7 @@ class _IncomesBodyState extends State<IncomesBody> {
             fontSize: 12,
             color: isDark ? DarkColors.textPrimary : LightColors.textPrimary,
           ),
-          dropdownColor: isDark ? DarkColors.surface : Colors.white,
+          dropdownColor: isDark ? DarkColors.surface : white,
           items: <DropdownMenuItem<CustomIncomeCategoryOptions?>>[
             DropdownMenuItem<CustomIncomeCategoryOptions?>(
               value: null,

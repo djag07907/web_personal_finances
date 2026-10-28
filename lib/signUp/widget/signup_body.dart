@@ -5,6 +5,7 @@ import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/dialog/custom_status_dialog.dart';
 import 'package:web_personal_finances/commons/enum/status_dialog_types.dart';
 import 'package:web_personal_finances/commons/loader/loader.dart';
+import 'package:web_personal_finances/commons/utils/web_window_helper.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/routes/landing_routes.dart';
@@ -458,7 +459,7 @@ class _SignUpBodyState extends State<SignUpBody> {
                 ),
               ),
               InkWell(
-                onTap: () {},
+                onTap: () => openUrlInNewTab(termsRoute),
                 child: const Text(
                   'Terms of Service',
                   style: TextStyle(
@@ -476,7 +477,7 @@ class _SignUpBodyState extends State<SignUpBody> {
                 ),
               ),
               InkWell(
-                onTap: () {},
+                onTap: () => openUrlInNewTab(privacyRoute),
                 child: const Text(
                   'Privacy Policy',
                   style: TextStyle(

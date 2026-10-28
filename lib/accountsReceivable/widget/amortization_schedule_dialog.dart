@@ -483,7 +483,7 @@ class _AmortizationScheduleDialogState
                               columnSpacing: 16,
                               headingRowColor: WidgetStateProperty.all(
                                 isDark
-                                    ? Colors.white.withValues(alpha: 0.04)
+                                    ? white.withValues(alpha: 0.04)
                                     : const Color(0xFFF3F4F6),
                               ),
                               columns: <DataColumn>[

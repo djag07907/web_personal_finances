@@ -13,3 +13,5 @@ const String savingsRoute = '/savings';
 const String profileRoute = '/profile';
 const String vaultRecoveryRoute = '/vault-recovery';
 const String vaultSetupRoute = '/vault-setup';
+const String termsRoute = '/terms';
+const String privacyRoute = '/privacy';

@@ -42,7 +42,7 @@ class KpiInfoTooltip extends StatelessWidget {
         border: Border.all(color: accent.withValues(alpha: 0.6)),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
+            color: black.withValues(alpha: 0.25),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -61,11 +61,7 @@ class KpiInfoTooltip extends StatelessWidget {
           if (hasDescription)
             TextSpan(
               text: '\n$description',
-              style: const TextStyle(
-                fontSize: 12,
-                height: 1.4,
-                color: Colors.white,
-              ),
+              style: const TextStyle(fontSize: 12, height: 1.4, color: white),
             ),
           if (hasCalculation) ...<InlineSpan>[
             TextSpan(

@@ -7,6 +7,8 @@ import 'package:web_personal_finances/commons/utils/navigation_utils.dart';
 import 'package:web_personal_finances/expenses/expenses_screen.dart';
 import 'package:web_personal_finances/home/home_screen.dart';
 import 'package:web_personal_finances/incomes/incomes_screen.dart';
+import 'package:web_personal_finances/legal/privacy_screen.dart';
+import 'package:web_personal_finances/legal/terms_screen.dart';
 import 'package:web_personal_finances/login/login_screen.dart';
 import 'package:web_personal_finances/menu/menu_screen.dart';
 import 'package:web_personal_finances/onboarding/onboarding_screen.dart';
@@ -20,6 +22,9 @@ part 'landing_constants.dart';
 
 /// Routes that are only accessible to unauthenticated users.
 const Set<String> _publicRoutes = <String>{rootRoute, loginRoute, signupRoute};
+
+/// Routes accessible to all users at any time (unauthenticated or authenticated).
+const Set<String> _universalPublicRoutes = <String>{termsRoute, privacyRoute};
 
 /// Routes that require authentication but do NOT require completed onboarding.
 const Set<String> _semiPublicRoutes = <String>{onboardingRoute};
@@ -35,6 +40,12 @@ GoRouter buildAppRouter(final AppAuthNotifier authNotifier) {
       final bool isAuthenticated = authNotifier.isAuthenticated;
       final bool isOnboarded = authNotifier.isOnboarded;
       final String location = state.matchedLocation;
+
+      // ── Universal Public Routes (Terms, Privacy) ──────────────────────────
+      // Always allowed for anyone regardless of auth or vault status.
+      if (_universalPublicRoutes.contains(location)) {
+        return null;
+      }
 
       // ── Unauthenticated ───────────────────────────────────────────────────
       if (!isAuthenticated) {
@@ -119,6 +130,22 @@ GoRouter buildAppRouter(final AppAuthNotifier authNotifier) {
             snappyTransitionPage(
               key: state.pageKey,
               child: const VaultSetupScreen(),
+            ),
+      ),
+      GoRoute(
+        path: termsRoute,
+        pageBuilder: (final BuildContext context, final GoRouterState state) =>
+            snappyTransitionPage(
+              key: state.pageKey,
+              child: const TermsScreen(),
+            ),
+      ),
+      GoRoute(
+        path: privacyRoute,
+        pageBuilder: (final BuildContext context, final GoRouterState state) =>
+            snappyTransitionPage(
+              key: state.pageKey,
+              child: const PrivacyScreen(),
             ),
       ),
       ShellRoute(

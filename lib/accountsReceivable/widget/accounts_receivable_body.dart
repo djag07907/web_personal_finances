@@ -789,8 +789,8 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
         ? Colors.green
         : (isDark ? DarkColors.primary : LightColors.primary);
     final Color trackColor = isDark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.black.withValues(alpha: 0.08);
+        ? white.withValues(alpha: 0.08)
+        : black.withValues(alpha: 0.08);
 
     final String tooltipText = context.translate(
       'quotas_progress_tooltip',

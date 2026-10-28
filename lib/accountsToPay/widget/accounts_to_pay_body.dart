@@ -316,7 +316,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
             fontSize: 12,
             color: isDark ? DarkColors.textPrimary : LightColors.textPrimary,
           ),
-          dropdownColor: isDark ? DarkColors.surface : Colors.white,
+          dropdownColor: isDark ? DarkColors.surface : white,
           items: <DropdownMenuItem<T?>>[
             DropdownMenuItem<T?>(value: null, child: Text(allLabel)),
             ...options.entries.map(
@@ -729,8 +729,8 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
         ? Colors.green
         : (isDark ? DarkColors.primary : LightColors.primary);
     final Color trackColor = isDark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.black.withValues(alpha: 0.08);
+        ? white.withValues(alpha: 0.08)
+        : black.withValues(alpha: 0.08);
 
     final String tooltipText = context.translate(
       'quotas_progress_tooltip',

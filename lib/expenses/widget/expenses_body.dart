@@ -342,7 +342,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
             fontSize: 12,
             color: isDark ? DarkColors.textPrimary : LightColors.textPrimary,
           ),
-          dropdownColor: isDark ? DarkColors.surface : Colors.white,
+          dropdownColor: isDark ? DarkColors.surface : white,
           items: <DropdownMenuItem<CustomExpenseTypeOptions?>>[
             DropdownMenuItem<CustomExpenseTypeOptions?>(
               value: null,
@@ -399,7 +399,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
             fontSize: 12,
             color: isDark ? DarkColors.textPrimary : LightColors.textPrimary,
           ),
-          dropdownColor: isDark ? DarkColors.surface : Colors.white,
+          dropdownColor: isDark ? DarkColors.surface : white,
           items: <DropdownMenuItem<CustomExpenseCategoryOptions?>>[
             DropdownMenuItem<CustomExpenseCategoryOptions?>(
               value: null,
