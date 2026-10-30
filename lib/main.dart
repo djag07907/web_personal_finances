@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -9,6 +10,9 @@ import 'package:go_router/go_router.dart';
 import 'package:internationalization/internationalization.dart';
 import 'package:provider/provider.dart';
 import 'package:web_personal_finances/commons/bloc/app_auth_notifier.dart';
+import 'package:web_personal_finances/commons/error/error_boundary.dart';
+import 'package:web_personal_finances/commons/error/privacy_safe_logger.dart';
+import 'package:web_personal_finances/commons/security/app_check_service.dart';
 import 'package:web_personal_finances/firebase_options.dart';
 import 'package:web_personal_finances/repositories/firebase_auth_repository.dart';
 import 'package:web_personal_finances/repositories/user_repository.dart';
@@ -19,11 +23,27 @@ import 'package:web_personal_finances/routes/landing_routes.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Setup privacy-safe error handling and custom ErrorWidget
+  FlutterError.onError = (final FlutterErrorDetails details) {
+    PrivacySafeLogger.logError(
+      details.exception,
+      details.stack,
+      'FlutterError: ${details.library ?? "framework"}',
+    );
+  };
+  PlatformDispatcher.instance.onError =
+      (final Object error, final StackTrace stack) {
+        PrivacySafeLogger.logError(error, stack, 'PlatformDispatcher');
+        return true;
+      };
+  ErrorWidget.builder = buildPrivacySafeErrorWidget;
+
   await dotenv.load(fileName: '.env');
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await AppCheckService.initialize();
 
-  runApp(const MyApp());
+  runApp(const ErrorBoundary(child: MyApp()));
 }
 
 class MyApp extends StatefulWidget {

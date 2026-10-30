@@ -1,14 +1,25 @@
 import 'dart:convert';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/material.dart';
+import 'package:web_personal_finances/accountsReceivable/model/account_receivable_item.dart';
+import 'package:web_personal_finances/accountsReceivable/repository/accounts_receivable_repository.dart';
+import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
+import 'package:web_personal_finances/accountsToPay/repository/accounts_to_pay_repository.dart';
+import 'package:web_personal_finances/commons/export/csv_export_service.dart';
 import 'package:web_personal_finances/commons/security/bip39_words.dart';
 import 'package:web_personal_finances/commons/security/encryption_service.dart';
 import 'package:web_personal_finances/commons/security/recovery_key_utils.dart';
 import 'package:web_personal_finances/commons/security/session_vault.dart';
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
+import 'package:web_personal_finances/expenses/model/expense_item.dart';
+import 'package:web_personal_finances/expenses/repository/expenses_repository.dart';
+import 'package:web_personal_finances/incomes/model/income_item.dart';
+import 'package:web_personal_finances/incomes/repository/incomes_repository.dart';
 import 'package:web_personal_finances/profile/widget/profile_info_card.dart';
 import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
+import 'package:web_personal_finances/savings/model/saving_item.dart';
+import 'package:web_personal_finances/savings/repository/savings_repository.dart';
 import 'package:web_personal_finances/user/model/user_model.dart';
 
 class ProfileDetailsView extends StatelessWidget {
@@ -198,6 +209,209 @@ class ProfileDetailsView extends StatelessWidget {
                       ),
                       icon: const Icon(Icons.download_rounded, size: 18),
                       label: const Text('Download Backup Key'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(
+              width: constraints.maxWidth,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: isDark ? DarkColors.surface : white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? DarkColors.border : Colors.grey.shade300,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: LightColors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.file_download_outlined,
+                            color: LightColors.primary,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                'Data Portability & CSV Export',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? DarkColors.textPrimary
+                                      : LightColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Export your financial records to RFC-4180 CSV spreadsheets. All exports are decrypted client-side in your browser before saving.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: isDark
+                                      ? DarkColors.textSecondary
+                                      : LightColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: <Widget>[
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            final List<IncomeItem> incomes =
+                                await IncomeRepository()
+                                    .getIncomes(user.uid)
+                                    .first;
+                            const CsvExportService().exportIncomes(incomes);
+                            if (context.mounted) {
+                              showSnackbar(
+                                context,
+                                'Incomes CSV exported successfully.',
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.arrow_downward, size: 16),
+                          label: const Text('Export Incomes'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            final List<ExpenseItem> expenses =
+                                await ExpenseRepository()
+                                    .getExpenses(user.uid)
+                                    .first;
+                            const CsvExportService().exportExpenses(expenses);
+                            if (context.mounted) {
+                              showSnackbar(
+                                context,
+                                'Expenses CSV exported successfully.',
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.arrow_upward, size: 16),
+                          label: const Text('Export Expenses'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            final List<AccountToPayItem> debts =
+                                await AccountToPayRepository()
+                                    .getAccountsToPay(user.uid)
+                                    .first;
+                            const CsvExportService().exportAccountsToPay(debts);
+                            if (context.mounted) {
+                              showSnackbar(
+                                context,
+                                'Accounts to Pay CSV exported successfully.',
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.credit_card, size: 16),
+                          label: const Text('Export Debts'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            final List<AccountReceivableItem> receivables =
+                                await AccountReceivableRepository()
+                                    .getAccountsReceivable(user.uid)
+                                    .first;
+                            const CsvExportService().exportAccountsReceivable(
+                              receivables,
+                            );
+                            if (context.mounted) {
+                              showSnackbar(
+                                context,
+                                'Accounts Receivable CSV exported successfully.',
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.handshake_outlined, size: 16),
+                          label: const Text('Export Receivables'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            final List<SavingItem> savings =
+                                await SavingsRepository()
+                                    .getSavings(user.uid)
+                                    .first;
+                            const CsvExportService().exportSavings(savings);
+                            if (context.mounted) {
+                              showSnackbar(
+                                context,
+                                'Savings Goals CSV exported successfully.',
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.savings_outlined, size: 16),
+                          label: const Text('Export Savings'),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            final List<IncomeItem> inList =
+                                await IncomeRepository()
+                                    .getIncomes(user.uid)
+                                    .first;
+                            final List<ExpenseItem> exList =
+                                await ExpenseRepository()
+                                    .getExpenses(user.uid)
+                                    .first;
+                            final List<AccountToPayItem> atpList =
+                                await AccountToPayRepository()
+                                    .getAccountsToPay(user.uid)
+                                    .first;
+                            final List<AccountReceivableItem> arList =
+                                await AccountReceivableRepository()
+                                    .getAccountsReceivable(user.uid)
+                                    .first;
+                            final List<SavingItem> svList =
+                                await SavingsRepository()
+                                    .getSavings(user.uid)
+                                    .first;
+
+                            const CsvExportService exp = CsvExportService();
+                            exp.exportIncomes(inList);
+                            exp.exportExpenses(exList);
+                            exp.exportAccountsToPay(atpList);
+                            exp.exportAccountsReceivable(arList);
+                            exp.exportSavings(svList);
+
+                            if (context.mounted) {
+                              showSnackbar(
+                                context,
+                                'All financial datasets exported (5 CSV files).',
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: LightColors.primary,
+                            foregroundColor: white,
+                          ),
+                          icon: const Icon(
+                            Icons.download_for_offline,
+                            size: 16,
+                          ),
+                          label: const Text('Export All Datasets (5 CSVs)'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
