@@ -260,7 +260,7 @@ class _IncomesBodyState extends State<IncomesBody> {
         crossAxisAlignment: WrapCrossAlignment.center,
         children: <Widget>[
           Text(
-            'Active filters:',
+            context.translate('active_filters'),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -271,7 +271,7 @@ class _IncomesBodyState extends State<IncomesBody> {
             _buildFilterChip(
               context,
               isDark,
-              label: 'Search: "$_searchQuery"',
+              label: '${context.translate('search')}: "$_searchQuery"',
               onDeleted: () {
                 setState(() {
                   _searchQuery = emptyString;
@@ -284,7 +284,7 @@ class _IncomesBodyState extends State<IncomesBody> {
               context,
               isDark,
               label:
-                  'Status: ${_selectedStatusFilter! ? activeLabel : inactiveLabel}',
+                  '${context.translate('status')}: ${_selectedStatusFilter! ? activeLabel : inactiveLabel}',
               onDeleted: () {
                 setState(() {
                   _selectedStatusFilter = null;
@@ -297,7 +297,7 @@ class _IncomesBodyState extends State<IncomesBody> {
               context,
               isDark,
               label:
-                  'Category: ${_selectedCategoryFilter!.toTranslate(context)}',
+                  '${context.translate('category')}: ${_selectedCategoryFilter!.toTranslate(context)}',
               onDeleted: () {
                 setState(() {
                   _selectedCategoryFilter = null;
@@ -310,7 +310,7 @@ class _IncomesBodyState extends State<IncomesBody> {
               context,
               isDark,
               label:
-                  'Frequency: ${_selectedFrequencyFilter!.toTranslate(context)}',
+                  '${context.translate('frequency')}: ${_selectedFrequencyFilter!.toTranslate(context)}',
               onDeleted: () {
                 setState(() {
                   _selectedFrequencyFilter = null;
@@ -322,7 +322,7 @@ class _IncomesBodyState extends State<IncomesBody> {
             _buildFilterChip(
               context,
               isDark,
-              label: 'Date: $_selectedDateFilter',
+              label: '${context.translate('date')}: $_selectedDateFilter',
               onDeleted: () {
                 setState(() {
                   _selectedDateFilter = null;
@@ -346,7 +346,7 @@ class _IncomesBodyState extends State<IncomesBody> {
                 vertical: 2.0,
               ),
               child: Text(
-                'Reset all',
+                context.translate('reset_all'),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -670,7 +670,7 @@ class _IncomesBodyState extends State<IncomesBody> {
             isMain: false,
             isMenu: true,
             title: context.translate('incomes'),
-            description: 'Track and manage all your income sources',
+            description: context.translate('incomes_page_description'),
             buttonText: context.translate('add_income'),
             buttonIsPrimary: true,
             buttonIsAdd: true,
@@ -683,9 +683,10 @@ class _IncomesBodyState extends State<IncomesBody> {
                   child: _incomeItems.isEmpty
                       ? EmptyContentWidget(
                           icon: Icons.payments_outlined,
-                          title: 'No incomes registered yet',
-                          subtitle:
-                              'Start tracking your revenues by adding your first income entry.',
+                          title: context.translate('no_incomes_registered_yet'),
+                          subtitle: context.translate(
+                            'start_tracking_revenues_subtitle',
+                          ),
                           actionLabel: context.translate('add_income'),
                           onAction: _addIncome,
                         )
@@ -721,8 +722,9 @@ class _IncomesBodyState extends State<IncomesBody> {
                                   (_isFilterActive || _searchQuery.isNotEmpty)
                                   ? _buildActiveFilterChips(context)
                                   : null,
-                              searchHint:
-                                  'Search by name, category, or amount...',
+                              searchHint: context.translate(
+                                'search_incomes_hint',
+                              ),
                               onSearch: (final String query) {
                                 setState(() {
                                   _searchQuery = query;

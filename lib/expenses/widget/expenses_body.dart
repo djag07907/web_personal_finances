@@ -591,7 +591,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
         crossAxisAlignment: WrapCrossAlignment.center,
         children: <Widget>[
           Text(
-            'Active filters:',
+            context.translate('active_filters'),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -602,7 +602,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
             _buildFilterChip(
               context,
               isDark,
-              label: 'Search: "$_searchQuery"',
+              label: '${context.translate('search')}: "$_searchQuery"',
               onDeleted: () {
                 setState(() {
                   _searchQuery = emptyString;
@@ -615,7 +615,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
               context,
               isDark,
               label:
-                  'Status: ${_selectedStatusFilter! ? activeLabel : inactiveLabel}',
+                  '${context.translate('status')}: ${_selectedStatusFilter! ? activeLabel : inactiveLabel}',
               onDeleted: () {
                 setState(() {
                   _selectedStatusFilter = null;
@@ -627,7 +627,8 @@ class _ExpensesBodyState extends State<ExpensesBody> {
             _buildFilterChip(
               context,
               isDark,
-              label: 'Type: ${_selectedTypeFilter!.toTranslate(context)}',
+              label:
+                  '${context.translate('type')}: ${_selectedTypeFilter!.toTranslate(context)}',
               onDeleted: () {
                 setState(() {
                   _selectedTypeFilter = null;
@@ -640,7 +641,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
               context,
               isDark,
               label:
-                  'Category: ${_selectedCategoryFilter!.toTranslate(context)}',
+                  '${context.translate('category')}: ${_selectedCategoryFilter!.toTranslate(context)}',
               onDeleted: () {
                 setState(() {
                   _selectedCategoryFilter = null;
@@ -653,7 +654,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
               context,
               isDark,
               label:
-                  'Frequency: ${_selectedFrequencyFilter!.toTranslate(context)}',
+                  '${context.translate('frequency')}: ${_selectedFrequencyFilter!.toTranslate(context)}',
               onDeleted: () {
                 setState(() {
                   _selectedFrequencyFilter = null;
@@ -665,7 +666,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
             _buildFilterChip(
               context,
               isDark,
-              label: 'Date: $_selectedDateFilter',
+              label: '${context.translate('date')}: $_selectedDateFilter',
               onDeleted: () {
                 setState(() {
                   _selectedDateFilter = null;
@@ -691,7 +692,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                 vertical: 2.0,
               ),
               child: Text(
-                'Reset all',
+                context.translate('reset_all'),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -760,8 +761,7 @@ class _ExpensesBodyState extends State<ExpensesBody> {
             isMain: false,
             isMenu: true,
             title: context.translate('expenses'),
-            description:
-                'Track and analyze fixed and variable outgoing expenses',
+            description: context.translate('expenses_page_description'),
             buttonText: context.translate('add_expense'),
             buttonIsPrimary: true,
             buttonIsAdd: true,
@@ -774,9 +774,12 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                   child: _expenseItems.isEmpty
                       ? EmptyContentWidget(
                           icon: Icons.account_balance_wallet_outlined,
-                          title: 'No expenses registered yet',
-                          subtitle:
-                              'Start tracking your budget by adding your first expense entry.',
+                          title: context.translate(
+                            'no_expenses_registered_yet',
+                          ),
+                          subtitle: context.translate(
+                            'start_tracking_budget_subtitle',
+                          ),
                           actionLabel: context.translate('add_expense'),
                           onAction: _addExpense,
                         )
@@ -814,8 +817,9 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                                   (_isFilterActive || _searchQuery.isNotEmpty)
                                   ? _buildActiveFilterChips(context)
                                   : null,
-                              searchHint:
-                                  'Search by name, category, or amount...',
+                              searchHint: context.translate(
+                                'search_expenses_hint',
+                              ),
                               onSearch: (final String query) {
                                 setState(() {
                                   _searchQuery = query;

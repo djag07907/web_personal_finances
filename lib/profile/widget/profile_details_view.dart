@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/material.dart';
+import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/accountsReceivable/model/account_receivable_item.dart';
 import 'package:web_personal_finances/accountsReceivable/repository/accounts_receivable_repository.dart';
 import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
@@ -41,7 +42,7 @@ class ProfileDetailsView extends StatelessWidget {
             : constraints.maxWidth;
 
         final String currencyDisplay = user.enableDualCurrency
-            ? '${user.primaryCurrency} (Dual Mode HNL & USD Enabled)'
+            ? '${user.primaryCurrency} (${context.translate('dual_mode_enabled')})'
             : user.primaryCurrency;
 
         return Wrap(
@@ -52,10 +53,10 @@ class ProfileDetailsView extends StatelessWidget {
               width: cardWidth,
               child: ProfileInfoCard(
                 isDark: isDark,
-                title: 'Full Name',
+                title: context.translate('full_name'),
                 value: user.fullName.isNotEmpty
                     ? user.fullName
-                    : 'Not specified',
+                    : context.translate('not_specified'),
                 icon: Icons.person_outline,
               ),
             ),
@@ -63,10 +64,10 @@ class ProfileDetailsView extends StatelessWidget {
               width: cardWidth,
               child: ProfileInfoCard(
                 isDark: isDark,
-                title: 'Profession / Occupation',
+                title: context.translate('profession_occupation'),
                 value: user.profession.isNotEmpty
                     ? user.profession
-                    : 'Not specified',
+                    : context.translate('not_specified'),
                 icon: Icons.work_outline,
               ),
             ),
@@ -74,10 +75,10 @@ class ProfileDetailsView extends StatelessWidget {
               width: cardWidth,
               child: ProfileInfoCard(
                 isDark: isDark,
-                title: 'Birth Date',
+                title: context.translate('birth_date'),
                 value: user.birthDate.isNotEmpty
                     ? user.birthDate
-                    : 'Not specified',
+                    : context.translate('not_specified'),
                 icon: Icons.cake_outlined,
               ),
             ),
@@ -85,7 +86,7 @@ class ProfileDetailsView extends StatelessWidget {
               width: cardWidth,
               child: ProfileInfoCard(
                 isDark: isDark,
-                title: 'Primary & Supported Currencies',
+                title: context.translate('primary_supported_currencies'),
                 value: currencyDisplay,
                 icon: Icons.monetization_on_outlined,
               ),
@@ -121,7 +122,7 @@ class ProfileDetailsView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            'Zero-Knowledge Encryption Vault',
+                            context.translate('zk_encryption_vault'),
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -133,8 +134,8 @@ class ProfileDetailsView extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             user.vault != null
-                                ? 'Status: Active (AES-256-GCM). Your sensitive financial records are protected.'
-                                : 'Status: Standard cloud security active.',
+                                ? context.translate('vault_status_active')
+                                : context.translate('vault_status_standard'),
                             style: TextStyle(
                               fontSize: 13,
                               color: isDark
@@ -187,12 +188,14 @@ class ProfileDetailsView extends StatelessWidget {
                           );
                           showSnackbar(
                             context,
-                            'Emergency key backup file downloaded (matches your vault).',
+                            context.translate('emergency_key_downloaded'),
                           );
                         } else if (context.mounted) {
                           showSnackbar(
                             context,
-                            'Unable to retrieve recovery key. Please re-authenticate.',
+                            context.translate(
+                              'unable_to_retrieve_recovery_key',
+                            ),
                           );
                         }
                       },
@@ -208,7 +211,7 @@ class ProfileDetailsView extends StatelessWidget {
                         ),
                       ),
                       icon: const Icon(Icons.download_rounded, size: 18),
-                      label: const Text('Download Backup Key'),
+                      label: Text(context.translate('download_backup_key')),
                     ),
                   ],
                 ),
@@ -248,7 +251,9 @@ class ProfileDetailsView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
-                                'Data Portability & CSV Export',
+                                context.translate(
+                                  'data_portability_csv_export',
+                                ),
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
@@ -259,7 +264,9 @@ class ProfileDetailsView extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Export your financial records to RFC-4180 CSV spreadsheets. All exports are decrypted client-side in your browser before saving.',
+                                context.translate(
+                                  'data_portability_description',
+                                ),
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: isDark
@@ -287,12 +294,12 @@ class ProfileDetailsView extends StatelessWidget {
                             if (context.mounted) {
                               showSnackbar(
                                 context,
-                                'Incomes CSV exported successfully.',
+                                context.translate('incomes_csv_exported'),
                               );
                             }
                           },
                           icon: const Icon(Icons.arrow_downward, size: 16),
-                          label: const Text('Export Incomes'),
+                          label: Text(context.translate('export_incomes')),
                         ),
                         OutlinedButton.icon(
                           onPressed: () async {
@@ -304,12 +311,12 @@ class ProfileDetailsView extends StatelessWidget {
                             if (context.mounted) {
                               showSnackbar(
                                 context,
-                                'Expenses CSV exported successfully.',
+                                context.translate('expenses_csv_exported'),
                               );
                             }
                           },
                           icon: const Icon(Icons.arrow_upward, size: 16),
-                          label: const Text('Export Expenses'),
+                          label: Text(context.translate('export_expenses')),
                         ),
                         OutlinedButton.icon(
                           onPressed: () async {
@@ -321,12 +328,14 @@ class ProfileDetailsView extends StatelessWidget {
                             if (context.mounted) {
                               showSnackbar(
                                 context,
-                                'Accounts to Pay CSV exported successfully.',
+                                context.translate(
+                                  'accounts_to_pay_csv_exported',
+                                ),
                               );
                             }
                           },
                           icon: const Icon(Icons.credit_card, size: 16),
-                          label: const Text('Export Debts'),
+                          label: Text(context.translate('export_debts')),
                         ),
                         OutlinedButton.icon(
                           onPressed: () async {
@@ -340,12 +349,14 @@ class ProfileDetailsView extends StatelessWidget {
                             if (context.mounted) {
                               showSnackbar(
                                 context,
-                                'Accounts Receivable CSV exported successfully.',
+                                context.translate(
+                                  'accounts_receivable_csv_exported',
+                                ),
                               );
                             }
                           },
                           icon: const Icon(Icons.handshake_outlined, size: 16),
-                          label: const Text('Export Receivables'),
+                          label: Text(context.translate('export_receivables')),
                         ),
                         OutlinedButton.icon(
                           onPressed: () async {
@@ -357,12 +368,12 @@ class ProfileDetailsView extends StatelessWidget {
                             if (context.mounted) {
                               showSnackbar(
                                 context,
-                                'Savings Goals CSV exported successfully.',
+                                context.translate('savings_csv_exported'),
                               );
                             }
                           },
                           icon: const Icon(Icons.savings_outlined, size: 16),
-                          label: const Text('Export Savings'),
+                          label: Text(context.translate('export_savings')),
                         ),
                         ElevatedButton.icon(
                           onPressed: () async {
@@ -397,7 +408,7 @@ class ProfileDetailsView extends StatelessWidget {
                             if (context.mounted) {
                               showSnackbar(
                                 context,
-                                'All financial datasets exported (5 CSV files).',
+                                context.translate('all_datasets_exported'),
                               );
                             }
                           },
@@ -409,7 +420,7 @@ class ProfileDetailsView extends StatelessWidget {
                             Icons.download_for_offline,
                             size: 16,
                           ),
-                          label: const Text('Export All Datasets (5 CSVs)'),
+                          label: Text(context.translate('export_all_datasets')),
                         ),
                       ],
                     ),

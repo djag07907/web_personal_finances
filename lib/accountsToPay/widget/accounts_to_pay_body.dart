@@ -513,7 +513,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
         crossAxisAlignment: WrapCrossAlignment.center,
         children: <Widget>[
           Text(
-            'Active filters:',
+            context.translate('active_filters'),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -521,30 +521,33 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
             ),
           ),
           if (_searchQuery.isNotEmpty)
-            chip('Search: "$_searchQuery"', () => _searchQuery = emptyString),
+            chip(
+              '${context.translate('search')}: "$_searchQuery"',
+              () => _searchQuery = emptyString,
+            ),
           if (_selectedPaymentFilter != null)
             chip(
-              'Payment: ${_paymentLabel(context, _selectedPaymentFilter!)}',
+              '${context.translate('payment')}: ${_paymentLabel(context, _selectedPaymentFilter!)}',
               () => _selectedPaymentFilter = null,
             ),
           if (_selectedStatusFilter != null)
             chip(
-              'Status: ${_selectedStatusFilter! ? context.translate('active') : context.translate('inactive')}',
+              '${context.translate('status')}: ${_selectedStatusFilter! ? context.translate('active') : context.translate('inactive')}',
               () => _selectedStatusFilter = null,
             ),
           if (_selectedCategoryFilter != null)
             chip(
-              'Category: ${_selectedCategoryFilter!.toTranslate(context)}',
+              '${context.translate('category')}: ${_selectedCategoryFilter!.toTranslate(context)}',
               () => _selectedCategoryFilter = null,
             ),
           if (_selectedFrequencyFilter != null)
             chip(
-              'Frequency: ${_selectedFrequencyFilter!.toTranslate(context)}',
+              '${context.translate('frequency')}: ${_selectedFrequencyFilter!.toTranslate(context)}',
               () => _selectedFrequencyFilter = null,
             ),
           if (_selectedDateFilter != null && _selectedDateFilter!.isNotEmpty)
             chip(
-              'Date: $_selectedDateFilter',
+              '${context.translate('date')}: $_selectedDateFilter',
               () => _selectedDateFilter = null,
             ),
           InkWell(
@@ -555,7 +558,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                 vertical: 2.0,
               ),
               child: Text(
-                'Reset all',
+                context.translate('reset_all'),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -794,8 +797,7 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
             isMain: false,
             isMenu: true,
             title: context.translate('accounts_to_pay'),
-            description:
-                'Track your bills and debts, and never miss a due date',
+            description: context.translate('accounts_to_pay_page_description'),
             buttonText: context.translate('add_account_to_pay'),
             buttonIsPrimary: true,
             buttonIsAdd: true,
@@ -808,9 +810,12 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                   child: _items.isEmpty
                       ? EmptyContentWidget(
                           icon: Icons.receipt_long_outlined,
-                          title: 'No accounts to pay registered yet',
-                          subtitle:
-                              'Keep your bills under control by adding your first account to pay.',
+                          title: context.translate(
+                            'no_accounts_to_pay_registered_yet',
+                          ),
+                          subtitle: context.translate(
+                            'keep_bills_under_control_subtitle',
+                          ),
                           actionLabel: context.translate('add_account_to_pay'),
                           onAction: _addAccountToPay,
                         )
@@ -848,8 +853,9 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                                   (_isFilterActive || _searchQuery.isNotEmpty)
                                   ? _buildActiveFilterChips(context)
                                   : null,
-                              searchHint:
-                                  'Search by creditor, category, or amount...',
+                              searchHint: context.translate(
+                                'search_accounts_to_pay_hint',
+                              ),
                               onSearch: (final String query) {
                                 setState(() {
                                   _searchQuery = query;

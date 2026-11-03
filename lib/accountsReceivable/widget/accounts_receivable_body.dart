@@ -854,8 +854,9 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
             isMain: false,
             isMenu: true,
             title: context.translate('accounts_receivable'),
-            description:
-                'Track money owed to you and manage scheduled collections',
+            description: context.translate(
+              'accounts_receivable_page_description',
+            ),
             buttonText: context.translate('add_account_receivable'),
             buttonIsPrimary: true,
             buttonIsAdd: true,
@@ -868,9 +869,12 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
                   child: _items.isEmpty
                       ? EmptyContentWidget(
                           icon: Icons.request_quote_outlined,
-                          title: 'No accounts receivable registered yet',
-                          subtitle:
-                              'Stay in control of what clients or debtors owe you by registering your first receivable.',
+                          title: context.translate(
+                            'no_accounts_receivable_registered_yet',
+                          ),
+                          subtitle: context.translate(
+                            'stay_in_control_debtors_subtitle',
+                          ),
                           actionLabel: context.translate(
                             'add_account_receivable',
                           ),
@@ -911,8 +915,9 @@ class _AccountsReceivableBodyState extends State<AccountsReceivableBody> {
                                   (_isFilterActive || _searchQuery.isNotEmpty)
                                   ? _buildActiveFilterChips(context)
                                   : null,
-                              searchHint:
-                                  'Search by debtor, category, or amount...',
+                              searchHint: context.translate(
+                                'search_accounts_receivable_hint',
+                              ),
                               onSearch: (final String query) {
                                 setState(() {
                                   _searchQuery = query;

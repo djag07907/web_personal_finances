@@ -64,9 +64,10 @@ class _ProfileBodyState extends State<ProfileBody> {
               isMain: false,
               isMenu: true,
               title: context.translate('profile'),
-              description:
-                  'Manage your personal account details and preferences',
-              buttonText: _isEditing ? 'Cancel Edit' : 'Edit Profile',
+              description: context.translate('profile_page_description'),
+              buttonText: _isEditing
+                  ? context.translate('cancel_edit')
+                  : context.translate('edit_profile'),
               buttonIsPrimary: !_isEditing,
               onButtonPressed: () {
                 setState(() {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/user/model/user_model.dart';
@@ -50,7 +51,9 @@ class ProfileHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  user.fullName.isNotEmpty ? user.fullName : 'Valued User',
+                  user.fullName.isNotEmpty
+                      ? user.fullName
+                      : context.translate('valued_user'),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -63,7 +66,7 @@ class ProfileHeader extends StatelessWidget {
                 Text(
                   user.profession.isNotEmpty
                       ? user.profession
-                      : 'Personal Finances User',
+                      : context.translate('personal_finances_user'),
                   style: TextStyle(
                     fontSize: 14,
                     color: isDark

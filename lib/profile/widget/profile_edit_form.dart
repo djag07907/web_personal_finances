@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/button/custom_button.dart';
 import 'package:web_personal_finances/commons/calendar/calendar_widget.dart';
 import 'package:web_personal_finances/commons/inputs/custom_label_input.dart';
@@ -86,7 +87,7 @@ class _ProfileEditFormState extends State<ProfileEditForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'Edit Account Details',
+              context.translate('edit_account_details'),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -97,25 +98,25 @@ class _ProfileEditFormState extends State<ProfileEditForm> {
             ),
             const SizedBox(height: 20),
             CustomLabelInput(
-              label: 'Full Name *',
-              hintText: 'Enter full name',
+              label: '${context.translate('full_name')} *',
+              hintText: context.translate('enter_full_name'),
               validator: (final String? val) {
                 if (val == null || val.trim().isEmpty) {
-                  return 'Full name cannot be empty';
+                  return context.translate('full_name_cannot_be_empty');
                 }
                 return null;
               },
               controller: _nameController,
             ),
             CustomLabelInput(
-              label: 'Profession',
-              hintText: 'Enter profession or job title',
+              label: context.translate('profession'),
+              hintText: context.translate('enter_profession'),
               validator: (final String? val) => null,
               controller: _professionController,
             ),
             CustomLabelInput(
-              label: 'Birth Date',
-              hintText: 'Select birth date',
+              label: context.translate('birth_date'),
+              hintText: context.translate('select_birth_date'),
               isCalendar: true,
               isReadOnly: true,
               validator: (final String? val) => null,
@@ -128,8 +129,8 @@ class _ProfileEditFormState extends State<ProfileEditForm> {
               },
             ),
             CustomLabelSelector(
-              label: 'Primary Currency',
-              hintText: 'Select primary currency',
+              label: context.translate('primary_currency'),
+              hintText: context.translate('select_primary_currency'),
               validator: (final String? val) => null,
               selectedValue: _selectedCurrency,
               items: _currencies,
@@ -145,7 +146,7 @@ class _ProfileEditFormState extends State<ProfileEditForm> {
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(
-                'Enable Dual Currency Mode (HNL & USD)',
+                context.translate('enable_dual_currency_mode'),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -155,7 +156,7 @@ class _ProfileEditFormState extends State<ProfileEditForm> {
                 ),
               ),
               subtitle: Text(
-                'Simultaneously manage transactions in Honduran Lempiras (L.) and US Dollars (\$)',
+                context.translate('dual_currency_description'),
                 style: TextStyle(
                   fontSize: 12,
                   color: widget.isDark
@@ -180,7 +181,7 @@ class _ProfileEditFormState extends State<ProfileEditForm> {
                   child: CustomButton(
                     onPressed: widget.onCancel,
                     isPrimary: false,
-                    text: 'Cancel',
+                    text: context.translate('cancel'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -189,7 +190,7 @@ class _ProfileEditFormState extends State<ProfileEditForm> {
                   child: CustomButton(
                     onPressed: _submit,
                     isPrimary: true,
-                    text: 'Save Changes',
+                    text: context.translate('save_changes'),
                   ),
                 ),
               ],
