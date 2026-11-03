@@ -36,15 +36,16 @@ class _OnboardingBodyState extends State<OnboardingBody> {
   final TextEditingController _birthDateController = TextEditingController();
 
   int _currentStep = 0;
-  String _selectedCurrencyLabel = '$hnlCurrency (L.) - Honduran Lempira';
+  String _selectedCurrency = hnlCurrency;
   bool _enableDualCurrency = false;
   late final String _recoveryPhrase;
   bool _hasDownloadedKey = false;
 
-  final List<String> _currencies = <String>[
-    '$hnlCurrency (L.) - Honduran Lempira',
-    '$usdCurrency (\$) - US Dollar',
-  ];
+  String _currencyLabel(final BuildContext context, final String code) {
+    return code == usdCurrency
+        ? context.translate('usd_currency_label')
+        : context.translate('hnl_currency_label');
+  }
 
   @override
   void initState() {
@@ -80,7 +81,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
       if (!_hasDownloadedKey) {
         showSnackbar(
           context,
-          'Please download your emergency recovery key to proceed.',
+          context.translate('please_download_emergency_key'),
         );
         return;
       }
@@ -113,7 +114,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
 
     showSnackbar(
       context,
-      'Recovery key file downloaded. Keep it in a safe location!',
+      context.translate('recovery_key_downloaded_keep_safe'),
     );
   }
 
@@ -121,9 +122,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
     final User? currentUser = FirebaseAuth.instance.currentUser;
     final String uid = currentUser?.uid ?? emptyString;
     final String email = currentUser?.email ?? emptyString;
-    final String primaryCode = _selectedCurrencyLabel.contains(usdCurrency)
-        ? usdCurrency
-        : hnlCurrency;
+    final String primaryCode = _selectedCurrency;
 
     final EncryptionService encryptionService = EncryptionService();
     final SecretKey dek = await encryptionService.generateDataEncryptionKey();
@@ -231,7 +230,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Welcome aboard!',
+                          context.translate('welcome_aboard'),
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -243,7 +242,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Let\'s set up your profile and security vault to protect your financial data',
+                          context.translate('onboarding_header_subtitle'),
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark
@@ -253,7 +252,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
-                        _buildStepProgress(isDark),
+                        _buildStepProgress(context, isDark),
                         const SizedBox(height: 24),
                         AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
@@ -271,7 +270,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
                                 child: CustomButton(
                                   onPressed: _onPreviousStep,
                                   isPrimary: false,
-                                  text: 'Back',
+                                  text: context.translate('back'),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -281,10 +280,14 @@ class _OnboardingBodyState extends State<OnboardingBody> {
                                 onPressed: _onNextStep,
                                 isPrimary: true,
                                 text: _currentStep == 0
-                                    ? 'Continue'
+                                    ? context.translate('continue_button')
                                     : (_currentStep == 1
-                                          ? 'Next: Security Vault'
-                                          : 'Complete Setup'),
+                                          ? context.translate(
+                                              'next_security_vault',
+                                            )
+                                          : context.translate(
+                                              'complete_setup',
+                                            )),
                               ),
                             ),
                           ],
@@ -309,24 +312,24 @@ class _OnboardingBodyState extends State<OnboardingBody> {
     );
   }
 
-  Widget _buildStepProgress(final bool isDark) {
+  Widget _buildStepProgress(final BuildContext context, final bool isDark) {
     return Row(
       children: <Widget>[
         _buildProgressSegment(
           isDark: isDark,
-          title: '1. Profile',
+          title: context.translate('step_profile'),
           isActive: _currentStep >= 0,
         ),
         const SizedBox(width: 8),
         _buildProgressSegment(
           isDark: isDark,
-          title: '2. Currency',
+          title: context.translate('step_currency'),
           isActive: _currentStep >= 1,
         ),
         const SizedBox(width: 8),
         _buildProgressSegment(
           isDark: isDark,
-          title: '3. Security',
+          title: context.translate('step_security'),
           isActive: _currentStep >= 2,
         ),
       ],
@@ -374,25 +377,25 @@ class _OnboardingBodyState extends State<OnboardingBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         CustomLabelInput(
-          label: 'Full Name *',
-          hintText: 'e.g. John Doe',
+          label: '${context.translate('full_name')} *',
+          hintText: context.translate('hint_full_name_example'),
           validator: (final String? value) {
             if (value == null || value.trim().isEmpty) {
-              return 'Please enter your full name';
+              return context.translate('please_enter_full_name');
             }
             return null;
           },
           controller: _fullNameController,
         ),
         CustomLabelInput(
-          label: 'Profession / Title (Optional)',
-          hintText: 'e.g. Software Engineer, Designer, Accountant',
+          label: context.translate('profession_optional'),
+          hintText: context.translate('profession_examples_hint'),
           validator: (final String? value) => null,
           controller: _professionController,
         ),
         CustomLabelInput(
-          label: 'Birth Date (Optional)',
-          hintText: 'Select your date of birth',
+          label: context.translate('birth_date_optional'),
+          hintText: context.translate('select_date_of_birth'),
           isCalendar: true,
           isReadOnly: true,
           validator: (final String? value) => null,
@@ -414,20 +417,25 @@ class _OnboardingBodyState extends State<OnboardingBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         CustomLabelSelector(
-          label: 'Primary Display Currency *',
-          hintText: 'Select primary currency (HNL or USD)',
+          label: context.translate('primary_display_currency'),
+          hintText: context.translate('select_primary_currency_hint'),
           validator: (final String? value) {
             if (value == null || value.isEmpty) {
-              return 'Please select a primary currency';
+              return context.translate('please_select_primary_currency');
             }
             return null;
           },
-          selectedValue: _selectedCurrencyLabel,
-          items: _currencies,
+          selectedValue: _currencyLabel(context, _selectedCurrency),
+          items: <String>[
+            context.translate('hnl_currency_label'),
+            context.translate('usd_currency_label'),
+          ],
           onChanged: (final String? newValue) {
             if (newValue != null) {
               setState(() {
-                _selectedCurrencyLabel = newValue;
+                _selectedCurrency = newValue.contains(usdCurrency)
+                    ? usdCurrency
+                    : hnlCurrency;
               });
             }
           },
@@ -461,7 +469,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'Enable Dual Currency Mode (HNL & USD)',
+                      context.translate('enable_dual_currency_mode'),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -472,7 +480,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Allows tracking incomes & expenses simultaneously in both Honduran Lempiras (L.) and US Dollars (\$)',
+                      context.translate('dual_currency_onboarding_desc'),
                       style: TextStyle(
                         fontSize: 12,
                         color: isDark
@@ -511,7 +519,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Zero-Knowledge Security Vault',
+          context.translate('zk_security_vault'),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -521,7 +529,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
         ),
         const SizedBox(height: 6),
         Text(
-          'Your financial data is encrypted on your device. Download your emergency recovery key below to ensure you can always recover your records.',
+          context.translate('zk_vault_onboarding_desc'),
           style: TextStyle(
             fontSize: 13,
             color: isDark
@@ -585,13 +593,13 @@ class _OnboardingBodyState extends State<OnboardingBody> {
                     Clipboard.setData(ClipboardData(text: _recoveryPhrase));
                     showSnackbar(
                       context,
-                      'Recovery phrase copied to clipboard',
+                      context.translate('recovery_phrase_copied'),
                     );
                   },
                   icon: const Icon(Icons.copy, size: 14),
-                  label: const Text(
-                    'Copy Phrase',
-                    style: TextStyle(fontSize: 12),
+                  label: Text(
+                    context.translate('copy_phrase'),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ),
               ),
@@ -601,8 +609,8 @@ class _OnboardingBodyState extends State<OnboardingBody> {
         const SizedBox(height: 16),
         CustomButton(
           text: _hasDownloadedKey
-              ? 'Download Key Again (.txt)'
-              : 'Download Emergency Key (.txt) *',
+              ? context.translate('download_key_again')
+              : context.translate('download_emergency_key'),
           onPressed: _downloadEmergencyKey,
           isPrimary: !_hasDownloadedKey,
         ),
@@ -621,7 +629,9 @@ class _OnboardingBodyState extends State<OnboardingBody> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Emergency key downloaded! You can now complete setup.',
+                    context.translate(
+                      'emergency_key_downloaded_complete_setup',
+                    ),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -636,7 +646,7 @@ class _OnboardingBodyState extends State<OnboardingBody> {
           )
         else
           Text(
-            '⚠️ Downloading your emergency key is required to finish setup',
+            context.translate('downloading_emergency_key_required'),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
