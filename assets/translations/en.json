@@ -47,6 +47,7 @@
   "export_savings": "Export Savings",
   "all_datasets_exported": "All financial datasets exported (5 CSV files).",
   "export_all_datasets": "Export All Datasets (5 CSVs)",
+  "personal_finances": "Personal Finances",
   "welcome_aboard": "Welcome aboard!",
   "onboarding_header_subtitle": "Let's set up your profile and security vault to protect your financial data",
   "step_profile": "1. Profile",

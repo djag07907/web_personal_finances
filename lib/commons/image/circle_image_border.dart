@@ -40,15 +40,13 @@ class CircularImageBorder extends StatelessWidget {
           ),
         ],
       ),
-      child: CircleAvatar(
-        backgroundColor: primaryColor.withValues(alpha: 0.8),
-        child: imagePath != null ? _buildImageAsset() : _buildTextImage(),
-      ),
+      child: imagePath != null
+          ? ClipOval(child: Image.asset(imagePath!, fit: BoxFit.cover))
+          : CircleAvatar(
+              backgroundColor: primaryColor.withValues(alpha: 0.8),
+              child: _buildTextImage(),
+            ),
     );
-  }
-
-  Widget _buildImageAsset() {
-    return Image.asset(imagePath!, fit: BoxFit.contain);
   }
 
   Widget _buildTextImage() {

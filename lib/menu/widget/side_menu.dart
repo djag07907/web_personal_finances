@@ -78,17 +78,22 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
           builder: (final SideMenuBuilderData data) {
             return SideMenuData(
               header: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 16.0,
+                ),
                 child: Column(
-                  spacing: 16.0,
                   children: <Widget>[
-                    Container(
-                      width: 95,
-                      height: 95,
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: _isCollapsed ? 48.0 : 78.0,
+                      height: _isCollapsed ? 48.0 : 78.0,
                       decoration: BoxDecoration(
-                        color: transparent,
                         shape: BoxShape.circle,
-                        border: Border.all(color: primaryColor, width: 2),
+                        border: Border.all(
+                          color: primaryColor.withValues(alpha: 0.6),
+                          width: 2,
+                        ),
                         boxShadow: <BoxShadow>[
                           BoxShadow(
                             color: primaryColor.withValues(alpha: 0.25),
@@ -98,24 +103,31 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                         ],
                       ),
                       child: ClipOval(
-                        child: CircularImageBorder(
-                          minHeight: 85.0,
-                          minWidth: 85.0,
-                          imagePath: pecuniaLogoPath,
-                        ),
+                        child: Image.asset(pecuniaLogoPath, fit: BoxFit.cover),
                       ),
                     ),
-                    _isCollapsed
-                        ? const SizedBox.shrink()
-                        : Text(
-                            'Daniel Alvarez',
-                            style: Theme.of(context).textTheme.titleLarge!
-                                .copyWith(
-                                  fontSize: fontSize20,
-                                  color: white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          ),
+                    if (!_isCollapsed) ...<Widget>[
+                      const SizedBox(height: 12),
+                      Text(
+                        appName,
+                        style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                          fontSize: fontSize20,
+                          color: white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        context.translate('personal_finances'),
+                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                          fontSize: fontSize12,
+                          color: textSecondaryDark,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
