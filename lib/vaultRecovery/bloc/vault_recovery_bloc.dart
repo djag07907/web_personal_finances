@@ -22,8 +22,48 @@ class VaultRecoveryBloc extends Bloc<VaultRecoveryEvent, VaultRecoveryState> {
     final EncryptionService? encryptionService,
   }) : encryptionService = encryptionService ?? EncryptionService(),
        super(VaultRecoveryInitial()) {
+    on<VaultRecoveryPasswordUnlockSubmitted>(_onPasswordUnlockSubmitted);
     on<VaultRecoveryUnlockSubmitted>(_onUnlockSubmitted);
     on<VaultRecoveryResetSubmitted>(_onResetSubmitted);
+  }
+
+  Future<void> _onPasswordUnlockSubmitted(
+    final VaultRecoveryPasswordUnlockSubmitted event,
+    final Emitter<VaultRecoveryState> emit,
+  ) async {
+    emit(VaultRecoveryInProgress());
+    try {
+      await authRepository.verifyPassword(password: event.password);
+
+      final UserModel? profile = await userRepository.getUser(event.uid);
+      if (profile == null || profile.vault == null) {
+        throw Exception('No encrypted vault found for this account.');
+      }
+
+      final SecretKey? dek = await encryptionService.unlockVaultWithPassword(
+        profile.vault!,
+        event.password,
+      );
+
+      if (dek == null) {
+        throw Exception(
+          'Password verified, but could not unlock this vault. If your password was recently changed, please use your Emergency Recovery Key to restore access.',
+        );
+      }
+
+      await SessionVault.instance.setDek(dek, uid: event.uid);
+      SessionVault.instance.clearPendingAuthPassword();
+
+      emit(const VaultRecoverySuccess(recoveryPhrase: emptyString));
+    } on FirebaseAuthException catch (e) {
+      emit(VaultRecoveryFailure(error: _mapAuthError(e.code)));
+    } catch (e) {
+      emit(
+        VaultRecoveryFailure(
+          error: e.toString().replaceFirst('Exception: ', emptyString),
+        ),
+      );
+    }
   }
 
   Future<void> _onUnlockSubmitted(
@@ -58,8 +98,11 @@ class VaultRecoveryBloc extends Bloc<VaultRecoveryEvent, VaultRecoveryState> {
 
       await userRepository.saveUser(profile.copyWith(vault: newVault));
 
-      SessionVault.instance.setDek(dek);
-      SessionVault.instance.setRecoveryPhrase(event.recoveryPhrase);
+      await SessionVault.instance.setDek(dek, uid: event.uid);
+      SessionVault.instance.setRecoveryPhrase(
+        event.recoveryPhrase,
+        uid: event.uid,
+      );
       SessionVault.instance.clearPendingAuthPassword();
 
       emit(VaultRecoverySuccess(recoveryPhrase: event.recoveryPhrase));
@@ -100,8 +143,8 @@ class VaultRecoveryBloc extends Bloc<VaultRecoveryEvent, VaultRecoveryState> {
         await userRepository.saveUser(profile.copyWith(vault: freshVault));
       }
 
-      SessionVault.instance.setDek(newDek);
-      SessionVault.instance.setRecoveryPhrase(newPhrase);
+      await SessionVault.instance.setDek(newDek, uid: event.uid);
+      SessionVault.instance.setRecoveryPhrase(newPhrase, uid: event.uid);
       SessionVault.instance.clearPendingAuthPassword();
 
       emit(VaultRecoveryResetSuccess(recoveryPhrase: newPhrase));

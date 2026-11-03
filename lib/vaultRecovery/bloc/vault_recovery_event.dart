@@ -24,6 +24,19 @@ class VaultRecoveryUnlockSubmitted extends VaultRecoveryEvent {
   List<Object?> get props => <Object?>[uid, email, recoveryPhrase, password];
 }
 
+class VaultRecoveryPasswordUnlockSubmitted extends VaultRecoveryEvent {
+  final String uid;
+  final String password;
+
+  const VaultRecoveryPasswordUnlockSubmitted({
+    required this.uid,
+    required this.password,
+  });
+
+  @override
+  List<Object?> get props => <Object?>[uid, password];
+}
+
 class VaultRecoveryResetSubmitted extends VaultRecoveryEvent {
   final String uid;
   final String email;

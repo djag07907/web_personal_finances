@@ -47,8 +47,11 @@ class VaultSetupBloc extends Bloc<VaultSetupEvent, VaultSetupState> {
 
       await userRepository.saveUser(profile.copyWith(vault: vault));
 
-      SessionVault.instance.setDek(dek);
-      SessionVault.instance.setRecoveryPhrase(event.recoveryPhrase);
+      await SessionVault.instance.setDek(dek, uid: event.uid);
+      SessionVault.instance.setRecoveryPhrase(
+        event.recoveryPhrase,
+        uid: event.uid,
+      );
       SessionVault.instance.clearPendingAuthPassword();
 
       emit(VaultSetupSuccess());

@@ -136,8 +136,8 @@ class _OnboardingBodyState extends State<OnboardingBody> {
       salt: salt,
     );
 
-    SessionVault.instance.setDek(dek);
-    SessionVault.instance.setRecoveryPhrase(_recoveryPhrase);
+    await SessionVault.instance.setDek(dek, uid: uid);
+    SessionVault.instance.setRecoveryPhrase(_recoveryPhrase, uid: uid);
 
     final UserModel userModel = UserModel(
       uid: uid,

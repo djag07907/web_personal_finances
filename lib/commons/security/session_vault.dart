@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/foundation.dart';
+import 'package:web_personal_finances/commons/security/session_storage_helper.dart';
 
 /// In-memory vault holding the decrypted Data Encryption Key (DEK)
 /// for the authenticated user's current session.
 ///
-/// Keys are never persisted in plaintext and are immediately wiped on logout.
+/// Keys are stored in transient browser memory (and tab-scoped sessionStorage)
+/// to survive in-tab reloads, and are wiped immediately on logout or tab close.
 class SessionVault extends ChangeNotifier {
   SessionVault._();
 
@@ -31,9 +35,38 @@ class SessionVault extends ChangeNotifier {
   /// The user's active 12-word recovery phrase for the session, if available.
   String? get recoveryPhrase => _recoveryPhrase;
 
-  /// Sets the active Data Encryption Key in memory.
-  void setDek(final SecretKey dek) {
+  /// Sets the active Data Encryption Key in memory and syncs to sessionStorage.
+  Future<void> setDek(final SecretKey dek, {final String? uid}) async {
     _currentDek = dek;
+    if (uid != null && uid.isNotEmpty) {
+      try {
+        final List<int> bytes = await dek.extractBytes();
+        saveSessionDek(uid: uid, rawDekBase64: base64Url.encode(bytes));
+      } catch (_) {}
+    }
+    notifyListeners();
+  }
+
+  /// Attempts to restore the active DEK from browser sessionStorage for [uid].
+  bool tryRestoreFromSession(final String uid) {
+    if (_currentDek != null) return true;
+    if (uid.isEmpty) return false;
+    final String? stored = getSessionDek(uid: uid);
+    if (stored != null && stored.isNotEmpty) {
+      try {
+        final List<int> bytes = base64Url.decode(stored);
+        _currentDek = SecretKey(bytes);
+        final String? phrase = getSessionPhrase(uid: uid);
+        if (phrase != null && phrase.isNotEmpty) {
+          _recoveryPhrase = phrase;
+        }
+        notifyListeners();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return false;
   }
 
   /// Sets the temporary auth password in memory.
@@ -46,9 +79,12 @@ class SessionVault extends ChangeNotifier {
     _pendingAuthPassword = null;
   }
 
-  /// Sets the active recovery phrase in memory.
-  void setRecoveryPhrase(final String phrase) {
+  /// Sets the active recovery phrase in memory and syncs to sessionStorage.
+  void setRecoveryPhrase(final String phrase, {final String? uid}) {
     _recoveryPhrase = phrase;
+    if (uid != null && uid.isNotEmpty) {
+      saveSessionPhrase(uid: uid, phrase: phrase);
+    }
   }
 
   /// Marks the start of the login-time vault unlock attempt.
@@ -63,12 +99,13 @@ class SessionVault extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Wipes all sensitive keys and passwords from memory. Called on user sign out.
+  /// Wipes all sensitive keys and passwords from memory and sessionStorage. Called on user sign out.
   void clear() {
     _currentDek = null;
     _pendingAuthPassword = null;
     _recoveryPhrase = null;
     _isUnlockInProgress = false;
+    clearSessionStorage();
     notifyListeners();
   }
 }

@@ -43,7 +43,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           final SecretKey? dek = await EncryptionService()
               .unlockVaultWithPassword(profile!.vault!, event.password);
           if (dek != null) {
-            SessionVault.instance.setDek(dek);
+            SessionVault.instance.setDek(dek, uid: uid);
           } else {
             SessionVault.instance.setPendingAuthPassword(event.password);
             final String? preloadedPhrase =
@@ -67,7 +67,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
                 await userRepository.saveUser(
                   profile.copyWith(vault: updatedVault),
                 );
-                SessionVault.instance.setDek(recoveredDek);
+                SessionVault.instance.setDek(recoveredDek, uid: uid);
                 RecoveryKeyUtils.downloadEmergencyKey(
                   email: profile.email,
                   uid: uid,
@@ -76,9 +76,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
               }
             }
           }
-        } else if (profile != null) {
-          // Existing account without a vault: the vault setup screen will
-          // create one using this (already verified) login password.
+        } else {
+          // Account without a vault (e.g. pending onboarding or legacy account):
+          // Store verified login password so onboarding/setup encrypts the vault with it.
           SessionVault.instance.setPendingAuthPassword(event.password);
         }
       }

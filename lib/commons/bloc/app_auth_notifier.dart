@@ -67,12 +67,16 @@ class AppAuthNotifier extends ChangeNotifier {
     _firebaseUser = user;
 
     if (user == null) {
-      // Signed out — clear profile immediately.
+      // Signed out — clear profile and session immediately.
       _userProfile = null;
       _isLoading = false;
+      SessionVault.instance.clear();
       notifyListeners();
       return;
     }
+
+    // Try to restore the active DEK from browser sessionStorage for this tab.
+    SessionVault.instance.tryRestoreFromSession(user.uid);
 
     // Signed in — fetch profile to determine onboarding status.
     try {
