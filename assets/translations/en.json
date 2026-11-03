@@ -21,7 +21,7 @@
   "primary_currency": "Primary Currency",
   "select_primary_currency": "Select primary currency",
   "enable_dual_currency_mode": "Enable Dual Currency Mode (HNL & USD)",
-  "dual_currency_description": "Simultaneously manage transactions in Honduran Lempiras (L.) and US Dollars (\$)",
+  "dual_currency_description": "Simultaneously manage transactions in Honduran Lempiras (L.) and US Dollars ($)",
   "save_changes": "Save Changes",
   "dual_mode_enabled": "Dual Mode HNL & USD Enabled",
   "not_specified": "Not specified",
