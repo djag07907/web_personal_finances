@@ -26,6 +26,7 @@ import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/resources/fonts_constants.dart';
+import 'package:web_personal_finances/savings/model/saving_item.dart';
 import 'package:web_personal_finances/user/model/user_model.dart';
 
 part 'dashboard_kpi_card.dart';
@@ -153,10 +154,22 @@ class _HomeBodyState extends State<HomeBody> {
     final List<AccountToPayItem> accountsToPay = loadedState.accountsToPay;
     final List<AccountReceivableItem> accountsReceivable =
         loadedState.accountsReceivable;
+    final List<SavingItem> savings = loadedState.savings;
 
     final String primaryCurrency = profile.primaryCurrency.isNotEmpty
         ? profile.primaryCurrency
         : hnlCurrency;
+
+    // 0. Executive Balance Sheet & Net Worth cards (MASTER OVERVIEW)
+    final List<KpiCardSpec> netWorthCards =
+        CurrencyKpiUtils.generateNetWorthKpiCards(
+          savings: savings,
+          receivables: accountsReceivable,
+          accountsToPay: accountsToPay,
+          expenses: expenses,
+          user: profile,
+          context: context,
+        );
 
     // 1. Incomes cards (FIRST)
     final List<KpiCardSpec> incomeCards =
@@ -254,6 +267,18 @@ class _HomeBodyState extends State<HomeBody> {
               final Widget mainContentColumn = Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
+                  // Section 0: Executive Balance Sheet & Net Worth (CONSOLIDATED OVERVIEW)
+                  _buildSectionHeader(
+                    context: context,
+                    title: context.translate('executive_balance_sheet_title'),
+                    subtitle: context.translate(
+                      'executive_balance_sheet_subtitle',
+                    ),
+                    icon: Icons.account_balance_outlined,
+                    iconColor: LightColors.primary,
+                  ),
+                  _buildKpiGrid(netWorthCards),
+
                   // Section 1: Incomes (FIRST)
                   _buildSectionHeader(
                     context: context,

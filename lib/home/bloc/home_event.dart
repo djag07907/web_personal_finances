@@ -3,6 +3,7 @@ import 'package:web_personal_finances/accountsReceivable/model/account_receivabl
 import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
 import 'package:web_personal_finances/expenses/model/expense_item.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
+import 'package:web_personal_finances/savings/model/saving_item.dart';
 
 abstract class HomeEvent extends Equatable {
   const HomeEvent();
@@ -54,4 +55,13 @@ class HomeAccountsReceivableUpdated extends HomeEvent {
 
   @override
   List<Object?> get props => <Object?>[accountsReceivable];
+}
+
+class HomeSavingsUpdated extends HomeEvent {
+  const HomeSavingsUpdated({required this.savings});
+
+  final List<SavingItem> savings;
+
+  @override
+  List<Object?> get props => <Object?>[savings];
 }

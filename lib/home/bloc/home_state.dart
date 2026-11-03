@@ -3,6 +3,7 @@ import 'package:web_personal_finances/accountsReceivable/model/account_receivabl
 import 'package:web_personal_finances/accountsToPay/model/account_to_pay_item.dart';
 import 'package:web_personal_finances/expenses/model/expense_item.dart';
 import 'package:web_personal_finances/incomes/model/income_item.dart';
+import 'package:web_personal_finances/savings/model/saving_item.dart';
 import 'package:web_personal_finances/user/model/user_model.dart';
 
 abstract class HomeState extends Equatable {
@@ -22,6 +23,7 @@ class HomeLoaded extends HomeState {
   final List<ExpenseItem> expenses;
   final List<AccountToPayItem> accountsToPay;
   final List<AccountReceivableItem> accountsReceivable;
+  final List<SavingItem> savings;
 
   const HomeLoaded({
     required this.profile,
@@ -29,6 +31,7 @@ class HomeLoaded extends HomeState {
     this.expenses = const <ExpenseItem>[],
     this.accountsToPay = const <AccountToPayItem>[],
     this.accountsReceivable = const <AccountReceivableItem>[],
+    this.savings = const <SavingItem>[],
   });
 
   HomeLoaded copyWith({
@@ -37,6 +40,7 @@ class HomeLoaded extends HomeState {
     final List<ExpenseItem>? expenses,
     final List<AccountToPayItem>? accountsToPay,
     final List<AccountReceivableItem>? accountsReceivable,
+    final List<SavingItem>? savings,
   }) {
     return HomeLoaded(
       profile: profile ?? this.profile,
@@ -44,6 +48,7 @@ class HomeLoaded extends HomeState {
       expenses: expenses ?? this.expenses,
       accountsToPay: accountsToPay ?? this.accountsToPay,
       accountsReceivable: accountsReceivable ?? this.accountsReceivable,
+      savings: savings ?? this.savings,
     );
   }
 
@@ -54,6 +59,7 @@ class HomeLoaded extends HomeState {
     expenses,
     accountsToPay,
     accountsReceivable,
+    savings,
   ];
 }
 

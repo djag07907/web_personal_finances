@@ -10,6 +10,7 @@ import 'package:web_personal_finances/home/widget/home_body.dart';
 import 'package:web_personal_finances/incomes/repository/incomes_repository.dart';
 import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/resources/constants.dart';
+import 'package:web_personal_finances/savings/repository/savings_repository.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -26,6 +27,7 @@ class HomeScreen extends StatelessWidget {
           expenseRepository: ExpenseRepository(),
           accountToPayRepository: AccountToPayRepository(),
           accountReceivableRepository: AccountReceivableRepository(),
+          savingsRepository: SavingsRepository(),
         )..add(HomeFetchProfile(uid: uid));
       },
       child: const HomeBody(),

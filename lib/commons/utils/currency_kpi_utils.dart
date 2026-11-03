@@ -712,4 +712,226 @@ class CurrencyKpiUtils {
 
     return cards;
   }
+
+  /// Calculates total accumulated Net Worth for a specific currency:
+  /// Net Worth = (Total Liquid Savings + Pending Receivables) - (Pending Accounts to Pay + Unpaid Active Expenses).
+  static double calculateNetWorth({
+    required final List<SavingItem> savings,
+    required final List<AccountReceivableItem> receivables,
+    required final List<AccountToPayItem> accountsToPay,
+    required final List<ExpenseItem> expenses,
+    required final String currency,
+  }) {
+    final double totalSavings = savings
+        .where((final SavingItem s) => s.status && s.currency == currency)
+        .fold(
+          0.0,
+          (final double sum, final SavingItem s) => sum + s.currentAmount,
+        );
+
+    final double totalReceivables = receivables
+        .where(
+          (final AccountReceivableItem r) =>
+              r.status && !r.isFullyPaid && r.currency == currency,
+        )
+        .fold(
+          0.0,
+          (final double sum, final AccountReceivableItem r) =>
+              sum + r.remainingBalance,
+        );
+
+    final double totalDebts = accountsToPay
+        .where(
+          (final AccountToPayItem p) =>
+              p.status && !p.isFullyPaid && p.currency == currency,
+        )
+        .fold(
+          0.0,
+          (final double sum, final AccountToPayItem p) =>
+              sum + p.remainingBalance,
+        );
+
+    final double unpaidExpenses = expenses
+        .where(
+          (final ExpenseItem e) =>
+              e.status && !e.isPaid && e.currency == currency,
+        )
+        .fold(0.0, (final double sum, final ExpenseItem e) => sum + e.amount);
+
+    final double totalAssets = totalSavings + totalReceivables;
+    final double totalLiabilities = totalDebts + unpaidExpenses;
+
+    return totalAssets - totalLiabilities;
+  }
+
+  /// Generates the Executive Balance Sheet & Net Worth KPI cards.
+  static List<KpiCardSpec> generateNetWorthKpiCards({
+    required final List<SavingItem> savings,
+    required final List<AccountReceivableItem> receivables,
+    required final List<AccountToPayItem> accountsToPay,
+    required final List<ExpenseItem> expenses,
+    required final UserModel? user,
+    final BuildContext? context,
+  }) {
+    final bool isDual = user?.enableDualCurrency ?? false;
+    final String primary =
+        (user?.primaryCurrency != null && user!.primaryCurrency.isNotEmpty)
+        ? user.primaryCurrency
+        : hnlCurrency;
+    final String secondary = primary == hnlCurrency ? usdCurrency : hnlCurrency;
+    final List<String> currencies = <String>[primary, if (isDual) secondary];
+
+    final List<KpiCardSpec> cards = <KpiCardSpec>[];
+
+    for (final String currency in currencies) {
+      final double totalSavings = savings
+          .where((final SavingItem s) => s.status && s.currency == currency)
+          .fold(
+            0.0,
+            (final double sum, final SavingItem s) => sum + s.currentAmount,
+          );
+
+      final double totalReceivables = receivables
+          .where(
+            (final AccountReceivableItem r) =>
+                r.status && !r.isFullyPaid && r.currency == currency,
+          )
+          .fold(
+            0.0,
+            (final double sum, final AccountReceivableItem r) =>
+                sum + r.remainingBalance,
+          );
+
+      final double totalDebts = accountsToPay
+          .where(
+            (final AccountToPayItem p) =>
+                p.status && !p.isFullyPaid && p.currency == currency,
+          )
+          .fold(
+            0.0,
+            (final double sum, final AccountToPayItem p) =>
+                sum + p.remainingBalance,
+          );
+
+      final double unpaidExpenses = expenses
+          .where(
+            (final ExpenseItem e) =>
+                e.status && !e.isPaid && e.currency == currency,
+          )
+          .fold(0.0, (final double sum, final ExpenseItem e) => sum + e.amount);
+
+      final double totalAssets = totalSavings + totalReceivables;
+      final double totalLiabilities = totalDebts + unpaidExpenses;
+      final double netWorth = totalAssets - totalLiabilities;
+
+      final double debtToAssetRatio = totalAssets > 0
+          ? (totalLiabilities / totalAssets) * 100
+          : (totalLiabilities > 0 ? 100.0 : 0.0);
+
+      String suffix(final String label) =>
+          isDual ? '$label ($currency)' : label;
+
+      // 1. Total Net Worth Master Card
+      cards.add(
+        KpiCardSpec(
+          title: suffix(
+            context?.translate('net_worth_title') ?? 'Total Net Worth',
+          ),
+          amount: formatAmount(netWorth, currency),
+          subtitle: netWorth >= 0
+              ? (context?.translate('positive_equity') ??
+                    'Positive Equity / Solvent')
+              : (context?.translate('negative_equity') ??
+                    'Negative Equity / Liabilities Exceed Assets'),
+          isPositive: netWorth >= 0,
+          icon: netWorth >= 0
+              ? Icons.account_balance_wallet_outlined
+              : Icons.warning_amber_rounded,
+          currency: currency,
+          description:
+              context?.translate('net_worth_desc') ??
+              'Total personal wealth: Assets minus total obligations.',
+          calculation:
+              context?.translate('net_worth_calc') ??
+              '(Liquid Savings + Receivables) - (Debts + Unpaid Expenses).',
+        ),
+      );
+
+      // 2. Total Assets
+      cards.add(
+        KpiCardSpec(
+          title: suffix(
+            context?.translate('total_assets_title') ?? 'Total Assets',
+          ),
+          amount: formatAmount(totalAssets, currency),
+          subtitle:
+              context?.translate('assets_subtitle') ??
+              'Liquid savings & capital owed to you',
+          isPositive: true,
+          icon: Icons.savings_outlined,
+          currency: currency,
+          description:
+              context?.translate('total_assets_desc') ??
+              'Sum of all active savings reserves and pending receivables.',
+          calculation:
+              context?.translate('total_assets_calc') ??
+              'Current Savings Amount + Remaining Receivables.',
+        ),
+      );
+
+      // 3. Total Liabilities
+      cards.add(
+        KpiCardSpec(
+          title: suffix(
+            context?.translate('total_liabilities_title') ??
+                'Total Liabilities',
+          ),
+          amount: formatAmount(totalLiabilities, currency),
+          subtitle: totalLiabilities > 0
+              ? (context?.translate('liabilities_subtitle') ??
+                    'Debts, loans & pending bills')
+              : (context?.translate('zero_debt_free') ??
+                    'Debt-free / No liabilities'),
+          isPositive: totalLiabilities == 0,
+          icon: Icons.receipt_long_outlined,
+          currency: currency,
+          description:
+              context?.translate('total_liabilities_desc') ??
+              'Total obligations you currently owe to creditors and vendors.',
+          calculation:
+              context?.translate('total_liabilities_calc') ??
+              'Remaining Accounts to Pay + Unpaid Operating Expenses.',
+        ),
+      );
+
+      // 4. Debt-to-Asset Solvency Ratio
+      cards.add(
+        KpiCardSpec(
+          title: suffix(
+            context?.translate('debt_ratio_title') ?? 'Debt-to-Asset Ratio',
+          ),
+          amount: '${debtToAssetRatio.toStringAsFixed(1)}%',
+          subtitle: debtToAssetRatio <= 30
+              ? (context?.translate('healthy_solvency') ??
+                    'Healthy balance sheet (<30%)')
+              : (debtToAssetRatio <= 60
+                    ? (context?.translate('moderate_leverage') ??
+                          'Moderate leverage (30-60%)')
+                    : (context?.translate('high_leverage') ??
+                          'High financial leverage (>60%)')),
+          isPositive: debtToAssetRatio <= 40,
+          icon: Icons.pie_chart_outline_rounded,
+          currency: currency,
+          description:
+              context?.translate('debt_ratio_desc') ??
+              'The percentage of your total assets leveraged against debt.',
+          calculation:
+              context?.translate('debt_ratio_calc') ??
+              '(Total Liabilities ÷ Total Assets) × 100%.',
+        ),
+      );
+    }
+
+    return cards;
+  }
 }

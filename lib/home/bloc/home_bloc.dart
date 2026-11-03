@@ -13,6 +13,8 @@ import 'package:web_personal_finances/incomes/model/income_item.dart';
 import 'package:web_personal_finances/incomes/repository/incomes_repository.dart';
 import 'package:web_personal_finances/repositories/user_repository.dart';
 import 'package:web_personal_finances/resources/constants.dart';
+import 'package:web_personal_finances/savings/model/saving_item.dart';
+import 'package:web_personal_finances/savings/repository/savings_repository.dart';
 import 'package:web_personal_finances/user/model/user_model.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
@@ -22,18 +24,21 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final ExpenseRepository? expenseRepository,
     final AccountToPayRepository? accountToPayRepository,
     final AccountReceivableRepository? accountReceivableRepository,
+    final SavingsRepository? savingsRepository,
   }) : incomeRepository = incomeRepository ?? IncomeRepository(),
        expenseRepository = expenseRepository ?? ExpenseRepository(),
        accountToPayRepository =
            accountToPayRepository ?? AccountToPayRepository(),
        accountReceivableRepository =
            accountReceivableRepository ?? AccountReceivableRepository(),
+       savingsRepository = savingsRepository ?? SavingsRepository(),
        super(HomeInitial()) {
     on<HomeFetchProfile>(_onFetchProfile);
     on<HomeIncomesUpdated>(_onIncomesUpdated);
     on<HomeExpensesUpdated>(_onExpensesUpdated);
     on<HomeAccountsToPayUpdated>(_onAccountsToPayUpdated);
     on<HomeAccountsReceivableUpdated>(_onAccountsReceivableUpdated);
+    on<HomeSavingsUpdated>(_onSavingsUpdated);
   }
 
   final UserRepository userRepository;
@@ -41,12 +46,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final ExpenseRepository expenseRepository;
   final AccountToPayRepository accountToPayRepository;
   final AccountReceivableRepository accountReceivableRepository;
+  final SavingsRepository savingsRepository;
 
   StreamSubscription<List<IncomeItem>>? _incomesSubscription;
   StreamSubscription<List<ExpenseItem>>? _expensesSubscription;
   StreamSubscription<List<AccountToPayItem>>? _accountsToPaySubscription;
   StreamSubscription<List<AccountReceivableItem>>?
   _accountsReceivableSubscription;
+  StreamSubscription<List<SavingItem>>? _savingsSubscription;
 
   Future<void> _onFetchProfile(
     final HomeFetchProfile event,
@@ -64,6 +71,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       await _expensesSubscription?.cancel();
       await _accountsToPaySubscription?.cancel();
       await _accountsReceivableSubscription?.cancel();
+      await _savingsSubscription?.cancel();
 
       _incomesSubscription = incomeRepository.getIncomes(event.uid).listen((
         final List<IncomeItem> incomes,
@@ -92,8 +100,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               ),
             );
           });
-    } on Exception catch (e) {
-      emit(HomeError(message: e.toString()));
+
+      _savingsSubscription = savingsRepository.getSavings(event.uid).listen((
+        final List<SavingItem> savings,
+      ) {
+        add(HomeSavingsUpdated(savings: savings));
+      });
+    } on Exception catch (error) {
+      emit(HomeError(message: error.toString()));
     }
   }
 
@@ -137,12 +151,22 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
+  void _onSavingsUpdated(
+    final HomeSavingsUpdated event,
+    final Emitter<HomeState> emit,
+  ) {
+    if (state is HomeLoaded) {
+      emit((state as HomeLoaded).copyWith(savings: event.savings));
+    }
+  }
+
   @override
   Future<void> close() {
     _incomesSubscription?.cancel();
     _expensesSubscription?.cancel();
     _accountsToPaySubscription?.cancel();
     _accountsReceivableSubscription?.cancel();
+    _savingsSubscription?.cancel();
     return super.close();
   }
 }
