@@ -32,4 +32,8 @@ doc/api/
 # FVM Version Cache
 .fvm/
 
+# Vercel Configuration & Project Linkage
+.vercel/
+
 UI_PROMPTS/
+.vercel
