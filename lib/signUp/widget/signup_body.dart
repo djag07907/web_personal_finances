@@ -81,9 +81,9 @@ class _SignUpBodyState extends State<SignUpBody> {
                 CustomStatusDialog.show(
                   context,
                   type: StatusDialogType.error,
-                  title: 'Registration Failed',
+                  title: context.translate('registration_failed'),
                   message: state.error,
-                  dismissLabel: 'Try Again',
+                  dismissLabel: context.translate('try_again'),
                 );
               }
               // SignUpSuccess: router redirect via AppAuthNotifier handles navigation.
@@ -141,7 +141,10 @@ class _SignUpBodyState extends State<SignUpBody> {
                           ),
                         ),
                         if (constraints.maxWidth > 800)
-                          Expanded(flex: 4, child: _buildRightPanel(isDark)),
+                          Expanded(
+                            flex: 4,
+                            child: _buildRightPanel(context, isDark),
+                          ),
                       ],
                     );
                   },
@@ -215,7 +218,7 @@ class _SignUpBodyState extends State<SignUpBody> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Start managing your finances smartly today.',
+          context.translate('start_managing_finances_today'),
           style: TextStyle(
             fontSize: 16,
             color: isDark
@@ -245,7 +248,7 @@ class _SignUpBodyState extends State<SignUpBody> {
           keyboardType: TextInputType.emailAddress,
           style: TextStyle(color: isDark ? white : LightColors.textPrimary),
           decoration: InputDecoration(
-            hintText: 'e.g. john@example.com',
+            hintText: context.translate('email_signup_hint'),
             hintStyle: TextStyle(
               color: isDark ? Colors.grey[500] : LightColors.textSecondary,
             ),
@@ -302,7 +305,7 @@ class _SignUpBodyState extends State<SignUpBody> {
           obscureText: _obscurePassword,
           style: TextStyle(color: isDark ? white : LightColors.textPrimary),
           decoration: InputDecoration(
-            hintText: 'Min. 6 characters',
+            hintText: context.translate('password_min_length_hint'),
             hintStyle: TextStyle(
               color: isDark ? Colors.grey[500] : LightColors.textSecondary,
             ),
@@ -361,7 +364,7 @@ class _SignUpBodyState extends State<SignUpBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'Confirm Password',
+          context.translate('confirm_password'),
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -374,7 +377,7 @@ class _SignUpBodyState extends State<SignUpBody> {
           obscureText: _obscureConfirmPassword,
           style: TextStyle(color: isDark ? white : LightColors.textPrimary),
           decoration: InputDecoration(
-            hintText: 'Re-enter password',
+            hintText: context.translate('reenter_password_hint'),
             hintStyle: TextStyle(
               color: isDark ? Colors.grey[500] : LightColors.textSecondary,
             ),
@@ -452,7 +455,7 @@ class _SignUpBodyState extends State<SignUpBody> {
           child: Wrap(
             children: <Widget>[
               Text(
-                'I agree to the ',
+                context.translate('i_agree_to_the'),
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark ? Colors.grey[300] : LightColors.textPrimary,
@@ -460,9 +463,9 @@ class _SignUpBodyState extends State<SignUpBody> {
               ),
               InkWell(
                 onTap: () => openUrlInNewTab(termsRoute),
-                child: const Text(
-                  'Terms of Service',
-                  style: TextStyle(
+                child: Text(
+                  context.translate('terms_of_service'),
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: LightColors.primary,
@@ -470,7 +473,7 @@ class _SignUpBodyState extends State<SignUpBody> {
                 ),
               ),
               Text(
-                ' and ',
+                context.translate('and_conjunction'),
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark ? Colors.grey[300] : LightColors.textPrimary,
@@ -478,9 +481,9 @@ class _SignUpBodyState extends State<SignUpBody> {
               ),
               InkWell(
                 onTap: () => openUrlInNewTab(privacyRoute),
-                child: const Text(
-                  'Privacy Policy',
-                  style: TextStyle(
+                child: Text(
+                  context.translate('privacy_policy'),
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: LightColors.primary,
@@ -521,7 +524,7 @@ class _SignUpBodyState extends State<SignUpBody> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(
-            'Already have an account? ',
+            "${context.translate('already_have_account_prompt')} ",
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.grey[400] : LightColors.textSecondary,
@@ -536,9 +539,9 @@ class _SignUpBodyState extends State<SignUpBody> {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text(
-              'Sign In',
-              style: TextStyle(
+            child: Text(
+              context.translate('sign_in'),
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: LightColors.primary,
@@ -550,7 +553,7 @@ class _SignUpBodyState extends State<SignUpBody> {
     );
   }
 
-  Widget _buildRightPanel(final bool isDark) {
+  Widget _buildRightPanel(final BuildContext context, final bool isDark) {
     return Container(
       color: isDark ? DarkColors.surface : LightColors.surface,
       child: Center(
@@ -566,7 +569,7 @@ class _SignUpBodyState extends State<SignUpBody> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Take Control of Your Wealth',
+                context.translate('take_control_of_wealth'),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -576,7 +579,7 @@ class _SignUpBodyState extends State<SignUpBody> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Monitor expenses, manage dual-currency accounts, and reach financial freedom.',
+                context.translate('signup_hero_description'),
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark

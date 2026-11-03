@@ -120,7 +120,7 @@ class _LoginBodyState extends State<LoginBody> {
                                       const SizedBox(height: 48),
 
                                       // Security Indicator
-                                      _buildSecurityIndicator(isDark),
+                                      _buildSecurityIndicator(context, isDark),
                                     ],
                                   ),
                                 ),
@@ -225,7 +225,7 @@ class _LoginBodyState extends State<LoginBody> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Sign in to manage your finances',
+          context.translate('sign_in_to_manage_finances'),
           style: TextStyle(
             fontSize: 16,
             color: isDark
@@ -255,7 +255,7 @@ class _LoginBodyState extends State<LoginBody> {
           keyboardType: TextInputType.emailAddress,
           style: TextStyle(color: isDark ? white : LightColors.textPrimary),
           decoration: InputDecoration(
-            hintText: 'name@example.com',
+            hintText: context.translate('email_hint'),
             hintStyle: TextStyle(
               color: isDark ? Colors.grey[500] : LightColors.textSecondary,
             ),
@@ -410,7 +410,7 @@ class _LoginBodyState extends State<LoginBody> {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           child: Text(
-            'Forgot password?',
+            context.translate('forgot_password'),
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -446,7 +446,7 @@ class _LoginBodyState extends State<LoginBody> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(
-            "Don't have an account? ",
+            "${context.translate('dont_have_account_prompt')} ",
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.grey[400] : LightColors.textSecondary,
@@ -462,7 +462,7 @@ class _LoginBodyState extends State<LoginBody> {
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(
-              'Sign up',
+              context.translate('sign_up'),
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -475,7 +475,10 @@ class _LoginBodyState extends State<LoginBody> {
     );
   }
 
-  Widget _buildSecurityIndicator(final bool isDark) {
+  Widget _buildSecurityIndicator(
+    final BuildContext context,
+    final bool isDark,
+  ) {
     return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -483,7 +486,7 @@ class _LoginBodyState extends State<LoginBody> {
           Icon(Icons.lock, size: 16, color: LightColors.primary),
           const SizedBox(width: 8),
           Text(
-            'Your connection is secure',
+            context.translate('your_connection_is_secure'),
             style: TextStyle(
               fontSize: 12,
               color: isDark ? Colors.grey[500] : LightColors.textSecondary,

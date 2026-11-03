@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/routes/landing_routes.dart';
@@ -133,7 +134,9 @@ class LegalReaderScaffold extends StatelessWidget {
                                   size: 16,
                                 ),
                                 label: Text(
-                                  isCompact ? 'Back' : 'Back to Sign Up',
+                                  isCompact
+                                      ? context.translate('back')
+                                      : context.translate('back_to_sign_up'),
                                 ),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: textPrimary,

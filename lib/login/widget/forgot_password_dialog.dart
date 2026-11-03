@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/security/file_picker_helper.dart';
 import 'package:web_personal_finances/commons/security/recovery_key_utils.dart';
 import 'package:web_personal_finances/commons/snackBar/custom_snackbar.dart';
@@ -56,20 +57,22 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
 
       final String? email = RecoveryKeyUtils.extractEmail(content);
       if (email != null && email.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _emailController.text = email;
-          _autofillNotice = 'Autofilled account email from emergency key file.';
+          _autofillNotice = context.translate('autofilled_email_from_key');
           _errorMessage = null;
         });
       } else {
+        if (!mounted) return;
         setState(() {
-          _errorMessage =
-              'Could not find an account email in the selected key file.';
+          _errorMessage = context.translate('could_not_find_email_in_key');
         });
       }
     } catch (_) {
+      if (!mounted) return;
       setState(() {
-        _errorMessage = 'Failed to read emergency key file.';
+        _errorMessage = context.translate('failed_to_read_emergency_key');
       });
     }
   }
@@ -79,7 +82,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
 
     if (email.isEmpty || !email.contains('@')) {
       setState(() {
-        _errorMessage = 'Please enter a valid account email.';
+        _errorMessage = context.translate('please_enter_valid_email');
       });
       return;
     }
@@ -98,23 +101,25 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
         _resetSent = true;
       });
     } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
       setState(() {
         _isSending = false;
         switch (e.code) {
           case 'user-not-found':
-            _errorMessage = 'No user account found with this email.';
+            _errorMessage = context.translate('no_user_account_found');
             break;
           case 'invalid-email':
-            _errorMessage = 'The email address format is invalid.';
+            _errorMessage = context.translate('invalid_email_format');
             break;
           default:
-            _errorMessage = 'Failed to send reset email (${e.message}).';
+            _errorMessage = context.translate('failed_to_send_reset_email');
         }
       });
     } catch (_) {
+      if (!mounted) return;
       setState(() {
         _isSending = false;
-        _errorMessage = 'An unexpected error occurred. Please try again.';
+        _errorMessage = context.translate('unexpected_error_occurred');
       });
     }
   }
@@ -135,12 +140,12 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              _buildHeader(isDark),
+              _buildHeader(context, isDark),
               const SizedBox(height: 18),
               if (!_resetSent)
-                _buildFormContent(isDark)
+                _buildFormContent(context, isDark)
               else
-                _buildSuccessContent(isDark),
+                _buildSuccessContent(context, isDark),
             ],
           ),
         ),
@@ -148,7 +153,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
     );
   }
 
-  Widget _buildHeader(final bool isDark) {
+  Widget _buildHeader(final BuildContext context, final bool isDark) {
     return Row(
       children: <Widget>[
         Container(
@@ -169,7 +174,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'Reset Password',
+                context.translate('reset_password'),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -180,7 +185,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
               ),
               const SizedBox(height: 2),
               Text(
-                'Zero-Knowledge Protected Account',
+                context.translate('zk_protected_account'),
                 style: TextStyle(
                   fontSize: 12.5,
                   color: isDark
@@ -202,7 +207,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
     );
   }
 
-  Widget _buildFormContent(final bool isDark) {
+  Widget _buildFormContent(final BuildContext context, final bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -229,9 +234,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Enter your account email to receive a password reset link. '
-                  'Because your data is Zero-Knowledge encrypted, you will use your '
-                  'Emergency Key (.txt) file upon login to sync and unlock your vault.',
+                  context.translate('zk_reset_password_description'),
                   style: TextStyle(
                     fontSize: 12.5,
                     height: 1.45,
@@ -251,7 +254,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Text(
-              'Account Email',
+              context.translate('account_email'),
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -263,9 +266,9 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
             TextButton.icon(
               onPressed: _handleUploadKeyForEmail,
               icon: const Icon(Icons.file_upload_outlined, size: 15),
-              label: const Text(
-                'Autofill from Key File',
-                style: TextStyle(fontSize: 12),
+              label: Text(
+                context.translate('autofill_from_key_file'),
+                style: const TextStyle(fontSize: 12),
               ),
               style: TextButton.styleFrom(
                 foregroundColor: LightColors.primary,
@@ -283,7 +286,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
             fontSize: 13.5,
           ),
           decoration: InputDecoration(
-            hintText: 'name@example.com',
+            hintText: context.translate('email_hint'),
             hintStyle: TextStyle(
               color: isDark ? DarkColors.textSecondary : Colors.grey.shade400,
               fontSize: 13,
@@ -372,8 +375,8 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
                 : const Icon(Icons.send_rounded, size: 18),
             label: Text(
               _isSending
-                  ? 'Sending reset email...'
-                  : 'Send Password Reset Link',
+                  ? context.translate('sending_reset_email')
+                  : context.translate('send_password_reset_link'),
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ),
           ),
@@ -382,7 +385,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
     );
   }
 
-  Widget _buildSuccessContent(final bool isDark) {
+  Widget _buildSuccessContent(final BuildContext context, final bool isDark) {
     final String email = _emailController.text.trim();
 
     return Column(
@@ -403,7 +406,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Password Reset Email Sent!',
+          context.translate('password_reset_email_sent'),
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 17,
@@ -425,7 +428,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'Next Steps to Restore Access:',
+                context.translate('next_steps_restore_access'),
                 style: TextStyle(
                   fontSize: 13.5,
                   fontWeight: FontWeight.bold,
@@ -436,9 +439,9 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
               ),
               const SizedBox(height: 8),
               Text(
-                '1. Open the reset email sent to $email and follow the link to choose your new password.\n\n'
-                '2. Return to Pecunia and sign in with your email and new password.\n\n'
-                '3. On sign in, you will be prompted to provide your Emergency Key (.txt) file to unlock and re-encrypt your vault with your new password.',
+                context
+                    .translate('reset_instructions')
+                    .replaceAll('{email}', email),
                 style: TextStyle(
                   fontSize: 12.5,
                   height: 1.45,
@@ -458,7 +461,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
               Navigator.of(context).pop();
               showSnackbar(
                 context,
-                'Password reset email sent. Log in after updating your password.',
+                context.translate('password_reset_snackbar'),
               );
             },
             style: ElevatedButton.styleFrom(
@@ -469,9 +472,9 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text(
-              'Back to Sign In',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            child: Text(
+              context.translate('back_to_sign_in'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
           ),
         ),
