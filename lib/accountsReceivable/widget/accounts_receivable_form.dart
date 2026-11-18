@@ -396,12 +396,27 @@ class _FormWidgetState extends State<FormWidget> {
                     controller: _startDateController,
                   ),
                   CustomLabelInput(
-                    label: isLoan
-                        ? context.translate('first_payment_date')
-                        : context.translate('date_due'),
-                    hintText: isLoan
-                        ? context.translate('enter_first_payment_date')
-                        : context.translate('enter_due_date'),
+                    label:
+                        (isLoan ||
+                            (selectedFrequency != null &&
+                                selectedFrequency !=
+                                    CustomFrequencyOptions.once))
+                        ? context.translate('first_installment_date')
+                        : context.translate('payment_due_date_label'),
+                    hintText:
+                        (isLoan ||
+                            (selectedFrequency != null &&
+                                selectedFrequency !=
+                                    CustomFrequencyOptions.once))
+                        ? context.translate('first_installment_date_hint')
+                        : context.translate('payment_due_date_hint'),
+                    helperText:
+                        (isLoan ||
+                            (selectedFrequency != null &&
+                                selectedFrequency !=
+                                    CustomFrequencyOptions.once))
+                        ? context.translate('first_installment_date_helper')
+                        : context.translate('payment_due_date_helper'),
                     isReadOnly: true,
                     isCalendar: true,
                     onTap: () async {
@@ -420,7 +435,16 @@ class _FormWidgetState extends State<FormWidget> {
                     },
                     validator: (final String? value) {
                       if (value == null || value.isEmpty) {
-                        return context.translate('please_enter_date_due');
+                        return (isLoan ||
+                                (selectedFrequency != null &&
+                                    selectedFrequency !=
+                                        CustomFrequencyOptions.once))
+                            ? context.translate(
+                                'please_enter_first_installment_date',
+                              )
+                            : context.translate(
+                                'please_enter_payment_due_date',
+                              );
                       }
                       return null;
                     },

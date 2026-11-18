@@ -658,5 +658,13 @@
   "vault_password_reset_explanation": "Because Zero-Knowledge encryption protects your records, changing your password requires your Emergency Key to re-encrypt and unlock your vault.",
   "vault_password_changed_subtitle": "Password was recently reset or changed",
   "upload_key_txt": "Upload Key (.txt)",
-  "quota_payment_notes_hint": "e.g. Quota payment or partial transfer"
+  "quota_payment_notes_hint": "e.g. Quota payment or partial transfer",
+  "first_installment_date": "First Installment Date",
+  "first_installment_date_hint": "Select date of first installment",
+  "first_installment_date_helper": "Anchors all consecutive payments (e.g., the 15th of every month).",
+  "payment_due_date_label": "Payment Due Date",
+  "payment_due_date_hint": "Select final payment due date",
+  "payment_due_date_helper": "Final deadline to settle this account.",
+  "please_enter_first_installment_date": "Please select the first installment date",
+  "please_enter_payment_due_date": "Please select payment due date"
 }

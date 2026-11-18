@@ -658,5 +658,13 @@
   "vault_password_reset_explanation": "Debido a que el cifrado Zero-Knowledge protege tus registros, cambiar tu contraseña requiere tu Llave de Emergencia para recifrar y desbloquear tu bóveda.",
   "vault_password_changed_subtitle": "La contraseña fue recientemente restablecida o cambiada",
   "upload_key_txt": "Subir Llave (.txt)",
-  "quota_payment_notes_hint": "Ej. Pago de cuota o transferencia parcial"
+  "quota_payment_notes_hint": "Ej. Pago de cuota o transferencia parcial",
+  "first_installment_date": "Fecha de la primera cuota",
+  "first_installment_date_hint": "Seleccionar fecha de la primera cuota",
+  "first_installment_date_helper": "Fija la fecha de pago de todas las cuotas consecutivas (ej. el 15 de cada mes).",
+  "payment_due_date_label": "Fecha límite de vencimiento",
+  "payment_due_date_hint": "Seleccionar fecha límite de pago",
+  "payment_due_date_helper": "Fecha límite para liquidar esta cuenta.",
+  "please_enter_first_installment_date": "Por favor selecciona la fecha de la primera cuota",
+  "please_enter_payment_due_date": "Por favor selecciona la fecha límite de vencimiento"
 }
