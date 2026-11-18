@@ -6,12 +6,14 @@ import 'package:web_personal_finances/commons/dialog/custom_status_dialog.dart';
 import 'package:web_personal_finances/commons/enum/status_dialog_types.dart';
 import 'package:web_personal_finances/commons/loader/loader.dart';
 import 'package:web_personal_finances/commons/utils/web_window_helper.dart';
+import 'package:web_personal_finances/login/widget/finance_hero_widget.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
 import 'package:web_personal_finances/routes/landing_routes.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_bloc.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_event.dart';
 import 'package:web_personal_finances/signUp/bloc/signup_state.dart';
+import 'package:web_personal_finances/signUp/widget/signup_hero_widget.dart';
 
 class SignUpBody extends StatefulWidget {
   const SignUpBody({super.key});
@@ -662,43 +664,83 @@ class _SignUpBodyState extends State<SignUpBody> {
   }
 
   Widget _buildRightPanel(final BuildContext context, final bool isDark) {
+    // Previous static panel (kept commented out as requested):
+    // return Container(
+    //   color: isDark ? DarkColors.surface : LightColors.surface,
+    //   child: Center(
+    //     child: Padding(
+    //       padding: const EdgeInsets.all(48.0),
+    //       child: Column(
+    //         mainAxisAlignment: MainAxisAlignment.center,
+    //         children: <Widget>[
+    //           Icon(
+    //             Icons.account_balance_wallet_rounded,
+    //             size: 80,
+    //             color: LightColors.primary,
+    //           ),
+    //           const SizedBox(height: 24),
+    //           Text(
+    //             context.translate('take_control_of_wealth'),
+    //             style: TextStyle(
+    //               fontSize: 24,
+    //               fontWeight: FontWeight.bold,
+    //               color: isDark ? white : LightColors.textPrimary,
+    //             ),
+    //             textAlign: TextAlign.center,
+    //           ),
+    //           const SizedBox(height: 12),
+    //           Text(
+    //             context.translate('signup_hero_description'),
+    //             style: TextStyle(
+    //               fontSize: 14,
+    //               color: isDark
+    //                   ? DarkColors.textSecondary
+    //                   : LightColors.textSecondary,
+    //             ),
+    //             textAlign: TextAlign.center,
+    //           ),
+    //         ],
+    //       ),
+    //     ),
+    //   ),
+    // );
+
     return Container(
-      color: isDark ? DarkColors.surface : LightColors.surface,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(48.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(
-                Icons.account_balance_wallet_rounded,
-                size: 80,
-                color: LightColors.primary,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                context.translate('take_control_of_wealth'),
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? white : LightColors.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                context.translate('signup_hero_description'),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark
-                      ? DarkColors.textSecondary
-                      : LightColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? <Color>[const Color(0xFF0E1613), const Color(0xFF14201B)]
+              : <Color>[
+                  LightColors.primary.withValues(alpha: 0.04),
+                  LightColors.primary.withValues(alpha: 0.09),
+                ],
         ),
+      ),
+      child: Stack(
+        children: <Widget>[
+          Positioned.fill(
+            child: RepaintBoundary(
+              child: Opacity(
+                opacity: isDark ? 0.05 : 0.08,
+                child: const CustomPaint(painter: DotPatternPainter()),
+              ),
+            ),
+          ),
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 32.0,
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: SignupHeroWidget(isDark: isDark),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

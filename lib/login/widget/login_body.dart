@@ -9,6 +9,7 @@ import 'package:web_personal_finances/commons/loader/loader.dart';
 import 'package:web_personal_finances/login/bloc/login_bloc.dart';
 import 'package:web_personal_finances/login/bloc/login_event.dart';
 import 'package:web_personal_finances/login/bloc/login_state.dart';
+import 'package:web_personal_finances/login/widget/finance_hero_widget.dart';
 import 'package:web_personal_finances/login/widget/forgot_password_dialog.dart';
 import 'package:web_personal_finances/resources/colors_constants.dart';
 import 'package:web_personal_finances/resources/constants.dart';
@@ -504,10 +505,10 @@ class _LoginBodyState extends State<LoginBody> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? <Color>[Color(0xFF151d1a), Color(0xFF1e2825)]
+              ? <Color>[const Color(0xFF0E1613), const Color(0xFF14201B)]
               : <Color>[
-                  LightColors.primary.withValues(alpha: 0.05),
-                  LightColors.primary.withValues(alpha: 0.1),
+                  LightColors.primary.withValues(alpha: 0.04),
+                  LightColors.primary.withValues(alpha: 0.09),
                 ],
         ),
       ),
@@ -517,39 +518,21 @@ class _LoginBodyState extends State<LoginBody> {
           Positioned.fill(
             child: RepaintBoundary(
               child: Opacity(
-                opacity: isDark ? 0.05 : 0.1,
+                opacity: isDark ? 0.05 : 0.08,
                 child: CustomPaint(painter: _DotPatternPainter()),
               ),
             ),
           ),
-          // Lottie Animation (optimized with constraints and performance options)
           Center(
-            child: RepaintBoundary(
-              // child: ConstrainedBox(
-              //   constraints: const BoxConstraints(
-              //     maxWidth: 400,
-              //     maxHeight: 400,
-              //   ),
-              //   child: Lottie.asset(
-              //     'assets/animations/finance_animation1.json',
-              //     fit: BoxFit.contain,
-              //     repeat: true,
-              //     animate: true,
-              //     frameRate: FrameRate.composition,
-              //     renderCache: RenderCache.raster,
-              //     errorBuilder: (
-              //       final BuildContext context,
-              //       final Object error,
-              //       final StackTrace? stackTrace,
-              //     ) {
-              //       return Icon(
-              //         Icons.account_balance_wallet_outlined,
-              //         size: 120,
-              //         color: LightColors.primary.withValues(alpha: 0.3),
-              //       );
-              //     },
-              //   ),
-              // ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 32.0,
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: FinanceHeroWidget(isDark: isDark),
+              ),
             ),
           ),
         ],
