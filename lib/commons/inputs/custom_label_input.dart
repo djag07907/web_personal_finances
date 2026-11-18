@@ -5,6 +5,7 @@ import 'package:web_personal_finances/resources/colors_constants.dart';
 class CustomLabelInput extends StatelessWidget {
   final String label;
   final String hintText;
+  final String? helperText;
   final String? Function(String?)? validator;
   final TextEditingController controller;
   final TextInputType keyboardType;
@@ -18,6 +19,7 @@ class CustomLabelInput extends StatelessWidget {
     super.key,
     required this.label,
     required this.hintText,
+    this.helperText,
     required this.validator,
     required this.controller,
     this.keyboardType = TextInputType.text,
@@ -64,6 +66,12 @@ class CustomLabelInput extends StatelessWidget {
               hintStyle: TextStyle(
                 color: isDark ? DarkColors.textSecondary : null,
               ),
+              helperText: helperText,
+              helperStyle: TextStyle(
+                color: isDark ? DarkColors.textSecondary : Colors.grey.shade600,
+                fontSize: 12,
+              ),
+              helperMaxLines: 2,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15.0),
                 borderSide: BorderSide(

@@ -65,6 +65,16 @@ class _SignUpBodyState extends State<SignUpBody> {
         _acceptedTerms;
   }
 
+  bool get _hasPasswordMinLength => _passwordController.text.length >= 6;
+
+  bool get _doPasswordsMatch =>
+      _confirmPasswordController.text.isNotEmpty &&
+      _confirmPasswordController.text == _passwordController.text;
+
+  bool get _hasPasswordMismatch =>
+      _confirmPasswordController.text.isNotEmpty &&
+      _confirmPasswordController.text != _passwordController.text;
+
   @override
   Widget build(final BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
@@ -288,6 +298,9 @@ class _SignUpBodyState extends State<SignUpBody> {
   }
 
   Widget _buildPasswordField(final BuildContext context, final bool isDark) {
+    final bool showMinLengthError =
+        _passwordController.text.isNotEmpty && !_hasPasswordMinLength;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -314,23 +327,27 @@ class _SignUpBodyState extends State<SignUpBody> {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: isDark
-                    ? const Color(0xFF2A3632)
-                    : const Color(0xFFDEE3E1),
+                color: showMinLengthError
+                    ? cautionOrange
+                    : (isDark
+                          ? const Color(0xFF2A3632)
+                          : const Color(0xFFDEE3E1)),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: isDark
-                    ? const Color(0xFF2A3632)
-                    : const Color(0xFFDEE3E1),
+                color: showMinLengthError
+                    ? cautionOrange
+                    : (isDark
+                          ? const Color(0xFF2A3632)
+                          : const Color(0xFFDEE3E1)),
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(
-                color: LightColors.primary,
+              borderSide: BorderSide(
+                color: showMinLengthError ? cautionOrange : LightColors.primary,
                 width: 2,
               ),
             ),
@@ -352,6 +369,27 @@ class _SignUpBodyState extends State<SignUpBody> {
             ),
           ),
         ),
+        if (showMinLengthError) ...<Widget>[
+          const SizedBox(height: 6),
+          Row(
+            children: <Widget>[
+              const Icon(
+                Icons.info_outline_rounded,
+                size: 15,
+                color: cautionOrange,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                context.translate('password_min_length_error'),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: cautionOrange,
+                ),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -360,6 +398,12 @@ class _SignUpBodyState extends State<SignUpBody> {
     final BuildContext context,
     final bool isDark,
   ) {
+    final Color borderSideColor = _hasPasswordMismatch
+        ? unhealthyRed
+        : (_doPasswordsMatch && _hasPasswordMinLength
+              ? healthyGreen
+              : (isDark ? const Color(0xFF2A3632) : const Color(0xFFDEE3E1)));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -386,23 +430,25 @@ class _SignUpBodyState extends State<SignUpBody> {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: isDark
-                    ? const Color(0xFF2A3632)
-                    : const Color(0xFFDEE3E1),
+                color: borderSideColor,
+                width: _hasPasswordMismatch || _doPasswordsMatch ? 1.5 : 1.0,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
-                color: isDark
-                    ? const Color(0xFF2A3632)
-                    : const Color(0xFFDEE3E1),
+                color: borderSideColor,
+                width: _hasPasswordMismatch || _doPasswordsMatch ? 1.5 : 1.0,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(
-                color: LightColors.primary,
+              borderSide: BorderSide(
+                color: _hasPasswordMismatch
+                    ? unhealthyRed
+                    : (_doPasswordsMatch && _hasPasswordMinLength
+                          ? healthyGreen
+                          : LightColors.primary),
                 width: 2,
               ),
             ),
@@ -410,22 +456,84 @@ class _SignUpBodyState extends State<SignUpBody> {
               horizontal: 16,
               vertical: 12,
             ),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscureConfirmPassword
-                    ? Icons.visibility_off
-                    : Icons.visibility,
-                color: isDark ? Colors.grey[400] : LightColors.textSecondary,
-                size: 20,
-              ),
-              onPressed: () {
-                setState(() {
-                  _obscureConfirmPassword = !_obscureConfirmPassword;
-                });
-              },
+            suffixIcon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                if (_doPasswordsMatch && _hasPasswordMinLength)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 2),
+                    child: Icon(
+                      Icons.check_circle_rounded,
+                      color: healthyGreen,
+                      size: 18,
+                    ),
+                  )
+                else if (_hasPasswordMismatch)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 2),
+                    child: Icon(
+                      Icons.cancel_rounded,
+                      color: unhealthyRed,
+                      size: 18,
+                    ),
+                  ),
+                IconButton(
+                  icon: Icon(
+                    _obscureConfirmPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: isDark
+                        ? Colors.grey[400]
+                        : LightColors.textSecondary,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureConfirmPassword = !_obscureConfirmPassword;
+                    });
+                  },
+                ),
+              ],
             ),
           ),
         ),
+        if (_hasPasswordMismatch) ...<Widget>[
+          const SizedBox(height: 6),
+          Row(
+            children: <Widget>[
+              const Icon(Icons.close_rounded, size: 15, color: unhealthyRed),
+              const SizedBox(width: 6),
+              Text(
+                context.translate('passwords_do_not_match'),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: unhealthyRed,
+                ),
+              ),
+            ],
+          ),
+        ] else if (_doPasswordsMatch && _hasPasswordMinLength) ...<Widget>[
+          const SizedBox(height: 6),
+          Row(
+            children: <Widget>[
+              const Icon(
+                Icons.check_circle_rounded,
+                size: 15,
+                color: healthyGreen,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                context.translate('passwords_match'),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: healthyGreen,
+                ),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }

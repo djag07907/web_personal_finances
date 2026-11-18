@@ -37,6 +37,11 @@ class KpiCardSpec {
 }
 
 class CurrencyKpiUtils {
+  static final NumberFormat _amountFormatter = NumberFormat(
+    '#,##0.00',
+    'en_US',
+  );
+
   /// Returns currency symbol for display ('L.' for HNL, '$' for USD).
   static String getCurrencySymbol(final String currency) {
     if (currency == hnlCurrency) {
@@ -45,10 +50,32 @@ class CurrencyKpiUtils {
     return '\$';
   }
 
-  /// Formats an amount with its currency symbol (e.g. 'L. 1,500.00' or '$ 500.00').
+  /// Formats an amount with its currency symbol and thousands separators (e.g. 'L. 1,500.00' or '$ 500.00').
   static String formatAmount(final double amount, final String currency) {
+    if (amount.isNaN || amount.isInfinite) {
+      return '${getCurrencySymbol(currency)} 0.00';
+    }
     final String symbol = getCurrencySymbol(currency);
-    return '$symbol ${amount.toStringAsFixed(2)}';
+    final bool isNeg = amount < 0;
+    final String formatted = _amountFormatter.format(amount.abs());
+    return isNeg ? '-$symbol $formatted' : '$symbol $formatted';
+  }
+
+  /// Formats a raw number with thousands separators (e.g. 1586000 -> '1,586,000.00').
+  static String formatNumber(
+    final double amount, {
+    final int decimalDigits = 2,
+  }) {
+    if (amount.isNaN || amount.isInfinite) {
+      return decimalDigits == 0 ? '0' : '0.00';
+    }
+    final bool isNeg = amount < 0;
+    final double absVal = amount.abs();
+    final String pattern = decimalDigits == 0
+        ? '#,##0'
+        : '#,##0.${'0' * decimalDigits}';
+    final String formatted = NumberFormat(pattern, 'en_US').format(absVal);
+    return isNeg ? '-$formatted' : formatted;
   }
 
   static double calculateTotal<T>({

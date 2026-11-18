@@ -286,8 +286,15 @@ class _FormWidgetState extends State<FormWidget> {
                     },
                   ),
                   CustomLabelInput(
-                    label: context.translate('amount'),
-                    hintText: context.translate('enter_amount'),
+                    label: isLoan
+                        ? context.translate('total_loan_amount_label')
+                        : context.translate('total_amount_due_label'),
+                    hintText: isLoan
+                        ? context.translate('total_loan_amount_hint')
+                        : context.translate('total_amount_due_hint'),
+                    helperText: isLoan
+                        ? context.translate('total_loan_amount_helper')
+                        : context.translate('total_amount_due_helper'),
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
@@ -296,7 +303,13 @@ class _FormWidgetState extends State<FormWidget> {
                     ],
                     validator: (final String? value) {
                       if (value == null || value.isEmpty) {
-                        return context.translate('please_enter_amount');
+                        return isLoan
+                            ? context.translate(
+                                'please_enter_total_loan_amount',
+                              )
+                            : context.translate(
+                                'please_enter_total_amount_due',
+                              );
                       }
                       return null;
                     },

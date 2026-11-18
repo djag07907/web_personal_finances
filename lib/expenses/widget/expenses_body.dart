@@ -921,7 +921,9 @@ class _ExpensesBodyState extends State<ExpensesBody> {
                                     maxLines: 1,
                                   ),
                                   Text(data.currency),
-                                  Text(data.amount.toStringAsFixed(2)),
+                                  Text(
+                                    CurrencyKpiUtils.formatNumber(data.amount),
+                                  ),
                                   Text(data.dateDue),
                                   Tooltip(
                                     message: paymentStatusLabel,

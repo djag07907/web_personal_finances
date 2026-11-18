@@ -790,7 +790,9 @@ class _IncomesBodyState extends State<IncomesBody> {
                                     maxLines: 1,
                                   ),
                                   Text(data.currency),
-                                  Text(data.amount.toStringAsFixed(2)),
+                                  Text(
+                                    CurrencyKpiUtils.formatNumber(data.amount),
+                                  ),
                                   Text(data.dateToReceive),
                                   Tooltip(
                                     message: paymentStatusLabel,

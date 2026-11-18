@@ -97,6 +97,7 @@ class _HomeBodyState extends State<HomeBody> {
 
   Widget _buildHeader(final BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final double screenWidth = MediaQuery.of(context).size.width;
 
     final HomeState homeState = context.watch<HomeBloc>().state;
     final String displayName = homeState is HomeLoaded
@@ -110,17 +111,33 @@ class _HomeBodyState extends State<HomeBody> {
         ? '$welcomePrefix, $displayName'
         : welcomePrefix;
 
+    final bool isMobile = screenWidth < 600;
+    final bool isTablet = screenWidth >= 600 && screenWidth < 1024;
+
+    final double bannerHeight = isMobile ? 40.0 : (isTablet ? 45.0 : 50.0);
+    final double responsiveFontSize = isMobile
+        ? fontSize15
+        : (isTablet ? fontSize18 : fontSize22);
+    final double bannerWidth = isMobile
+        ? (screenWidth * 0.82).clamp(240.0, 420.0)
+        : (isTablet
+              ? (screenWidth * 0.52).clamp(280.0, 460.0)
+              : (screenWidth * 0.38).clamp(340.0, 520.0));
+    final double horizontalPadding = isMobile ? 16.0 : (isTablet ? 20.0 : 24.0);
+    final double topMargin = isMobile ? 6.0 : (isTablet ? 8.0 : 10.0);
+
     return Align(
       alignment: Alignment.topRight,
       child: Container(
-        height: 50.0,
-        margin: const EdgeInsets.only(top: 10.0),
-        width: MediaQuery.of(context).size.width * 0.45,
+        height: bannerHeight,
+        margin: EdgeInsets.only(top: topMargin),
+        width: bannerWidth,
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
         decoration: BoxDecoration(
           color: isDark ? DarkColors.primary : LightColors.primary,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(300.0),
-            bottomLeft: Radius.circular(300.0),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(bannerHeight / 2),
+            bottomLeft: Radius.circular(bannerHeight / 2),
           ),
           boxShadow: isDark
               ? <BoxShadow>[
@@ -130,14 +147,22 @@ class _HomeBodyState extends State<HomeBody> {
                     spreadRadius: 1,
                   ),
                 ]
-              : null,
+              : <BoxShadow>[
+                  BoxShadow(
+                    color: LightColors.primary.withValues(alpha: 0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
         ),
         child: Center(
           child: Text(
             greeting,
             style: Theme.of(context).textTheme.headlineMedium!.copyWith(
-              fontSize: fontSize24,
+              fontSize: responsiveFontSize,
+              fontWeight: FontWeight.w600,
               color: white,
+              letterSpacing: 0.3,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

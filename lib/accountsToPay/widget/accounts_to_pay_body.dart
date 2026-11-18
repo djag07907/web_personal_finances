@@ -934,9 +934,13 @@ class _AccountsToPayBodyState extends State<AccountsToPayBody> {
                                     maxLines: 1,
                                   ),
                                   Text(data.currency),
-                                  Text(data.amount.toStringAsFixed(2)),
                                   Text(
-                                    data.remainingBalance.toStringAsFixed(2),
+                                    CurrencyKpiUtils.formatNumber(data.amount),
+                                  ),
+                                  Text(
+                                    CurrencyKpiUtils.formatNumber(
+                                      data.remainingBalance,
+                                    ),
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       color: data.isFullyPaid

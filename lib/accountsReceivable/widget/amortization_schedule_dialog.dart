@@ -604,7 +604,9 @@ class _AmortizationScheduleDialogState
                                     ),
                                     DataCell(
                                       Text(
-                                        q.quotaAmount.toStringAsFixed(2),
+                                        CurrencyKpiUtils.formatNumber(
+                                          q.quotaAmount,
+                                        ),
                                         style: TextStyle(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 11,
@@ -616,19 +618,25 @@ class _AmortizationScheduleDialogState
                                     ),
                                     DataCell(
                                       Text(
-                                        q.principal.toStringAsFixed(2),
+                                        CurrencyKpiUtils.formatNumber(
+                                          q.principal,
+                                        ),
                                         style: const TextStyle(fontSize: 11),
                                       ),
                                     ),
                                     DataCell(
                                       Text(
-                                        q.interest.toStringAsFixed(2),
+                                        CurrencyKpiUtils.formatNumber(
+                                          q.interest,
+                                        ),
                                         style: const TextStyle(fontSize: 11),
                                       ),
                                     ),
                                     DataCell(
                                       Text(
-                                        q.remainingBalance.toStringAsFixed(2),
+                                        CurrencyKpiUtils.formatNumber(
+                                          q.remainingBalance,
+                                        ),
                                         style: const TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w500,

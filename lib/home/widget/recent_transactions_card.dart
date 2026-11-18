@@ -91,24 +91,20 @@ class RecentTransactionsCard extends StatelessWidget {
             )
           else
             Column(
-              children: transactions
-                  .take(6)
-                  .toList()
-                  .asMap()
-                  .entries
-                  .map((final MapEntry<int, TransactionItem> entry) {
-                    final int index = entry.key;
-                    final TransactionItem transaction = entry.value;
-                    final int totalShown = transactions.length.clamp(0, 6);
-                    return _buildTransactionItem(
-                      context,
-                      transaction,
-                      isDark,
-                      isSmallScreen,
-                      isLast: index == totalShown - 1,
-                    );
-                  })
-                  .toList(),
+              children: transactions.take(6).toList().asMap().entries.map((
+                final MapEntry<int, TransactionItem> entry,
+              ) {
+                final int index = entry.key;
+                final TransactionItem transaction = entry.value;
+                final int totalShown = transactions.length.clamp(0, 6);
+                return _buildTransactionItem(
+                  context,
+                  transaction,
+                  isDark,
+                  isSmallScreen,
+                  isLast: index == totalShown - 1,
+                );
+              }).toList(),
             ),
         ],
       ),
@@ -188,7 +184,7 @@ class RecentTransactionsCard extends StatelessWidget {
                 ),
                 SizedBox(width: 8),
                 Text(
-                  '${transaction.isIncome ? "+" : "-"} \$${transaction.amount.toStringAsFixed(2)}',
+                  '${transaction.isIncome ? "+" : "-"} \$${CurrencyKpiUtils.formatNumber(transaction.amount)}',
                   style: TextStyle(
                     fontSize: isSmall ? 13 : 14,
                     fontWeight: FontWeight.bold,

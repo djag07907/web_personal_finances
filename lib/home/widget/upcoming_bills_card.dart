@@ -4,11 +4,7 @@ class UpcomingBillsCard extends StatelessWidget {
   final List<BillItem> bills;
   final VoidCallback? onAddBill;
 
-  const UpcomingBillsCard({
-    super.key,
-    required this.bills,
-    this.onAddBill,
-  });
+  const UpcomingBillsCard({super.key, required this.bills, this.onAddBill});
 
   @override
   Widget build(final BuildContext context) {
@@ -85,7 +81,9 @@ class UpcomingBillsCard extends StatelessWidget {
                 : Column(
                     children: bills.take(5).map((final BillItem bill) {
                       return Padding(
-                        padding: EdgeInsets.only(bottom: isSmallScreen ? 8 : 12),
+                        padding: EdgeInsets.only(
+                          bottom: isSmallScreen ? 8 : 12,
+                        ),
                         child: _buildBillItem(
                           context,
                           bill,
@@ -196,7 +194,7 @@ class UpcomingBillsCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                '\$${bill.amount.toStringAsFixed(2)}',
+                '\$${CurrencyKpiUtils.formatNumber(bill.amount)}',
                 style: TextStyle(
                   fontSize: isSmall ? 13 : 14,
                   fontWeight: FontWeight.bold,
@@ -255,8 +253,9 @@ class UpcomingBillsCard extends StatelessWidget {
           style: TextStyle(
             fontSize: isSmall ? 11 : 12,
             fontWeight: FontWeight.w500,
-            color:
-                isDark ? DarkColors.textSecondary : LightColors.textSecondary,
+            color: isDark
+                ? DarkColors.textSecondary
+                : LightColors.textSecondary,
           ),
         ),
       ),
