@@ -13,6 +13,7 @@ class AccountReceivableItem {
   final String description;
   final double amount;
   final String currency;
+  final DateTime? startDate;
   final DateTime dueDate;
   final DateTime? paymentDate;
   final bool isReceived;
@@ -28,6 +29,7 @@ class AccountReceivableItem {
   final int? totalQuotas;
   final double? monthlyQuota;
   final CustomInterestType interestType;
+  final int? initialPaidQuotas;
 
   AccountReceivableItem({
     required this.id,
@@ -36,6 +38,7 @@ class AccountReceivableItem {
     required this.description,
     required this.amount,
     required this.currency,
+    this.startDate,
     required this.dueDate,
     this.paymentDate,
     this.isReceived = false,
@@ -51,6 +54,7 @@ class AccountReceivableItem {
     this.totalQuotas,
     this.monthlyQuota,
     this.interestType = CustomInterestType.flat,
+    this.initialPaidQuotas,
   });
 
   /// True if this item represents a loan, promissory note, or installment financing given to others.
@@ -129,6 +133,7 @@ class AccountReceivableItem {
     final String? description,
     final double? amount,
     final String? currency,
+    final DateTime? startDate,
     final DateTime? dueDate,
     final DateTime? paymentDate,
     final bool? isReceived,
@@ -139,11 +144,13 @@ class AccountReceivableItem {
     final String? paymentMethod,
     final List<AccountReceivablePayment>? payments,
     final bool clearPaymentDate = false,
+    final bool clearStartDate = false,
     final bool? isLoan,
     final double? interestRate,
     final int? totalQuotas,
     final double? monthlyQuota,
     final CustomInterestType? interestType,
+    final int? initialPaidQuotas,
   }) {
     return AccountReceivableItem(
       id: id,
@@ -152,6 +159,7 @@ class AccountReceivableItem {
       description: description ?? this.description,
       amount: amount ?? this.amount,
       currency: currency ?? this.currency,
+      startDate: clearStartDate ? null : (startDate ?? this.startDate),
       dueDate: dueDate ?? this.dueDate,
       paymentDate: clearPaymentDate ? null : (paymentDate ?? this.paymentDate),
       isReceived: isReceived ?? this.isReceived,
@@ -167,6 +175,7 @@ class AccountReceivableItem {
       totalQuotas: totalQuotas ?? this.totalQuotas,
       monthlyQuota: monthlyQuota ?? this.monthlyQuota,
       interestType: interestType ?? this.interestType,
+      initialPaidQuotas: initialPaidQuotas ?? this.initialPaidQuotas,
     );
   }
 
@@ -180,6 +189,9 @@ class AccountReceivableItem {
           ? (map['amount'] as num).toDouble()
           : double.tryParse(map['amount']?.toString() ?? emptyString) ?? 0.0,
       currency: map['currency'] ?? usdCurrency,
+      startDate: map['startDate'] != null
+          ? DateTime.tryParse(map['startDate'])
+          : null,
       dueDate:
           DateTime.tryParse(map['dueDate'] ?? emptyString) ?? DateTime.now(),
       paymentDate: map['paymentDate'] != null
@@ -232,6 +244,9 @@ class AccountReceivableItem {
             element.name == map['interestType'],
         orElse: () => CustomInterestType.flat,
       ),
+      initialPaidQuotas: map['initialPaidQuotas'] != null
+          ? (map['initialPaidQuotas'] as num).toInt()
+          : null,
     );
   }
 
@@ -243,6 +258,7 @@ class AccountReceivableItem {
       'description': description,
       'amount': amount,
       'currency': currency,
+      'startDate': startDate?.toIso8601String(),
       'dueDate': dueDate.toIso8601String(),
       'paymentDate': paymentDate?.toIso8601String(),
       'receivedDate': paymentDate?.toIso8601String(),
@@ -261,6 +277,7 @@ class AccountReceivableItem {
       'totalQuotas': totalQuotas,
       'monthlyQuota': monthlyQuota,
       'interestType': interestType.name,
+      'initialPaidQuotas': initialPaidQuotas,
     };
   }
 }

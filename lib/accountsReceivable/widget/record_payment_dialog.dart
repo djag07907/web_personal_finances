@@ -476,7 +476,7 @@ class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
                     CustomLabelInput(
                       label:
                           '${context.translate('description')} (${context.translate('optional')})',
-                      hintText: 'e.g. Quota #1 or partial transfer',
+                      hintText: context.translate('quota_payment_notes_hint'),
                       validator: (final String? value) => null,
                       controller: _notesController,
                     ),

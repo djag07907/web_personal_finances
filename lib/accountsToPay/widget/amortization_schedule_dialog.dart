@@ -63,6 +63,15 @@ class _AmortizationScheduleDialogState
   }
 
   @override
+  void didUpdateWidget(covariant final AmortizationScheduleDialog oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item != widget.item) {
+      _currentItem = widget.item;
+      _schedule = LoanAmortizationUtils.generateSchedule(_currentItem);
+    }
+  }
+
+  @override
   void dispose() {
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
@@ -157,7 +166,7 @@ class _AmortizationScheduleDialogState
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        '${_currentItem.creditorName} • ${CurrencyKpiUtils.formatAmount(_currentItem.amount, currency)} (${_currentItem.totalQuotas ?? _schedule.length} months @ ${_currentItem.interestRate ?? 0}% APR • ${_currentItem.interestType.toTranslate(context)})',
+                        '${_currentItem.creditorName} • ${CurrencyKpiUtils.formatAmount(_currentItem.amount, currency)} (${_currentItem.totalQuotas ?? _schedule.length} ${context.translate('months')} @ ${_currentItem.interestRate ?? 0}% APR • ${_currentItem.interestType.toTranslate(context)})',
                         style: TextStyle(
                           fontSize: 13,
                           color: isDark
@@ -251,7 +260,7 @@ class _AmortizationScheduleDialogState
             child: _schedule.isEmpty
                 ? Center(
                     child: Text(
-                      'No amortization schedule available for this item.',
+                      context.translate('no_amortization_schedule'),
                       style: TextStyle(
                         color: isDark
                             ? DarkColors.textSecondary

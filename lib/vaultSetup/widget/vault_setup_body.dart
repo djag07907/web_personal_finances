@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/bloc/app_auth_notifier.dart';
 import 'package:web_personal_finances/commons/security/bip39_words.dart';
 import 'package:web_personal_finances/commons/security/recovery_key_utils.dart';
@@ -51,10 +52,7 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
       _hasDownloadedKey = true;
       _localError = null;
     });
-    showSnackbar(
-      context,
-      'Recovery key file downloaded. Keep it in a safe location!',
-    );
+    showSnackbar(context, context.translate('emergency_key_downloaded'));
   }
 
   void _handleEnableEncryption() {
@@ -62,8 +60,7 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
 
     if (!_hasDownloadedKey) {
       setState(() {
-        _localError =
-            'Please download your emergency recovery key before continuing.';
+        _localError = context.translate('please_download_key_first');
       });
       return;
     }
@@ -74,7 +71,7 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
 
     if (password.isEmpty) {
       setState(() {
-        _localError = 'Please enter your current account password.';
+        _localError = context.translate('please_enter_password');
       });
       return;
     }
@@ -82,7 +79,7 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
     final String uid = FirebaseAuth.instance.currentUser?.uid ?? emptyString;
     if (uid.isEmpty) {
       setState(() {
-        _localError = 'Session expired. Please sign in again.';
+        _localError = context.translate('session_expired_sign_in');
       });
       return;
     }
@@ -107,7 +104,7 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
     return BlocConsumer<VaultSetupBloc, VaultSetupState>(
       listener: (final BuildContext ctx, final VaultSetupState state) async {
         if (state is VaultSetupSuccess) {
-          showSnackbar(ctx, 'Zero-Knowledge encryption enabled!');
+          showSnackbar(ctx, context.translate('vault_setup_success'));
           await ctx.read<AppAuthNotifier>().refreshProfile();
         }
       },
@@ -167,7 +164,7 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Secure Your Account',
+                              context.translate('secure_your_account'),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 22,
@@ -179,7 +176,10 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Enable Zero-Knowledge encryption for $email',
+                              context.translate(
+                                'enable_zk_encryption_for',
+                                namedArgs: <String, String>{'email': email},
+                              ),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 13.5,
@@ -214,9 +214,7 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Your account was created before end-to-end encryption existed. '
-                                'Pecunia now protects your financial details so that only you can read them. '
-                                'Download your Emergency Key and store it somewhere safe: it is the only way to recover your data if you forget your password.',
+                                context.translate('vault_setup_explanation'),
                                 style: TextStyle(
                                   fontSize: 13,
                                   height: 1.45,
@@ -265,8 +263,12 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
                               const SizedBox(height: 8),
                               Text(
                                 _hasDownloadedKey
-                                    ? 'Emergency Key Downloaded'
-                                    : 'Download Emergency Key (.txt)',
+                                    ? context.translate(
+                                        'emergency_key_downloaded',
+                                      )
+                                    : context.translate(
+                                        'download_emergency_key',
+                                      ),
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -278,8 +280,12 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
                               const SizedBox(height: 4),
                               Text(
                                 _hasDownloadedKey
-                                    ? 'Click "Enable Encryption" below to continue'
-                                    : 'Required before you can continue',
+                                    ? context.translate(
+                                        'click_enable_encryption_continue',
+                                      )
+                                    : context.translate(
+                                        'required_before_continue',
+                                      ),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: isDark
@@ -294,7 +300,7 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
                       const SizedBox(height: 20),
                       if (needsPassword) ...<Widget>[
                         Text(
-                          'Current Login Password',
+                          context.translate('current_login_password'),
                           style: TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w600,
@@ -315,7 +321,9 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
                             fontSize: 13.5,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Enter the password you use to sign in',
+                            hintText: context.translate(
+                              'enter_password_sign_in',
+                            ),
                             prefixIcon: const Icon(
                               Icons.lock_outline,
                               size: 18,
@@ -402,8 +410,8 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
                               : const Icon(Icons.lock_rounded, size: 20),
                           label: Text(
                             isWorking
-                                ? 'Enabling encryption...'
-                                : 'Enable Encryption',
+                                ? context.translate('enabling_encryption')
+                                : context.translate('enable_encryption'),
                             style: const TextStyle(
                               fontSize: 14.5,
                               fontWeight: FontWeight.bold,
@@ -423,9 +431,9 @@ class _VaultSetupBodyState extends State<VaultSetupBody> {
                                       .signOut();
                                 },
                           icon: const Icon(Icons.logout_rounded, size: 16),
-                          label: const Text(
-                            'Sign Out',
-                            style: TextStyle(fontSize: 13),
+                          label: Text(
+                            context.translate('logout'),
+                            style: const TextStyle(fontSize: 13),
                           ),
                           style: TextButton.styleFrom(
                             foregroundColor: isDark

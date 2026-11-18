@@ -13,6 +13,7 @@ class AccountToPayItem {
   final String description;
   final double amount;
   final String currency;
+  final DateTime? startDate;
   final DateTime dueDate;
   final DateTime? paymentDate;
   final bool isPaid;
@@ -28,6 +29,7 @@ class AccountToPayItem {
   final int? totalQuotas;
   final double? monthlyQuota;
   final CustomInterestType interestType;
+  final int? initialPaidQuotas;
 
   AccountToPayItem({
     required this.id,
@@ -36,6 +38,7 @@ class AccountToPayItem {
     required this.description,
     required this.amount,
     required this.currency,
+    this.startDate,
     required this.dueDate,
     this.paymentDate,
     this.isPaid = false,
@@ -51,6 +54,7 @@ class AccountToPayItem {
     this.totalQuotas,
     this.monthlyQuota,
     this.interestType = CustomInterestType.french,
+    this.initialPaidQuotas,
   });
 
   /// True if this item represents a loan or installment financing.
@@ -122,6 +126,7 @@ class AccountToPayItem {
     final String? description,
     final double? amount,
     final String? currency,
+    final DateTime? startDate,
     final DateTime? dueDate,
     final DateTime? paymentDate,
     final bool? isPaid,
@@ -132,11 +137,13 @@ class AccountToPayItem {
     final String? paymentMethod,
     final List<AccountToPayPayment>? payments,
     final bool clearPaymentDate = false,
+    final bool clearStartDate = false,
     final bool? isLoan,
     final double? interestRate,
     final int? totalQuotas,
     final double? monthlyQuota,
     final CustomInterestType? interestType,
+    final int? initialPaidQuotas,
   }) {
     return AccountToPayItem(
       id: id,
@@ -145,6 +152,7 @@ class AccountToPayItem {
       description: description ?? this.description,
       amount: amount ?? this.amount,
       currency: currency ?? this.currency,
+      startDate: clearStartDate ? null : (startDate ?? this.startDate),
       dueDate: dueDate ?? this.dueDate,
       paymentDate: clearPaymentDate ? null : (paymentDate ?? this.paymentDate),
       isPaid: isPaid ?? this.isPaid,
@@ -160,6 +168,7 @@ class AccountToPayItem {
       totalQuotas: totalQuotas ?? this.totalQuotas,
       monthlyQuota: monthlyQuota ?? this.monthlyQuota,
       interestType: interestType ?? this.interestType,
+      initialPaidQuotas: initialPaidQuotas ?? this.initialPaidQuotas,
     );
   }
 
@@ -173,6 +182,9 @@ class AccountToPayItem {
           ? (map['amount'] as num).toDouble()
           : double.tryParse(map['amount']?.toString() ?? emptyString) ?? 0.0,
       currency: map['currency'] ?? usdCurrency,
+      startDate: map['startDate'] != null
+          ? DateTime.tryParse(map['startDate'])
+          : null,
       dueDate:
           DateTime.tryParse(map['dueDate'] ?? emptyString) ?? DateTime.now(),
       paymentDate: map['paymentDate'] != null
@@ -223,6 +235,9 @@ class AccountToPayItem {
             element.name == map['interestType'],
         orElse: () => CustomInterestType.french,
       ),
+      initialPaidQuotas: map['initialPaidQuotas'] != null
+          ? (map['initialPaidQuotas'] as num).toInt()
+          : null,
     );
   }
 
@@ -234,6 +249,7 @@ class AccountToPayItem {
       'description': description,
       'amount': amount,
       'currency': currency,
+      'startDate': startDate?.toIso8601String(),
       'dueDate': dueDate.toIso8601String(),
       'paymentDate': paymentDate?.toIso8601String(),
       'isPaid': isPaid,
@@ -251,6 +267,7 @@ class AccountToPayItem {
       'totalQuotas': totalQuotas,
       'monthlyQuota': monthlyQuota,
       'interestType': interestType.name,
+      'initialPaidQuotas': initialPaidQuotas,
     };
   }
 }

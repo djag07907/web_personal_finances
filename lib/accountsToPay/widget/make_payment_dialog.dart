@@ -493,7 +493,7 @@ class _MakePaymentDialogState extends State<MakePaymentDialog> {
                     CustomLabelInput(
                       label:
                           '${context.translate('description')} (${context.translate('optional')})',
-                      hintText: 'e.g. Quota #3 or partial transfer',
+                      hintText: context.translate('quota_payment_notes_hint'),
                       validator: (final String? value) => null,
                       controller: _notesController,
                     ),

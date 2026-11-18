@@ -63,6 +63,17 @@ class _AmortizationScheduleDialogState
   }
 
   @override
+  void didUpdateWidget(covariant final AmortizationScheduleDialog oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item != widget.item) {
+      _currentItem = widget.item;
+      _schedule = LoanAmortizationUtils.generateReceivableSchedule(
+        _currentItem,
+      );
+    }
+  }
+
+  @override
   void dispose() {
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
@@ -366,7 +377,7 @@ class _AmortizationScheduleDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            '${context.translate('next_quota_due')}: Quota #${nextDueQuota.quotaNumber} (${DateFormat(dayMonthYearFormat).format(nextDueQuota.dueDate)})',
+                            '${context.translate('next_quota_due')}: ${context.translate('quota')} #${nextDueQuota.quotaNumber} (${DateFormat(dayMonthYearFormat).format(nextDueQuota.dueDate)})',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,

@@ -31,9 +31,14 @@ class _FormWidgetState extends State<FormWidget> {
   CustomInterestType selectedInterestType = CustomInterestType.french;
   bool isPaid = false;
   bool isLoan = false;
+  final TextEditingController _startDateController = TextEditingController();
+  final TextEditingController _initialPaidQuotasController =
+      TextEditingController();
   final TextEditingController _interestRateController = TextEditingController();
   final TextEditingController _totalQuotasController = TextEditingController();
   final TextEditingController _monthlyQuotaController = TextEditingController();
+  DateTime? _selectedStartDate;
+  bool _isRetroactiveUpToDate = true;
   List<String> tags = <String>[];
   List<String> _availableCurrencies = <String>[hnlCurrency, usdCurrency];
 
@@ -45,6 +50,12 @@ class _FormWidgetState extends State<FormWidget> {
       _nameController.text = item.creditorName;
       _descriptionController.text = item.description;
       _amountController.text = item.amount.toString();
+      _selectedStartDate = item.startDate;
+      if (item.startDate != null) {
+        _startDateController.text = DateFormat(
+          dayMonthYearFormat,
+        ).format(item.startDate!);
+      }
       _dueDateController.text = DateFormat(
         dayMonthYearFormat,
       ).format(item.dueDate);
@@ -64,6 +75,10 @@ class _FormWidgetState extends State<FormWidget> {
       if (item.monthlyQuota != null) {
         _monthlyQuotaController.text = item.monthlyQuota.toString();
       }
+      if (item.initialPaidQuotas != null) {
+        _initialPaidQuotasController.text = item.initialPaidQuotas.toString();
+        _isRetroactiveUpToDate = false;
+      }
     } else {
       selectedCategory = CustomAccountToPayCategoryOptions.other;
       selectedFrequency = CustomFrequencyOptions.once;
@@ -78,9 +93,42 @@ class _FormWidgetState extends State<FormWidget> {
   }
 
   void _onFieldChanged() {
+    _syncCalculatedQuota();
     if (mounted) {
       setState(() {});
     }
+  }
+
+  void _syncCalculatedQuota({final bool force = false}) {
+    final double p =
+        double.tryParse(_amountController.text.replaceAll(',', emptyString)) ??
+        0.0;
+    final double r =
+        double.tryParse(_interestRateController.text.trim()) ?? 0.0;
+    final int n = int.tryParse(_totalQuotasController.text.trim()) ?? 0;
+
+    if (p > 0 && n > 0) {
+      final double estQuota = LoanAmortizationUtils.calculatePeriodicQuota(
+        principal: p,
+        annualInterestRatePercent: r,
+        totalQuotas: n,
+        frequency: selectedFrequency ?? CustomFrequencyOptions.monthly,
+        interestType: selectedInterestType,
+      );
+      if (force || _monthlyQuotaController.text.isEmpty) {
+        _monthlyQuotaController.text = estQuota.toStringAsFixed(2);
+      }
+    }
+  }
+
+  int get _elapsedQuotas {
+    if (_selectedStartDate == null) {
+      return 0;
+    }
+    return LoanAmortizationUtils.calculateElapsedPeriods(
+      startDate: _selectedStartDate!,
+      frequency: selectedFrequency ?? CustomFrequencyOptions.monthly,
+    );
   }
 
   Future<void> _loadUserCurrencies() async {
@@ -129,7 +177,9 @@ class _FormWidgetState extends State<FormWidget> {
     _nameController.dispose();
     _descriptionController.dispose();
     _amountController.dispose();
+    _startDateController.dispose();
     _dueDateController.dispose();
+    _initialPaidQuotasController.dispose();
     _interestRateController.dispose();
     _totalQuotasController.dispose();
     _monthlyQuotaController.dispose();
@@ -316,8 +366,41 @@ class _FormWidgetState extends State<FormWidget> {
                     controller: _amountController,
                   ),
                   CustomLabelInput(
-                    label: context.translate('date_due'),
-                    hintText: context.translate('enter_due_date'),
+                    label: context.translate('start_date'),
+                    hintText: context.translate('enter_start_date'),
+                    isReadOnly: true,
+                    isCalendar: true,
+                    onTap: () async {
+                      final CustomCalendarDialog calendar =
+                          CustomCalendarDialog();
+                      final DateTime? selectedDate = await calendar
+                          .showDateDialog(
+                            context: context,
+                            dateController: _startDateController,
+                          );
+                      if (selectedDate != null) {
+                        setState(() {
+                          _selectedStartDate = selectedDate;
+                          _startDateController.text = DateFormat(
+                            dayMonthYearFormat,
+                          ).format(selectedDate);
+                          if (_isRetroactiveUpToDate) {
+                            _initialPaidQuotasController.text = _elapsedQuotas
+                                .toString();
+                          }
+                        });
+                      }
+                    },
+                    validator: (final String? value) => null,
+                    controller: _startDateController,
+                  ),
+                  CustomLabelInput(
+                    label: isLoan
+                        ? context.translate('first_payment_date')
+                        : context.translate('date_due'),
+                    hintText: isLoan
+                        ? context.translate('enter_first_payment_date')
+                        : context.translate('enter_due_date'),
                     isReadOnly: true,
                     isCalendar: true,
                     onTap: () async {
@@ -585,6 +668,16 @@ class _FormWidgetState extends State<FormWidget> {
                           CustomLabelInput(
                             label: context.translate('custom_monthly_quota'),
                             hintText: context.translate('monthly_quota_hint'),
+                            trailingLabel: TextButton.icon(
+                              onPressed: () {
+                                _syncCalculatedQuota(force: true);
+                              },
+                              icon: const Icon(Icons.sync, size: 14),
+                              label: Text(
+                                context.translate('recalculate_quota'),
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                            ),
                             validator: null,
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
@@ -594,6 +687,136 @@ class _FormWidgetState extends State<FormWidget> {
                             ],
                             controller: _monthlyQuotaController,
                           ),
+                          if (_selectedStartDate != null &&
+                              _selectedStartDate!.isBefore(
+                                DateTime.now(),
+                              )) ...<Widget>[
+                            Container(
+                              margin: const EdgeInsets.symmetric(vertical: 8.0),
+                              padding: const EdgeInsets.all(12.0),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(10.0),
+                                border: Border.all(
+                                  color: Colors.amber.withValues(alpha: 0.35),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      const Icon(
+                                        Icons.history,
+                                        size: 18,
+                                        color: Colors.amber,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        context.translate(
+                                          'retroactive_calculation',
+                                        ),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: isDark
+                                              ? white
+                                              : LightColors.textPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    context.translate(
+                                      'retroactive_calculation_desc',
+                                    ),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: isDark
+                                          ? DarkColors.textSecondary
+                                          : LightColors.textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Expanded(
+                                        child: Text(
+                                          context.translate(
+                                            'is_debt_up_to_date',
+                                          ),
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      Switch(
+                                        value: _isRetroactiveUpToDate,
+                                        activeThumbColor: isDark
+                                            ? DarkColors.primary
+                                            : LightColors.primary,
+                                        onChanged: (final bool val) {
+                                          setState(() {
+                                            _isRetroactiveUpToDate = val;
+                                            if (val) {
+                                              _initialPaidQuotasController
+                                                  .text = _elapsedQuotas
+                                                  .toString();
+                                            }
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  if (_isRetroactiveUpToDate) ...<Widget>[
+                                    Text(
+                                      context.translate(
+                                        'elapsed_quotas_summary',
+                                        namedArgs: <String, String>{
+                                          'count': '$_elapsedQuotas',
+                                          'amount':
+                                              CurrencyKpiUtils.formatAmount(
+                                                _elapsedQuotas *
+                                                    (double.tryParse(
+                                                          _monthlyQuotaController
+                                                              .text
+                                                              .replaceAll(
+                                                                ',',
+                                                                emptyString,
+                                                              ),
+                                                        ) ??
+                                                        0.0),
+                                                selectedCurrency ?? emptyString,
+                                              ),
+                                        },
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.amber.shade800,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ] else ...<Widget>[
+                                    CustomLabelInput(
+                                      label: context.translate(
+                                        'quotas_already_paid',
+                                      ),
+                                      hintText: context.translate(
+                                        'enter_quotas_already_paid',
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      validator: null,
+                                      controller: _initialPaidQuotasController,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -673,12 +896,95 @@ class _FormWidgetState extends State<FormWidget> {
 
     DateTime? paymentDate;
     if (isPaid) {
-      // Keep the original payment date if it was already paid.
       paymentDate = (existing != null && existing.isPaid)
           ? existing.paymentDate
           : DateTime.now();
       paymentDate ??= DateTime.now();
     }
+
+    final double parsedAmount =
+        double.tryParse(_amountController.text.replaceAll(',', emptyString)) ??
+        0.0;
+    final DateTime dueDate = DateFormat(
+      dayMonthYearFormat,
+    ).parse(_dueDateController.text);
+    final int totalQ = int.tryParse(_totalQuotasController.text.trim()) ?? 0;
+    final double? parsedRate = isLoan
+        ? double.tryParse(_interestRateController.text.trim())
+        : null;
+    final double? customMonthlyQuota = isLoan
+        ? double.tryParse(
+            _monthlyQuotaController.text.replaceAll(',', emptyString),
+          )
+        : null;
+
+    int initialPaid = 0;
+    if (isLoan &&
+        _selectedStartDate != null &&
+        _selectedStartDate!.isBefore(DateTime.now())) {
+      if (_isRetroactiveUpToDate) {
+        initialPaid = math.min(
+          _elapsedQuotas,
+          totalQ > 0 ? totalQ : _elapsedQuotas,
+        );
+      } else {
+        initialPaid =
+            int.tryParse(_initialPaidQuotasController.text.trim()) ?? 0;
+      }
+    } else if (existing?.initialPaidQuotas != null) {
+      initialPaid = existing!.initialPaidQuotas!;
+    }
+
+    // Preserve non-retroactive manual payments
+    final List<AccountToPayPayment> preservedPayments = existing != null
+        ? existing.payments
+              .where(
+                (final AccountToPayPayment p) => !p.id.startsWith('retro_'),
+              )
+              .toList()
+        : <AccountToPayPayment>[];
+
+    final List<AccountToPayPayment> allPayments = <AccountToPayPayment>[];
+    if (isLoan && initialPaid > 0) {
+      final AccountToPayItem temp = AccountToPayItem(
+        id: existing?.id ?? 'temp',
+        creditorName: _nameController.text,
+        description: _descriptionController.text,
+        amount: parsedAmount,
+        currency: selectedCurrency!,
+        startDate: _selectedStartDate,
+        dueDate: dueDate,
+        category: selectedCategory ?? CustomAccountToPayCategoryOptions.other,
+        frequency: selectedFrequency ?? CustomFrequencyOptions.monthly,
+        isLoan: true,
+        interestRate: parsedRate,
+        totalQuotas: totalQ > 0 ? totalQ : null,
+        monthlyQuota: customMonthlyQuota,
+        interestType: selectedInterestType,
+      );
+      final List<AmortizationScheduleItem> schedule =
+          LoanAmortizationUtils.generateSchedule(temp);
+      final int count = math.min(initialPaid, schedule.length);
+      for (int k = 1; k <= count; k++) {
+        final AmortizationScheduleItem q = schedule[k - 1];
+        allPayments.add(
+          AccountToPayPayment(
+            id: 'retro_${temp.id}_$k',
+            amount: q.quotaAmount,
+            paymentDate: q.dueDate,
+            paymentMethod: context.translate('retroactive_payment_method'),
+            notes: context.translate(
+              'retroactive_payment_note',
+              namedArgs: <String, String>{'number': '$k'},
+            ),
+          ),
+        );
+      }
+    }
+    allPayments.addAll(preservedPayments);
+
+    final bool effectivelyPaid =
+        isPaid || (isLoan && totalQ > 0 && initialPaid >= totalQ);
 
     final AccountToPayItem newItem = AccountToPayItem(
       id: existing?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
@@ -688,34 +994,24 @@ class _FormWidgetState extends State<FormWidget> {
       creditorName: _nameController.text,
       description: _descriptionController.text,
       currency: selectedCurrency!,
-      amount:
-          double.tryParse(
-            _amountController.text.replaceAll(',', emptyString),
-          ) ??
-          0,
-      dueDate: DateFormat(dayMonthYearFormat).parse(_dueDateController.text),
+      amount: parsedAmount,
+      startDate: _selectedStartDate,
+      dueDate: dueDate,
       paymentDate: paymentDate,
-      isPaid: isPaid,
+      isPaid: effectivelyPaid,
       status: existing?.status ?? true,
       category: selectedCategory ?? CustomAccountToPayCategoryOptions.other,
       frequency: selectedFrequency ?? CustomFrequencyOptions.once,
       createdDate: existing?.createdDate ?? DateTime.now(),
       tags: tags,
       paymentMethod: existing?.paymentMethod,
-      payments: existing?.payments ?? const <AccountToPayPayment>[],
+      payments: allPayments,
       isLoan: isLoan,
-      interestRate: isLoan
-          ? double.tryParse(_interestRateController.text.trim())
-          : null,
-      totalQuotas: isLoan
-          ? int.tryParse(_totalQuotasController.text.trim())
-          : null,
-      monthlyQuota: isLoan
-          ? double.tryParse(
-              _monthlyQuotaController.text.replaceAll(',', emptyString),
-            )
-          : null,
+      interestRate: parsedRate,
+      totalQuotas: isLoan && totalQ > 0 ? totalQ : null,
+      monthlyQuota: customMonthlyQuota,
       interestType: selectedInterestType,
+      initialPaidQuotas: initialPaid > 0 ? initialPaid : null,
     );
 
     widget.onSave(newItem);

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/bloc/app_auth_notifier.dart';
 import 'package:web_personal_finances/commons/security/file_picker_helper.dart';
 import 'package:web_personal_finances/commons/security/recovery_key_utils.dart';
@@ -144,16 +145,12 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
       context: context,
       builder: (final BuildContext ctx) {
         return AlertDialog(
-          title: const Text('Reset Encrypted Vault?'),
-          content: const Text(
-            'WARNING: If you have permanently lost your Emergency Key, resetting your vault will create a brand new vault. '
-            'Past encrypted records (such as encrypted income entries) cannot be recovered without the original key.\n\n'
-            'Do you wish to proceed with creating a fresh vault?',
-          ),
+          title: Text(context.translate('reset_vault_title')),
+          content: Text(context.translate('reset_vault_warning')),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Cancel'),
+              child: Text(context.translate('cancel')),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(ctx).pop(true),
@@ -161,7 +158,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
                 backgroundColor: unhealthyRed,
                 foregroundColor: white,
               ),
-              child: const Text('Reset & Start Fresh'),
+              child: Text(context.translate('reset_start_fresh')),
             ),
           ],
         );
@@ -176,8 +173,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
 
     if (password.isEmpty) {
       setState(() {
-        _localError =
-            'Please enter your current login password below to create your fresh vault.';
+        _localError = context.translate('enter_password_fresh_vault');
       });
       return;
     }
@@ -188,7 +184,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
 
     if (uid.isEmpty) {
       setState(() {
-        _localError = 'Session expired. Please sign in again.';
+        _localError = context.translate('session_expired_sign_in');
       });
       return;
     }
@@ -229,12 +225,9 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
               uid: currentUser?.uid ?? '',
               recoveryPhrase: state.recoveryPhrase,
             );
-            showSnackbar(
-              ctx,
-              'Vault unlocked & re-encrypted with your new password!',
-            );
+            showSnackbar(ctx, context.translate('vault_unlocked_reencrypted'));
           } else {
-            showSnackbar(ctx, 'Vault unlocked successfully!');
+            showSnackbar(ctx, context.translate('vault_unlocked_success'));
           }
           await ctx.read<AppAuthNotifier>().refreshProfile();
         } else if (state is VaultRecoveryResetSuccess) {
@@ -243,10 +236,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
             uid: currentUser?.uid ?? '',
             recoveryPhrase: state.recoveryPhrase,
           );
-          showSnackbar(
-            ctx,
-            'Fresh vault created! Downloaded new emergency key.',
-          );
+          showSnackbar(ctx, context.translate('fresh_vault_created'));
           await ctx.read<AppAuthNotifier>().refreshProfile();
         }
       },
@@ -347,7 +337,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Zero-Knowledge Vault Locked',
+                context.translate('zk_vault_locked'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 22,
@@ -359,7 +349,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Enter your account password to unlock your personal finances.',
+                context.translate('zk_vault_locked_subtitle'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13.5,
@@ -433,7 +423,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
 
         // Password Input
         Text(
-          'Account Password',
+          context.translate('account_password'),
           style: TextStyle(
             fontSize: 13.5,
             fontWeight: FontWeight.w600,
@@ -452,7 +442,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
             fontSize: 13.5,
           ),
           decoration: InputDecoration(
-            hintText: 'Enter your password to unlock',
+            hintText: context.translate('enter_account_password'),
             hintStyle: TextStyle(
               color: isDark ? DarkColors.textSecondary : Colors.grey.shade400,
               fontSize: 13,
@@ -536,7 +526,9 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
                   )
                 : const Icon(Icons.lock_open_rounded, size: 20),
             label: Text(
-              isRecovering ? 'Unlocking Vault...' : 'Unlock Vault',
+              isRecovering
+                  ? context.translate('unlocking_vault')
+                  : context.translate('unlock_vault'),
               style: const TextStyle(
                 fontSize: 14.5,
                 fontWeight: FontWeight.bold,
@@ -557,7 +549,10 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
                       await context.read<AuthRepository>().signOut();
                     },
               icon: const Icon(Icons.logout_rounded, size: 16),
-              label: const Text('Sign Out', style: TextStyle(fontSize: 13)),
+              label: Text(
+                context.translate('logout'),
+                style: const TextStyle(fontSize: 13),
+              ),
               style: TextButton.styleFrom(
                 foregroundColor: isDark
                     ? DarkColors.textSecondary
@@ -578,9 +573,9 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
                 size: 16,
                 color: LightColors.primary,
               ),
-              label: const Text(
-                'Use Emergency Key',
-                style: TextStyle(
+              label: Text(
+                context.translate('use_emergency_key'),
+                style: const TextStyle(
                   fontSize: 13,
                   color: LightColors.primary,
                   fontWeight: FontWeight.w600,
@@ -619,9 +614,9 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
                     });
                   },
             icon: const Icon(Icons.arrow_back_rounded, size: 16),
-            label: const Text(
-              'Back to Password Unlock',
-              style: TextStyle(fontSize: 13),
+            label: Text(
+              context.translate('back_to_password_unlock'),
+              style: const TextStyle(fontSize: 13),
             ),
             style: TextButton.styleFrom(
               foregroundColor: isDark
@@ -650,7 +645,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Emergency Vault Recovery',
+                context.translate('emergency_vault_recovery'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 22,
@@ -662,7 +657,10 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Upload your Emergency Key (.txt) or enter your 12 recovery words to restore access for $email.',
+                context.translate(
+                  'emergency_vault_recovery_subtitle',
+                  namedArgs: <String, String>{'email': email},
+                ),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13.5,
@@ -699,8 +697,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Your financial records are encrypted with your zero-knowledge key. '
-                  'Providing your Emergency Key re-encrypts your records with your password so you can regain full access.',
+                  context.translate('emergency_vault_explanation'),
                   style: TextStyle(
                     fontSize: 13,
                     height: 1.45,
@@ -746,8 +743,8 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
                 const SizedBox(height: 8),
                 Text(
                   _keyFileLoaded
-                      ? 'Emergency Key Loaded Successfully!'
-                      : 'Upload Emergency Key File (.txt)',
+                      ? context.translate('emergency_key_loaded_success')
+                      : context.translate('upload_emergency_key_file'),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -757,8 +754,8 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
                 const SizedBox(height: 4),
                 Text(
                   _keyFileLoaded
-                      ? 'Click "Restore & Unlock Vault" below to continue'
-                      : 'Select your downloaded emergency key (.txt) file',
+                      ? context.translate('click_restore_unlock_continue')
+                      : context.translate('select_downloaded_key_file'),
                   style: TextStyle(
                     fontSize: 12,
                     color: isDark
@@ -774,7 +771,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
 
         // 12-Word Phrase Field
         Text(
-          '12-Word Recovery Phrase',
+          context.translate('recovery_words_label'),
           style: TextStyle(
             fontSize: 13.5,
             fontWeight: FontWeight.w600,
@@ -792,7 +789,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
             fontFamily: 'monospace',
           ),
           decoration: InputDecoration(
-            hintText: 'Paste 12 words or key file text here...',
+            hintText: context.translate('paste_recovery_words_hint'),
             hintStyle: TextStyle(
               color: isDark ? DarkColors.textSecondary : Colors.grey.shade400,
               fontSize: 12.5,
@@ -807,7 +804,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
 
         if (needsPassword) ...<Widget>[
           Text(
-            'Current Account Password',
+            context.translate('current_account_password'),
             style: TextStyle(
               fontSize: 13.5,
               fontWeight: FontWeight.w600,
@@ -824,7 +821,7 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
               fontSize: 13.5,
             ),
             decoration: InputDecoration(
-              hintText: 'Enter your password to re-encrypt the vault',
+              hintText: context.translate('enter_password_reencrypt_vault'),
               hintStyle: TextStyle(
                 color: isDark ? DarkColors.textSecondary : Colors.grey.shade400,
                 fontSize: 13,
@@ -912,8 +909,8 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
                 : const Icon(Icons.lock_open_rounded, size: 20),
             label: Text(
               isRecovering
-                  ? 'Unlocking & Re-encrypting Vault...'
-                  : 'Restore & Unlock Vault',
+                  ? context.translate('unlocking_reencrypting_vault')
+                  : context.translate('restore_unlock_vault'),
               style: const TextStyle(
                 fontSize: 14.5,
                 fontWeight: FontWeight.bold,
@@ -934,7 +931,10 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
                       await context.read<AuthRepository>().signOut();
                     },
               icon: const Icon(Icons.logout_rounded, size: 16),
-              label: const Text('Sign Out', style: TextStyle(fontSize: 13)),
+              label: Text(
+                context.translate('logout'),
+                style: const TextStyle(fontSize: 13),
+              ),
               style: TextButton.styleFrom(
                 foregroundColor: isDark
                     ? DarkColors.textSecondary
@@ -951,7 +951,9 @@ class _VaultRecoveryBodyState extends State<VaultRecoveryBody> {
                 color: unhealthyRed,
               ),
               label: Text(
-                isResetting ? 'Resetting...' : 'Lost Key? Reset Vault',
+                isResetting
+                    ? context.translate('resetting_vault')
+                    : context.translate('lost_key_reset_vault'),
                 style: const TextStyle(fontSize: 13, color: unhealthyRed),
               ),
             ),

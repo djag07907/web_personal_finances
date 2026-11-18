@@ -2,6 +2,7 @@ import 'package:cryptography/cryptography.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:internationalization/internationalization.dart';
 import 'package:web_personal_finances/commons/security/encryption_service.dart';
 import 'package:web_personal_finances/commons/security/file_picker_helper.dart';
 import 'package:web_personal_finances/commons/security/recovery_key_utils.dart';
@@ -222,7 +223,7 @@ class _VaultRecoveryDialogState extends State<VaultRecoveryDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          'Encrypted Vault Locked',
+                          context.translate('zk_vault_locked'),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -233,7 +234,7 @@ class _VaultRecoveryDialogState extends State<VaultRecoveryDialog> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Password was recently reset or changed',
+                          context.translate('vault_password_changed_subtitle'),
                           style: TextStyle(
                             fontSize: 13,
                             color: isDark
@@ -250,7 +251,7 @@ class _VaultRecoveryDialogState extends State<VaultRecoveryDialog> {
 
               // Guidance
               Text(
-                'Because Zero-Knowledge encryption protects your records, changing your password requires your Emergency Key to re-encrypt and unlock your vault.',
+                context.translate('vault_password_reset_explanation'),
                 style: TextStyle(
                   fontSize: 13,
                   height: 1.4,
@@ -266,7 +267,7 @@ class _VaultRecoveryDialogState extends State<VaultRecoveryDialog> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text(
-                    'Emergency Recovery Phrase',
+                    context.translate('recovery_words_label'),
                     style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w600,
@@ -278,9 +279,9 @@ class _VaultRecoveryDialogState extends State<VaultRecoveryDialog> {
                   TextButton.icon(
                     onPressed: _handleUploadKeyFile,
                     icon: const Icon(Icons.upload_file_rounded, size: 16),
-                    label: const Text(
-                      'Upload Key (.txt)',
-                      style: TextStyle(fontSize: 12.5),
+                    label: Text(
+                      context.translate('upload_key_txt'),
+                      style: const TextStyle(fontSize: 12.5),
                     ),
                     style: TextButton.styleFrom(
                       foregroundColor: LightColors.primary,
@@ -425,7 +426,7 @@ class _VaultRecoveryDialogState extends State<VaultRecoveryDialog> {
                 children: <Widget>[
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
+                    child: Text(context.translate('cancel')),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton.icon(
@@ -453,8 +454,8 @@ class _VaultRecoveryDialogState extends State<VaultRecoveryDialog> {
                         : const Icon(Icons.sync_lock_rounded, size: 18),
                     label: Text(
                       _isRecovering
-                          ? 'Restoring Vault...'
-                          : 'Restore & Sync Vault',
+                          ? context.translate('unlocking_vault')
+                          : context.translate('restore_unlock_vault'),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),

@@ -130,21 +130,42 @@ class LoanAmortizationUtils {
     required final double totalPaid,
     required final bool isFullyPaid,
     required final DateTime startDate,
+    final DateTime? firstPaymentDate,
     final CustomInterestType interestType = CustomInterestType.flat,
   }) {
     if (totalQuotas <= 0 || principal <= 0) {
       return const <AmortizationScheduleItem>[];
     }
 
-    final double quotaAmount = monthlyQuota != null && monthlyQuota > 0
-        ? monthlyQuota
-        : calculatePeriodicQuota(
-            principal: principal,
-            annualInterestRatePercent: annualRate,
-            totalQuotas: totalQuotas,
-            frequency: frequency,
-            interestType: interestType,
-          );
+    final double standardQuota = calculatePeriodicQuota(
+      principal: principal,
+      annualInterestRatePercent: annualRate,
+      totalQuotas: totalQuotas,
+      frequency: frequency,
+      interestType: interestType,
+    );
+
+    // Safeguard: If monthlyQuota was stored from an earlier term calculation (e.g., 239 quotas
+    // instead of 360), it would exhaust principal prematurely before totalQuotas.
+    // If it exceeds the standard quota for the chosen term by more than 2%, use the accurate standardQuota.
+    double quotaAmount = standardQuota;
+    if (monthlyQuota != null && monthlyQuota > 0) {
+      if (annualRate > 0 && monthlyQuota > standardQuota * 1.02) {
+        quotaAmount = standardQuota;
+      } else {
+        quotaAmount = monthlyQuota;
+      }
+    }
+
+    final DateTime baseFirstDueDate =
+        firstPaymentDate ??
+        (startDate == firstPaymentDate
+            ? startDate
+            : calculateDueDateForPeriod(
+                startDate: startDate,
+                periodIndex: 1,
+                frequency: frequency,
+              ));
 
     final int periodsPerYear = getPeriodsPerYear(frequency);
     double runningPaidConsumed = totalPaid;
@@ -183,7 +204,7 @@ class LoanAmortizationUtils {
         }
 
         final DateTime dueDate = calculateDueDateForPeriod(
-          startDate: startDate,
+          startDate: baseFirstDueDate,
           periodIndex: k - 1,
           frequency: frequency,
         );
@@ -235,7 +256,7 @@ class LoanAmortizationUtils {
       }
 
       final DateTime dueDate = calculateDueDateForPeriod(
-        startDate: startDate,
+        startDate: baseFirstDueDate,
         periodIndex: k - 1,
         frequency: frequency,
       );
@@ -260,12 +281,47 @@ class LoanAmortizationUtils {
         ),
       );
 
-      if (currentBalance <= 0) {
+      if (currentBalance <= 0 && k >= totalQuotas) {
         break;
       }
     }
 
     return schedule;
+  }
+
+  /// Calculates the number of elapsed payment periods between [startDate] and [referenceDate] (defaults to now).
+  static int calculateElapsedPeriods({
+    required final DateTime startDate,
+    required final CustomFrequencyOptions frequency,
+    final DateTime? referenceDate,
+  }) {
+    final DateTime now = referenceDate ?? DateTime.now();
+    if (now.isBefore(startDate)) {
+      return 0;
+    }
+    switch (frequency) {
+      case CustomFrequencyOptions.daily:
+        return now.difference(startDate).inDays;
+      case CustomFrequencyOptions.weekly:
+        return now.difference(startDate).inDays ~/ 7;
+      case CustomFrequencyOptions.biweekly:
+        return now.difference(startDate).inDays ~/ 14;
+      case CustomFrequencyOptions.monthly:
+      case CustomFrequencyOptions.once:
+        int months =
+            (now.year - startDate.year) * 12 + (now.month - startDate.month);
+        if (now.day < startDate.day) {
+          months = math.max(0, months - 1);
+        }
+        return math.max(0, months);
+      case CustomFrequencyOptions.yearly:
+        int years = now.year - startDate.year;
+        if (now.month < startDate.month ||
+            (now.month == startDate.month && now.day < startDate.day)) {
+          years = math.max(0, years - 1);
+        }
+        return math.max(0, years);
+    }
   }
 
   /// Generates the complete amortization schedule for a loan item.
@@ -280,7 +336,8 @@ class LoanAmortizationUtils {
       monthlyQuota: item.monthlyQuota,
       totalPaid: item.totalPaid,
       isFullyPaid: item.isFullyPaid,
-      startDate: item.dueDate,
+      startDate: item.startDate ?? item.dueDate,
+      firstPaymentDate: item.dueDate,
       interestType: item.interestType,
     );
   }
@@ -297,7 +354,8 @@ class LoanAmortizationUtils {
       monthlyQuota: item.monthlyQuota,
       totalPaid: item.totalCollected,
       isFullyPaid: item.isFullyPaid,
-      startDate: item.dueDate,
+      startDate: item.startDate ?? item.dueDate,
+      firstPaymentDate: item.dueDate,
       interestType: item.interestType,
     );
   }
